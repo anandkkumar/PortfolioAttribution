@@ -101,8 +101,17 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
     
     # Get total portfolio returns
     if (is.vector(WP)  & is.vector(WB)){
-      rp = Return.portfolio(Rp, WP)
-      rb = Return.portfolio(Rb, WB)
+      # For now we assume that if it's an error it's because we only have
+      # a single observation and not time serie data
+      rp = tryCatch({
+        Return.portfolio(Rp, WP)
+      }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
+      )
+      rb = tryCatch({
+        Return.portfolio(Rb, WB)
+      }, error = function(e) { return(as.matrix(sum(WB*Rb))) }
+      )
+      
     } else{
       rp = Return.rebalancing(Rp, WP)
       rb = Return.rebalancing(Rb, WB)
