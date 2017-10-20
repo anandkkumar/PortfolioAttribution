@@ -10,7 +10,7 @@ Wb = c(0.40, 0.20, 0.40)
 
 epsilon = 1e-10
 
-# BHB Example using one-period time series data
+# Example using one-period time series data
 Rp = xts(matrix(c(0.20, -0.05, 0.06, 0, 0, 0),ncol=3,byrow=TRUE,
                 dimnames=list(c("Rp", "Rp"),cnames)), 
          order.by=c(Sys.yearqtr(), as.yearqtr(as.Date(as.yearqtr(Sys.Date()))-1)))
@@ -73,7 +73,7 @@ test_that("BF Example in Table 5.4 for top-down approach with time series data" 
 )
 
 
-# BHB Example with single observation data
+# Example with single observation data
 Rp = matrix(c(0.20, -0.05, 0.06),ncol=3,byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
 Rp = checkData(Rp)
@@ -135,7 +135,7 @@ test_that("BF Example in Table 5.3 with single observation data" , {
 }
 )
 
-test_that("BF Example in Table 5.4 for top-down approach with time series data" , {
+test_that("BF Example in Table 5.4 for top-down approach with single observation data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
   expect_true(abs(attribution_results$Allocation[,"UK.equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[,"Japanese.equities"] - (-0.0104)) < epsilon)
