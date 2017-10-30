@@ -20,7 +20,7 @@ Rb = xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
 
 test_that("BHB Example for geometric approach with time series data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, linking = "none", geometric = TRUE)
-  expect_true(attribution_results$Allocation[2,"UK.equities"] - 0 < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"UK.equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Japanese.equities"] - (-0.0098)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"US.equities"] - (-0.0015)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Total"] - (-0.0113)) < epsilon)
@@ -36,7 +36,7 @@ test_that("BHB Example for geometric approach with time series data" , {
 
 test_that("BHB Example for geometric approach with time series data and alternate API" , {
   attribution_results = Attribution.geometric(Rp, Wp, Rb, Wb)
-  expect_true(attribution_results$Allocation[2,"UK.equities"] - 0 < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"UK.equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Japanese.equities"] - (-0.0098)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"US.equities"] - (-0.0015)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Total"] - (-0.0113)) < epsilon)
@@ -49,6 +49,8 @@ test_that("BHB Example for geometric approach with time series data and alternat
   expect_null(attribution_results$Interaction)
 }
 )
+
+
 # Example with single observation data
 Rp = matrix(c(0.20, -0.05, 0.06),ncol=3,byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
