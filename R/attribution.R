@@ -264,7 +264,7 @@ function (Rp, wp, Rb, wb,
       # Get total portfolio returns
       if (is.vector(WP)  & is.vector(WB)){
         # For now we assume that if it's an error it's because we only have
-        # a single observation and not time serie data
+        # a single observation and not time series data
         rp = tryCatch({
           Return.portfolio(Rp, WP, geometric = FALSE)
         }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
