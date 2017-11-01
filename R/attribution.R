@@ -285,22 +285,24 @@ function (Rp, wp, Rb, wb,
       #selection contribution is equal to 0
       #if bm weights unknown all contribution is treated as interaction as it cannot be broken down, user is warned
       
-      if(ncol(wb)==1){#allocation = 0 * (Rb - coredata(Rc) - coredata(L))
-                      selection = (Rp  - coredata(Rb))*0
-                      allocation = (Rp  - coredata(Rb))*0
-                      interaction = (wp ) * (Rp - coredata(Rb))  
-                      warning("Benchmark weights unknown, all effects treated as interaction, returns wp*(Rp-Rb)")                      }else{
-      if (bf == TRUE){ # Brinson and Fachler (1985) allocation effect
-        allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L) - 
-          rep(rb, ncol(Rb)))
-      } else{          # Brinson, Hood and Beebower (1986) allocation effect
-                    allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L))
+      if(ncol(wb)==1){
+        selection = (Rp  - coredata(Rb))*0
+        allocation = (Rp  - coredata(Rb))*0
+        interaction = coredata(wp) * (Rp - coredata(Rb))  
+        warning("Benchmark weights unknown, all effects treated as interaction, returns wp*(Rp-Rb)")
       }
-                      
-      selection = (Rp  - coredata(Rb)) * wb
-      interaction = (wp - wb) * (Rp - coredata(Rb))         
-                      
-                      }
+      else{
+        if (bf == TRUE){ # Brinson and Fachler (1985) allocation effect
+          allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L) - 
+            rep(rb, ncol(Rb)))
+        }else{
+          # Brinson, Hood and Beebower (1986) allocation effect
+          allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L))
+        }
+                        
+        selection = (Rp  - coredata(Rb)) * coredata(wb)
+        interaction = coredata(wp - wb) * (Rp - coredata(Rb))         
+      }
     
       
       
