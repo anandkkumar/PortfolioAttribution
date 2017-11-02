@@ -203,8 +203,23 @@ function (Rp, wp, Rb, wb,
     Rp = checkData(Rp)
     WP = wp # Save original weights in order to avoid double conversion later
     WB = wb
-    wp = Weight.transform(wp, Rp)
-    wb = Weight.transform(wb, Rb)
+    if (is.vector(wp)){
+      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wp) = colnames(Rp)
+    }
+    else{
+      wp = WP
+    }
+    if (is.vector(wb)){
+      wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+                  index(Rb))
+      colnames(wb) = colnames(Rb)
+    }
+    else{
+      wb = WB
+    }
+    
     if (nrow(wp) < nrow(Rp)){ # Rebalancing occurs next day
       Rp = Rp[2:nrow(Rp)]
       Rb = Rb[2:nrow(Rb)]

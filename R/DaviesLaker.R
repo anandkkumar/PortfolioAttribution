@@ -4,7 +4,8 @@
 #' Davies and Laker linking method. Used internally by the 
 #' \code{\link{Attribution}} function. Arithmetic attribution effects do not 
 #' naturally link over time. This function uses Davies and Laker linking method
-#' to compute total attribution effects. 
+#' to compute total attribution effects and uses Brinson, Hood & Beebower approach 
+#' to defining allocation, selection & interaction effects. 
 #' Arithmetic excess returns are decomposed as follows:
 #' \deqn{R_{p} - R_{b} = Allocation + Selection + Interaction}{Rp - Rb = 
 #' Allocation + Selection + Interaction}
@@ -61,8 +62,23 @@ function(Rp, wp, Rb, wb)
     # FUNCTION:
     WP = wp
     WB = wb
-    wp = Weight.transform(wp, Rp)
-    wb = Weight.transform(wb, Rb)
+    if (is.vector(wp)){
+      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wp) = colnames(Rp)
+    }
+    else{
+      wp = WP
+    }
+    if (is.vector(wb)){
+      wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+                  index(Rb))
+      colnames(wb) = colnames(Rb)
+    }
+    else{
+      wb = WB
+    }
+    
     if (is.vector(WP)  & is.vector(WB)){
       rp = Return.portfolio(Rp, WP, geometric = FALSE)
       rb = Return.portfolio(Rb, WB, geometric = FALSE)
@@ -73,18 +89,18 @@ function(Rp, wp, Rb, wb)
     colnames(rp) = "Total"
     colnames(rb) = "Total"
     # Allocation notional fund returns
-    bs = reclass(rowSums((wp * coredata(Rb[, 1:ncol(wp)]))), Rp) 
+    bs = reclass(rowSums((coredata(wp) * coredata(Rb[, 1:ncol(wp)]))), Rp) 
     # Selection notional fund returns
-    rs = reclass(rowSums((wb * coredata(Rp[, 1:ncol(wb)]))), Rp) 
+    rs = reclass(rowSums((coredata(wb) * coredata(Rp[, 1:ncol(wb)]))), Rp) 
     a = apply(1 + bs, 2, prod) - apply(1 + rb, 2, prod)
     s = apply(1 + rs, 2, prod) - apply(1 + rb, 2, prod)
     i = apply(1 + rp, 2, prod) - apply(1 + rs, 2, prod) - 
       apply(1 + bs, 2, prod) + apply(1 + rb, 2, prod)
     
     # Compute attribution effects (Brinson, Hood and Beebower model)
-    allocation = (wp - wb) * coredata(Rb)
-    selection = wb * (Rp - coredata(Rb))
-    interaction = (wp - wb) * (Rp - coredata(Rb))
+    allocation = coredata(wp - wb) * Rb
+    selection = coredata(wb) * (Rp - coredata(Rb))
+    interaction = coredata(wp - wb) * (Rp - coredata(Rb))
     n = ncol(allocation)               # number of segments
     allocation = cbind(allocation, rowSums(allocation))
     names(allocation)[n + 1] = "Total"  
