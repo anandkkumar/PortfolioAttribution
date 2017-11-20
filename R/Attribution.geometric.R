@@ -2,8 +2,12 @@
 #' 
 #' Performs sector-based geometric attribution of excess return. Calculates 
 #' total geometric attribution effects over multiple periods. Used internally
-#' by the \code{\link{Attribution}} function. Geometric attribution effects in
-#' the contrast with arithmetic do naturally link over time multiplicatively:
+#' by the \code{\link{Attribution}} function. 
+#' No interaction effects are computed and the allocation & selection effects are as 
+#' defined by the Brinson Fachler method. In addition, the individual category
+#' effects are NOT adjusted using the possible approach outlined in the Carl Bacon
+#' book. In any case these adjustments are small most of the time. Geometric attribution effects, in 
+#' contrast with arithmetic, do naturally link over time multiplicatively:
 #' \deqn{\frac{(1+R_{p})}{1+R_{b}}-1=\prod^{n}_{t=1}(1+A_{t}^{G})\times
 #' \prod^{n}_{t=1}(1+S{}_{t}^{G})-1}
 #' Total allocation effect at time \eqn{t}:
@@ -95,14 +99,37 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
     # FUNCTION:
     WP = wp # Save original weights in order to avoid double conversion later
     WB = wb
-    wp = Weight.transform(wp, Rp)
-    wb = Weight.transform(wb, Rb)
+    if (is.vector(wp)){
+      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wp) = colnames(Rp)
+    }
+    else{
+      wp = WP
+    }
+    if (is.vector(wb)){
+      wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+                  index(Rb))
+      colnames(wb) = colnames(Rb)
+    }
+    else{
+      wb = WB
+    }
     currency = !(is.null(dim(Rpl)) & is.null(dim(Rpl)) & is.null(dim(Rpl)))
     
     # Get total portfolio returns
     if (is.vector(WP)  & is.vector(WB)){
-      rp = Return.portfolio(Rp, WP)
-      rb = Return.portfolio(Rb, WB)
+      # For now we assume that if it's an error it's because we only have
+      # a single observation and not time serie data
+      rp = tryCatch({
+        Return.portfolio(Rp, WP)
+      }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
+      )
+      rb = tryCatch({
+        Return.portfolio(Rb, WB)
+      }, error = function(e) { return(as.matrix(sum(WB*Rb))) }
+      )
+      
     } else{
       rp = Return.rebalancing(Rp, WP)
       rb = Return.rebalancing(Rb, WB)
@@ -115,7 +142,7 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
     if (!currency){
       # Geometric attribution effects for individual categories
       allocation = ((1 + Rb) / (1 + rep(rb, ncol(Rp))) - 1) * coredata(wp - wb) 
-      selection = wp * (Rp - coredata(Rb)) / (1 + rep(bs, ncol(Rp)))
+      selection = coredata(wp) * (Rp - coredata(Rb)) / (1 + rep(bs, ncol(Rp)))
       colnames(allocation) = colnames(Rp)
 
     } else{
@@ -127,8 +154,8 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
       bsh = reclass(rowSums(((wp - wb) * Rbh + wb * Rbl)), Rpl)
       rpl = reclass(rowSums(Rpl * wp), Rpl)
       rbl = reclass(rowSums(Rbl * wp), Rpl)
-      allocation = (wp - wb) * ((1 + Rbh) / (1 + rep(rbl, ncol(Rbh))) - 1)
-      selection = wp * ((1 + Rpl) / (1 + Rbl) - 1) * ((1 + Rbl) / 
+      allocation = coredata(wp - wb) * ((1 + Rbh) / (1 + rep(rbl, ncol(Rbh))) - 1)
+      selection = coredata(wp) * ((1 + Rpl) / (1 + Rbl) - 1) * ((1 + Rbl) / 
         (1 + rep(bsl, ncol(Rbl))))
       hedge = (1 + bsl) / (1 + bsh) - 1
       currency.attr = (1 + rp) * (1 + rbl) / (1 + rpl) / (1 + rb) - 1

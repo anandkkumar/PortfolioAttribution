@@ -203,8 +203,23 @@ function (Rp, wp, Rb, wb,
     Rp = checkData(Rp)
     WP = wp # Save original weights in order to avoid double conversion later
     WB = wb
-    wp = Weight.transform(wp, Rp)
-    wb = Weight.transform(wb, Rb)
+    if (is.vector(wp)){
+      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wp) = colnames(Rp)
+    }
+    else{
+      wp = WP
+    }
+    if (is.vector(wb)){
+      wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+                  index(Rb))
+      colnames(wb) = colnames(Rb)
+    }
+    else{
+      wb = WB
+    }
+    
     if (nrow(wp) < nrow(Rp)){ # Rebalancing occurs next day
       Rp = Rp[2:nrow(Rp)]
       Rb = Rb[2:nrow(Rb)]
@@ -264,7 +279,7 @@ function (Rp, wp, Rb, wb,
       # Get total portfolio returns
       if (is.vector(WP)  & is.vector(WB)){
         # For now we assume that if it's an error it's because we only have
-        # a single observation and not time serie data
+        # a single observation and not time series data
         rp = tryCatch({
           Return.portfolio(Rp, WP, geometric = FALSE)
         }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
@@ -285,22 +300,24 @@ function (Rp, wp, Rb, wb,
       #selection contribution is equal to 0
       #if bm weights unknown all contribution is treated as interaction as it cannot be broken down, user is warned
       
-      if(ncol(wb)==1){#allocation = 0 * (Rb - coredata(Rc) - coredata(L))
-                      selection = (Rp  - coredata(Rb))*0
-                      allocation = (Rp  - coredata(Rb))*0
-                      interaction = (wp ) * (Rp - coredata(Rb))  
-                      warning("Benchmark weights unknown, all effects treated as interaction, returns wp*(Rp-Rb)")                      }else{
-      if (bf == TRUE){ # Brinson and Fachler (1985) allocation effect
-        allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L) - 
-          rep(rb, ncol(Rb)))
-      } else{          # Brinson, Hood and Beebower (1986) allocation effect
-                    allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L))
+      if(ncol(wb)==1){
+        selection = (Rp  - coredata(Rb))*0
+        allocation = (Rp  - coredata(Rb))*0
+        interaction = coredata(wp) * (Rp - coredata(Rb))  
+        warning("Benchmark weights unknown, all effects treated as interaction, returns wp*(Rp-Rb)")
       }
-                      
-      selection = (Rp  - coredata(Rb)) * wb
-      interaction = (wp - wb) * (Rp - coredata(Rb))         
-                      
-                      }
+      else{
+        if (bf == TRUE){ # Brinson and Fachler (1985) allocation effect
+          allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L) - 
+            rep(rb, ncol(Rb)))
+        }else{
+          # Brinson, Hood and Beebower (1986) allocation effect
+          allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L))
+        }
+                        
+        selection = (Rp  - coredata(Rb)) * coredata(wb)
+        interaction = coredata(wp - wb) * (Rp - coredata(Rb))         
+      }
     
       
       
