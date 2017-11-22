@@ -98,14 +98,6 @@
 #' @param wp vector, xts, data frame or matrix of portfolio weights
 #' @param Rb T x n xts, data frame or matrix of benchmark returns
 #' @param wb vector, xts, data frame or matrix of benchmark weights
-#' @param method Used to select the priority between allocation and selection 
-#' effects in arithmetic attribution. May be any of: \itemize{ \item none - 
-#' present allocation, selection and interaction effects independently, 
-#' \item top.down - the priority is given to the sector allocation. Interaction
-#' term is combined with the security selection effect, \item bottom.up - the 
-#' priority is given to the security selection. Interaction term is combined 
-#' with the sector allocation effect} 
-#' By default "none" is selected
 #' @param wpf vector, xts, data frame or matrix with portfolio weights of 
 #' currency forward contracts
 #' @param wbf vector, xts, data frame or matrix with benchmark weights of 
@@ -121,6 +113,14 @@
 #' @param bf TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
 #' Beebower arithmetic attribution. By default Brinson, Hood and Beebower 
 #' attribution is selected
+#' @param method Used to select the priority between allocation and selection 
+#' effects in arithmetic attribution. May be any of: \itemize{ \item none - 
+#' present allocation, selection and interaction effects independently, 
+#' \item top.down - the priority is given to the sector allocation. Interaction
+#' term is combined with the security selection effect, \item bottom.up - the 
+#' priority is given to the security selection. Interaction term is combined 
+#' with the sector allocation effect} 
+#' By default "none" is selected
 #' @param linking Used to select the linking method to present the multi-period
 #' summary of arithmetic attribution effects. May be any of: 
 #' \itemize{\item carino - logarithmic linking coefficient method
@@ -203,6 +203,9 @@ function (Rp, wp, Rb, wb,
     Rp = checkData(Rp)
     WP = wp # Save original weights in order to avoid double conversion later
     WB = wb
+    WPF = wpf # Save original weights in order to avoid double conversion later
+    WBF = wbf
+    
     if (is.vector(wp)){
       wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                   index(Rp))
@@ -218,6 +221,23 @@ function (Rp, wp, Rb, wb,
     }
     else{
       wb = WB
+    }
+    
+    if (!is.na(wpf) & is.vector(wpf)){
+      wpf = as.xts(matrix(rep(wpf, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wpf) = colnames(Rp)
+    }
+    else{
+      wpf = WPF
+    }
+    if (!is.na(wbf) & is.vector(wbf)){
+      wbf = as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+                  index(Rb))
+      colnames(wbf) = colnames(Rb)
+    }
+    else{
+      wbf = WBF
     }
     
     if (nrow(wp) < nrow(Rp)){ # Rebalancing occurs next day
@@ -248,18 +268,16 @@ function (Rp, wp, Rb, wb,
       if (!currency){
         Rc = 0
         L = 0
+        rpf = 0
+        rbf = 0
       } else{         # If multi-currency portfolio
         S = checkData(S)
         Forward_Rates = checkData(Forward_Rates)
-        wpf = Weight.transform(wpf, Rp)
-        wbf = Weight.transform(wbf, Rb)
-        
         Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
         Rd = lag(Forward_Rates, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
         Re = Rc - coredata(Rd)
         Rl = Rb - coredata(Rc)
-        Rk = Rp - coredata(Rc)
-        Rfp = Re / (1 + Rd)
+        Rpbf = Re / (1 + Rd)
         E = reclass(matrix(rep(rowSums(Re * coredata(wb)), ncol(Rb)), nrow(Rb),
                            ncol(Rb)), Rp)
         L = reclass(matrix(rep(rowSums(Rl * coredata(wb)), ncol(Rb)), nrow(Rb), 
@@ -267,13 +285,32 @@ function (Rp, wp, Rb, wb,
         D = reclass(matrix(rep(rowSums(Rd * coredata(wb)), ncol(Rb)), nrow(Rb), 
                            ncol(Rb)), Rp)
         # Contribution to currency
-        Cc = (wp - wb) * (Re - E) + (wpf - wbf) * (Rfp - E) 
+        Cc = (wp - wb) * (Re - E) + (wpf - wbf) * (Rpbf - E) 
         # Forward premium
         Df = (wp - wb) * (Rd - D) 
         Cc = cbind(Cc, rowSums(Cc))
         Df = cbind(Df, rowSums(Df))
         colnames(Cc) = c(colnames(S), "Total")
         colnames(Df) = colnames(Cc)
+        
+        # Get forward contract returns
+        if (is.vector(WPF) & is.vector(WBF)){
+          # For now we assume that if it's an error it's because we only have
+          # a single observation and not time series data
+          rpf = tryCatch({
+            Return.portfolio(Rpbf, WPF, geometric = FALSE)
+          }, error = function(e) { return(as.matrix(sum(WPF*Rpbf))) }
+          )
+          rbf = tryCatch({
+            Return.portfolio(Rpbf, WBF, geometric = FALSE)
+          }, error = function(e) { return(as.matrix(sum(WBF*Rpbf))) }
+          )
+        } else{
+          rpf = Return.rebalancing(Rpbf, WPF, geometric = FALSE)
+          rbf = Return.rebalancing(Rpbf, WBF, geometric = FALSE)
+        }
+        names(rpf) = "Total"
+        names(rbf) = "Total"
       }
       
       # Get total portfolio returns
@@ -358,9 +395,9 @@ function (Rp, wp, Rb, wb,
         }    
       }      
       # Arithmetic excess returns + annualized arithmetic excess returns
-      excess.returns = rp - coredata(rb)
+      excess.returns = rp - coredata(rb) + rpf - coredata(rbf)
       if (nrow(rp) > 1){
-        er = Return.annualized.excess(rp, rb, geometric = FALSE)
+        er = Return.annualized.excess(rp+rpf, rb+rbf, geometric = FALSE)
         excess.returns = rbind(as.matrix(excess.returns), er)
       }
       colnames(excess.returns) = "Arithmetic"
