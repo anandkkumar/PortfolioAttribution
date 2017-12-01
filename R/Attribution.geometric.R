@@ -120,7 +120,7 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
     # Get total portfolio returns
     if (is.vector(WP)  & is.vector(WB)){
       # For now we assume that if it's an error it's because we only have
-      # a single observation and not time serie data
+      # a single observation and not time series data
       rp = tryCatch({
         Return.portfolio(Rp, WP)
       }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
@@ -153,7 +153,7 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
       bsl = reclass(rowSums(Rbl * wp), Rpl)
       bsh = reclass(rowSums(((wp - wb) * Rbh + wb * Rbl)), Rpl)
       rpl = reclass(rowSums(Rpl * wp), Rpl)
-      rbl = reclass(rowSums(Rbl * wp), Rpl)
+      rbl = reclass(rowSums(Rbl * wb), Rbl)
       allocation = coredata(wp - wb) * ((1 + Rbh) / (1 + rep(rbl, ncol(Rbh))) - 1)
       selection = coredata(wp) * ((1 + Rpl) / (1 + Rbl) - 1) * ((1 + Rbl) / 
         (1 + rep(bsl, ncol(Rbl))))
