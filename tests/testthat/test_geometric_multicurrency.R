@@ -62,8 +62,28 @@ Fb = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.010379, 1.018503),ncol=3,byrow=
          order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
 
 
-test_that("Multicurrency Geometric Example using data in Tables 6.9 with forward contracts" , {
-  attribution_results = Attribution.geometric(Rp, Wp, Rb, Wb, Wpf, Wbf, S, Fp, Fb, Rpl = Rpl, Rbl = Rbl, Rbh = Rbh)
+test_that("Multicurrency Geometric Example using data in Tables 6.9 with forward contracts with main API" , {
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, Wpf, Wbf, S, Fp, Fb, Rpl, Rbl, Rbh, geometric = TRUE)
+  
+  expect_true(abs(attribution_results$Selection[2,"UK.equities"] - 0.038) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"Japanese.equities"] - (-0.0029)) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"US.equities"] - (-0.0057)) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"Total"] - 0.0295) < epsilon)
+  
+  expect_true(abs(attribution_results$Allocation[2,"UK.equities"] - 0) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"Japanese.equities"] - (-0.0088)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"US.equities"] - (-0.0034)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"Total"] - (-0.0122)) < epsilon)
+  
+  expect_true(abs(attribution_results$`Currency management`[2,"Hedging"] - (0.00095147)) < epsilon)
+  expect_true(abs(attribution_results$`Currency management`[2,"Currency attribution"] - (0.008879913)) < epsilon)
+  
+  expect_true(abs(attribution_results$`Excess returns`[2,"Geometric"] - 0.02689563) < epsilon)
+}
+)
+
+test_that("Multicurrency Geometric Example using data in Tables 6.9 with forward contracts using direct API" , {
+  attribution_results = Attribution.geometric(Rp, Wp, Rb, Wb, Wpf, Wbf, S, Fp, Fb, Rpl, Rbl, Rbh)
   
   expect_true(abs(attribution_results$Selection[2,"UK.equities"] - 0.038) < epsilon)
   expect_true(abs(attribution_results$Selection[2,"Japanese.equities"] - (-0.0029)) < epsilon)

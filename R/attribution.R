@@ -104,8 +104,10 @@
 #' currency forward contracts
 #' @param S (T+1) x n xts, data frame or matrix with spot rates. The first date
 #' should coincide with the first date of portfolio returns
-#' @param Forward_Rate (T+1) x n xts, data frame or matrix with forward rates. The first
-#' date should coincide with the first date of portfolio returns
+#' @param Fp (T+1) x n xts, data frame or matrix with forward rates for contracts in the portfolio. 
+#' The first date should coincide with the first date of portfolio returns
+#' @param Fb (T+1) x n xts, data frame or matrix with forward rates for contracts in the benchmark. 
+#' The first date should coincide with the first date of benchmark returns
 #' @param Rpl xts, data frame or matrix of portfolio returns in local currency
 #' @param Rbl xts, data frame or matrix of benchmark returns in local currency
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
@@ -163,7 +165,7 @@
 #' @export
 Attribution <- 
 function (Rp, wp, Rb, wb, 
-          wpf = NA, wbf = NA, S = NA, Forward_Rates = NA, Rpl = NA, Rbl = NA, Rbh = NA,
+          wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
           bf = FALSE,
           method = c("none", "top.down", "bottom.up"), 
           linking = c("carino", 
@@ -255,7 +257,7 @@ function (Rp, wp, Rb, wb,
     linking = linking[1]
     
     currency = !(is.null(dim(wpf)) & is.null(dim(wbf)) & 
-                   is.null(dim(S)) & is.null(dim(Forward_Rates)) & 
+                   is.null(dim(S)) & is.null(dim(Fp)) & is.null(dim(Fb)) &
                    is.null(dim(Rpl)) & is.null(dim(Rpl)) & 
                    is.null(dim(Rpl)))
     
@@ -272,9 +274,10 @@ function (Rp, wp, Rb, wb,
         rbf = 0
       } else{         # If multi-currency portfolio
         S = checkData(S)
-        Forward_Rates = checkData(Forward_Rates)
+        Fp = checkData(Fp)
+        Fb = checkData(Fb)
         Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
-        Rd = lag(Forward_Rates, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rd = lag(Fb, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
         Re = Rc - coredata(Rd)
         Rl = Rb - coredata(Rc)
         Rpbf = Re / (1 + Rd)
@@ -419,7 +422,7 @@ function (Rp, wp, Rb, wb,
    } else{ # The function takes output of the corresponding function 
             # (Attribution.geometric or DaviesLaker)
       if (geometric == TRUE){
-        attrib = Attribution.geometric(Rp, WP, Rb, WB)
+        return(Attribution.geometric(Rp, WP, Rb, WB, WPF, WBF, S, Fp, Fb, Rpl, Rbl, Rbh))
       }
       
       if (linking == "davies.laker"){
@@ -429,7 +432,7 @@ function (Rp, wp, Rb, wb,
     }
     
     # Label the output
-    if ((method == "none" & geometric == FALSE) | linking == "davies.laker"){
+    if (method == "none" | linking == "davies.laker"){
       names(result) = c("Excess returns", "Allocation", "Selection", 
                         "Interaction")
     } else{

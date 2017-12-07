@@ -17,16 +17,19 @@ Rp = xts(matrix(c(NA, NA, NA, 0.20, 0.045, 0.272),ncol=3,byrow=TRUE,
 Rb = xts(matrix(c(NA, NA, NA, 0.10, 0.056, 0.296),ncol=3,byrow=TRUE,
                 dimnames=list(c("Rb", "Rb"),cnames)), 
          order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-SpotRates = xts(matrix(c(NA, NA, NA, 1.0, 1.0, 1.0, 1.0, 1.1, 1.2),ncol=3,byrow=TRUE,
+S = xts(matrix(c(NA, NA, NA, 1.0, 1.0, 1.0, 1.0, 1.1, 1.2),ncol=3,byrow=TRUE,
                dimnames=list(c("SpotRates", "SpotRates", "SpotRates"),cnames)), 
         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
-ForwardRates = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
+Fp = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
                dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),cnames)), 
         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
+Fb = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
+                dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),cnames)), 
+         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
 
 
 test_that("Ankrim-Hensel Example in Table 6.2" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, Wpf, Wbf, SpotRates, ForwardRates, bf=FALSE, method="none", linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, Wpf, Wbf, S, Fp, Fb, bf=FALSE, method="none", linking = "none", geometric = FALSE)
   expect_true(abs(attribution_results$Allocation[2,"UK.equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Japanese.equities"] - (-0.01136)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"US.equities"] - (-0.00264)) < epsilon)
