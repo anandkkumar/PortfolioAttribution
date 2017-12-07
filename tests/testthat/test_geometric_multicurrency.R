@@ -63,7 +63,7 @@ Fb = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.010379, 1.018503),ncol=3,byrow=
 
 
 test_that("Multicurrency Geometric Example using data in Tables 6.9 with forward contracts" , {
-  attribution_results = Attribution.geometric(Rp, Wp, Rb, Wb, Wpf, Wbf, S, Fp, Fb, Rpl = Rpl, Rbl =Rbl, Rbh = Rbh)
+  attribution_results = Attribution.geometric(Rp, Wp, Rb, Wb, Wpf, Wbf, S, Fp, Fb, Rpl = Rpl, Rbl = Rbl, Rbh = Rbh)
   
   expect_true(abs(attribution_results$Selection[2,"UK.equities"] - 0.038) < epsilon)
   expect_true(abs(attribution_results$Selection[2,"Japanese.equities"] - (-0.0029)) < epsilon)

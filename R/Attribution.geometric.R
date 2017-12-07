@@ -59,6 +59,16 @@
 #' @param wp xts of portfolio weights
 #' @param Rb xts of benchmark returns
 #' @param wb xts of benchmark weights
+#' @param wpf vector, xts, data frame or matrix with portfolio weights of 
+#' currency forward contracts
+#' @param wbf vector, xts, data frame or matrix with benchmark weights of 
+#' currency forward contracts
+#' @param S (T+1) x n xts, data frame or matrix with spot rates. The first date
+#' should coincide with the first date of portfolio returns
+#' @param Fp (T+1) x n xts, data frame or matrix with forward rates for contracts in the portfolio. 
+#' The first date should coincide with the first date of portfolio returns
+#' @param Fb (T+1) x n xts, data frame or matrix with forward rates for contracts in the benchmark. 
+#' The first date should coincide with the first date of benchmark returns
 #' @param Rpl xts, data frame or matrix of portfolio returns in local currency
 #' @param Rbl xts, data frame or matrix of benchmark returns in local currency
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
