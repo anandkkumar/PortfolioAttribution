@@ -270,8 +270,8 @@ function (Rp, wp, Rb, wb,
       if (!currency){
         Rc = 0
         L = 0
-        rpf = 0
-        rbf = 0
+        Rpbf = NULL
+        WPF = WBF = NULL
       } else{         # If multi-currency portfolio
         S = checkData(S)
         Fp = checkData(Fp)
@@ -295,38 +295,19 @@ function (Rp, wp, Rb, wb,
         Df = cbind(Df, rowSums(Df))
         colnames(Cc) = c(colnames(S), "Total")
         colnames(Df) = colnames(Cc)
-        
-        # Get forward contract returns
-        if (is.vector(WPF) & is.vector(WBF)){
-          # For now we assume that if it's an error it's because we only have
-          # a single observation and not time series data
-          rpf = tryCatch({
-            Return.portfolio(Rpbf, WPF, geometric = FALSE)
-          }, error = function(e) { return(as.matrix(sum(WPF*Rpbf))) }
-          )
-          rbf = tryCatch({
-            Return.portfolio(Rpbf, WBF, geometric = FALSE)
-          }, error = function(e) { return(as.matrix(sum(WBF*Rpbf))) }
-          )
-        } else{
-          rpf = Return.rebalancing(Rpbf, WPF, geometric = FALSE)
-          rbf = Return.rebalancing(Rpbf, WBF, geometric = FALSE)
-        }
-        names(rpf) = "Total"
-        names(rbf) = "Total"
       }
       
-      # Get total portfolio returns
+      # Get total portfolio returns including any forward contracts, if present
       if (is.vector(WP)  & is.vector(WB)){
         # For now we assume that if it's an error it's because we only have
         # a single observation and not time series data
         rp = tryCatch({
-          Return.portfolio(Rp, WP, geometric = FALSE)
-        }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
+          Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
+        }, error = function(e) { return(as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpbf)))) }
         )
         rb = tryCatch({
-          Return.portfolio(Rb, WB, geometric = FALSE)
-        }, error = function(e) { return(as.matrix(sum(WB*Rb))) }
+          Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+        }, error = function(e) { return(as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))) }
         )
       } else{
         rp = Return.rebalancing(Rp, WP, geometric = FALSE)
@@ -398,9 +379,9 @@ function (Rp, wp, Rb, wb,
         }    
       }      
       # Arithmetic excess returns + annualized arithmetic excess returns
-      excess.returns = rp - coredata(rb) + rpf - coredata(rbf)
+      excess.returns = rp - coredata(rb)
       if (nrow(rp) > 1){
-        er = Return.annualized.excess(rp+rpf, rb+rbf, geometric = FALSE)
+        er = Return.annualized.excess(rp, rb, geometric = FALSE)
         excess.returns = rbind(as.matrix(excess.returns), er)
       }
       colnames(excess.returns) = "Arithmetic"
