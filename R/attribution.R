@@ -104,8 +104,10 @@
 #' currency forward contracts
 #' @param S (T+1) x n xts, data frame or matrix with spot rates. The first date
 #' should coincide with the first date of portfolio returns
-#' @param Forward_Rate (T+1) x n xts, data frame or matrix with forward rates. The first
-#' date should coincide with the first date of portfolio returns
+#' @param Fp (T+1) x n xts, data frame or matrix with forward rates for contracts in the portfolio. 
+#' The first date should coincide with the first date of portfolio returns
+#' @param Fb (T+1) x n xts, data frame or matrix with forward rates for contracts in the benchmark. 
+#' The first date should coincide with the first date of benchmark returns
 #' @param Rpl xts, data frame or matrix of portfolio returns in local currency
 #' @param Rbl xts, data frame or matrix of benchmark returns in local currency
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
@@ -163,7 +165,7 @@
 #' @export
 Attribution <- 
 function (Rp, wp, Rb, wb, 
-          wpf = NA, wbf = NA, S = NA, Forward_Rates = NA, Rpl = NA, Rbl = NA, Rbh = NA,
+          wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
           bf = FALSE,
           method = c("none", "top.down", "bottom.up"), 
           linking = c("carino", 
@@ -255,7 +257,7 @@ function (Rp, wp, Rb, wb,
     linking = linking[1]
     
     currency = !(is.null(dim(wpf)) & is.null(dim(wbf)) & 
-                   is.null(dim(S)) & is.null(dim(Forward_Rates)) & 
+                   is.null(dim(S)) & is.null(dim(Fp)) & is.null(dim(Fb)) &
                    is.null(dim(Rpl)) & is.null(dim(Rpl)) & 
                    is.null(dim(Rpl)))
     
@@ -268,13 +270,14 @@ function (Rp, wp, Rb, wb,
       if (!currency){
         Rc = 0
         L = 0
-        rpf = 0
-        rbf = 0
+        Rpbf = NULL
+        WPF = WBF = NULL
       } else{         # If multi-currency portfolio
         S = checkData(S)
-        Forward_Rates = checkData(Forward_Rates)
+        Fp = checkData(Fp)
+        Fb = checkData(Fb)
         Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
-        Rd = lag(Forward_Rates, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rd = lag(Fb, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
         Re = Rc - coredata(Rd)
         Rl = Rb - coredata(Rc)
         Rpbf = Re / (1 + Rd)
@@ -292,38 +295,19 @@ function (Rp, wp, Rb, wb,
         Df = cbind(Df, rowSums(Df))
         colnames(Cc) = c(colnames(S), "Total")
         colnames(Df) = colnames(Cc)
-        
-        # Get forward contract returns
-        if (is.vector(WPF) & is.vector(WBF)){
-          # For now we assume that if it's an error it's because we only have
-          # a single observation and not time series data
-          rpf = tryCatch({
-            Return.portfolio(Rpbf, WPF, geometric = FALSE)
-          }, error = function(e) { return(as.matrix(sum(WPF*Rpbf))) }
-          )
-          rbf = tryCatch({
-            Return.portfolio(Rpbf, WBF, geometric = FALSE)
-          }, error = function(e) { return(as.matrix(sum(WBF*Rpbf))) }
-          )
-        } else{
-          rpf = Return.rebalancing(Rpbf, WPF, geometric = FALSE)
-          rbf = Return.rebalancing(Rpbf, WBF, geometric = FALSE)
-        }
-        names(rpf) = "Total"
-        names(rbf) = "Total"
       }
       
-      # Get total portfolio returns
+      # Get total portfolio returns including any forward contracts, if present
       if (is.vector(WP)  & is.vector(WB)){
         # For now we assume that if it's an error it's because we only have
         # a single observation and not time series data
         rp = tryCatch({
-          Return.portfolio(Rp, WP, geometric = FALSE)
-        }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
+          Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
+        }, error = function(e) { return(as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpbf)))) }
         )
         rb = tryCatch({
-          Return.portfolio(Rb, WB, geometric = FALSE)
-        }, error = function(e) { return(as.matrix(sum(WB*Rb))) }
+          Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+        }, error = function(e) { return(as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))) }
         )
       } else{
         rp = Return.rebalancing(Rp, WP, geometric = FALSE)
@@ -395,9 +379,9 @@ function (Rp, wp, Rb, wb,
         }    
       }      
       # Arithmetic excess returns + annualized arithmetic excess returns
-      excess.returns = rp - coredata(rb) + rpf - coredata(rbf)
+      excess.returns = rp - coredata(rb)
       if (nrow(rp) > 1){
-        er = Return.annualized.excess(rp+rpf, rb+rbf, geometric = FALSE)
+        er = Return.annualized.excess(rp, rb, geometric = FALSE)
         excess.returns = rbind(as.matrix(excess.returns), er)
       }
       colnames(excess.returns) = "Arithmetic"
@@ -419,7 +403,7 @@ function (Rp, wp, Rb, wb,
    } else{ # The function takes output of the corresponding function 
             # (Attribution.geometric or DaviesLaker)
       if (geometric == TRUE){
-        attrib = Attribution.geometric(Rp, WP, Rb, WB)
+        return(Attribution.geometric(Rp, WP, Rb, WB, WPF, WBF, S, Fp, Fb, Rpl, Rbl, Rbh))
       }
       
       if (linking == "davies.laker"){
@@ -429,7 +413,7 @@ function (Rp, wp, Rb, wb,
     }
     
     # Label the output
-    if ((method == "none" & geometric == FALSE) | linking == "davies.laker"){
+    if (method == "none" | linking == "davies.laker"){
       names(result) = c("Excess returns", "Allocation", "Selection", 
                         "Interaction")
     } else{

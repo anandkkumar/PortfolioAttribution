@@ -59,6 +59,16 @@
 #' @param wp xts of portfolio weights
 #' @param Rb xts of benchmark returns
 #' @param wb xts of benchmark weights
+#' @param wpf vector, xts, data frame or matrix with portfolio weights of 
+#' currency forward contracts
+#' @param wbf vector, xts, data frame or matrix with benchmark weights of 
+#' currency forward contracts
+#' @param S (T+1) x n xts, data frame or matrix with spot rates. The first date
+#' should coincide with the first date of portfolio returns
+#' @param Fp (T+1) x n xts, data frame or matrix with forward rates for contracts in the portfolio. 
+#' The first date should coincide with the first date of portfolio returns
+#' @param Fb (T+1) x n xts, data frame or matrix with forward rates for contracts in the benchmark. 
+#' The first date should coincide with the first date of benchmark returns
 #' @param Rpl xts, data frame or matrix of portfolio returns in local currency
 #' @param Rbl xts, data frame or matrix of benchmark returns in local currency
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
@@ -80,7 +90,8 @@
 #' 
 #' @export
 Attribution.geometric <-
-function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
+function(Rp, wp, Rb, wb, 
+         wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA)
 {   # @author Andrii Babii
   
     # DESCRIPTION:
@@ -99,6 +110,10 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
     # FUNCTION:
     WP = wp # Save original weights in order to avoid double conversion later
     WB = wb
+    WPF = wpf # Save original weights in order to avoid double conversion later
+    WBF = wbf
+    
+    
     if (is.vector(wp)){
       wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                   index(Rp))
@@ -115,7 +130,25 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
     else{
       wb = WB
     }
-    currency = !(is.null(dim(Rpl)) & is.null(dim(Rpl)) & is.null(dim(Rpl)))
+    
+    if (!is.na(wpf) & is.vector(wpf)){
+      wpf = as.xts(matrix(rep(wpf, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                   index(Rp))
+      colnames(wpf) = colnames(Rp)
+    }
+    else{
+      wpf = WPF
+    }
+    if (!is.na(wbf) & is.vector(wbf)){
+      wbf = as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+                   index(Rb))
+      colnames(wbf) = colnames(Rb)
+    }
+    else{
+      wbf = WBF
+    }
+    
+    currency = !(is.null(dim(Rpl)) & is.null(dim(Rbl)) & is.null(dim(Rbh)))
     
     # Get total portfolio returns
     if (is.vector(WP)  & is.vector(WB)){
@@ -149,6 +182,44 @@ function(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA)
       Rpl = checkData(Rpl)
       Rbl = checkData(Rbl)
       Rbh = checkData(Rbh)
+      
+      
+      if (!is.null(dim(S)) & !is.null(dim(Fp)) & !is.null(dim(Fb))){
+        S = checkData(S)
+        Fp = checkData(Fp)
+        Fb = checkData(Fb)
+        
+        Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rpd = lag(Fp, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rbd = lag(Fb, -1)[1:nrow(Rb), ] / S[1:nrow(Rb), ] - 1
+        
+        Rpe = Rc - coredata(Rpd)
+        Rbe = Rc - coredata(Rbd)
+        
+        Rl = Rb - coredata(Rc)
+        Rpf = Rpe / (1 + Rpd)
+        Rbf = Rbe / (1 + Rbd)
+        
+        # Recompute total portfolio returns to include forward contracts in the portfolio
+        if (is.vector(WP)  & is.vector(WB) & is.vector(WPF) & is.vector(WBF)){
+          # For now we assume that if it's an error it's because we only have
+          # a single observation and not time series data
+          rp = tryCatch({
+            Return.portfolio(cbind(Rp, Rpf), c(WP, WPF))
+          }, error = function(e) { return(as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpf)))) }
+          )
+          rb = tryCatch({
+            Return.portfolio(cbind(Rb, Rbf), c(WB, WBF))
+          }, error = function(e) { return(as.matrix(sum(c(WB, WBF)*cbind(Rb, Rbf)))) }
+          )
+          
+        } else{
+          rp = Return.rebalancing(cbind(Rp, Rpf), cbind(WP, WPF))
+          rb = Return.rebalancing(cbind(Rb, Rbf), cbind(WB, WBF))
+        }
+        names(rp) = "Total"                    
+        names(rb) = "Total"
+      }
       
       bsl = reclass(rowSums(Rbl * wp), Rpl)
       bsh = reclass(rowSums(((wp - wb) * Rbh + wb * Rbl)), Rpl)

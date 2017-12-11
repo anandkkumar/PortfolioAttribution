@@ -14,6 +14,8 @@
 #' @param h  data.frame with portfolio hierarchy
 #' @param level level from the hierarchy to which returns and weights will be 
 #' aggregated
+#' @param relativeWeights the total weight from the prior level used to normalize 
+#' the weights for the current level
 #' @author Andrii Babii
 #' @seealso  \code{buildHierarchy} \cr \code{\link{Attribution}} \cr 
 #' \code{\link{Weight.level}}
@@ -28,7 +30,7 @@
 #' 
 #' @export
 Return.level <-
-function(Rp, wp, h, level = "Sector")
+function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
 {   # @author Andrii Babii
   
     # DESCRIPTION:
@@ -48,6 +50,10 @@ function(Rp, wp, h, level = "Sector")
     Rp = checkData(Rp, method = "xts")
     wp = Weight.transform(wp, Rp)
     
+    if(is.null(relativeWeights)){
+      relativeWeights=matrix(1, nrow = NROW(wp), ncol = NCOL(wp))
+    }
+    
     # If level has numeric values we replace numeric values by quintiles
     if (is.numeric(h[[level]])){
       h = HierarchyQuintiles(h, level)
@@ -55,7 +61,8 @@ function(Rp, wp, h, level = "Sector")
     h = split(h$primary_id, h[level])
     returns = as.xts(matrix(NA, ncol = length(h), nrow = nrow(Rp)), index(Rp))
     for(i in 1:length(h)){
-      returns[, i] = rowSums(Rp[, h[[i]]] * coredata(wp[, h[[i]]]))
+      returns[, i] = rowSums(Rp[, h[[i]]] * coredata(wp[, h[[i]]])/
+                               coredata(matrix(rep(relativeWeights[, i], length(h[[i]])), ncol = length(h[[i]]))))
     }
     colnames(returns) = names(h)
     return(returns)

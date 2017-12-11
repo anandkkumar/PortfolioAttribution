@@ -28,7 +28,8 @@
 #' @param h data.frame with the hierarchy obtained from the buildHierarchy 
 #' function or defined manually in the same style as buildHierarchy's
 #' output
-#' @param \dots any other passthrough parameters
+#' @param \dots The remaining passthrough parameters represent the levels in the
+#' heirarchy to aggregate by
 #' @return returns the list with geometric excess returns including annualized
 #' geometric excess returns, total attribution effects (allocation, selection 
 #' and total) including total multi-period attribution effects, attribution 
@@ -89,7 +90,7 @@ function(Rp, wp, Rb, wb, h, ...)
 
     levels <- unlist(list(...))
     if (!is.null(levels)) stopifnot(is.character(levels))
-    if (length(levels) == 1){
+    if (length(levels) == 0 | length(levels) == 1){
       stop("Use Attribution function for the single level. This function is for
            the multi-level attribution")
     }
@@ -128,10 +129,10 @@ function(Rp, wp, Rb, wb, h, ...)
     weights.b = list()
     bs = list()
     for(i in 1:length(levels)){
-      returns.p[[i]] = Return.level(Rp, WP, h, level = levels[i])
       weights.p[[i]] = Weight.level(WP, Rp, h, level = levels[i])
-      returns.b[[i]] = Return.level(Rb, WB, h, level = levels[i])
-      weights.b[[i]] = Weight.level(WB, Rp, h, level = levels[i])
+      weights.b[[i]] = Weight.level(WB, Rb, h, level = levels[i])
+      returns.p[[i]] = Return.level(Rp, WP, h, level = levels[i], weights.p[[i]])
+      returns.b[[i]] = Return.level(Rb, WB, h, level = levels[i], weights.b[[i]])
       # semi-notional funds returns
       bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rp)  
     }
@@ -160,8 +161,8 @@ function(Rp, wp, Rb, wb, h, ...)
     returns.b2 = list()
     for (j in 1:(length(levels) - 1)){ 
       # make benchmark returns conformable at different levels
-      r_l = Return.level(Rb, WB, h, level = levels[j])
-      r_h = Return.level(Rb, WB, h, level = levels[j + 1])
+      r_l = Return.level(Rb, WB, h, level = levels[j], Weight.level(WB, Rb, h, level = levels[j]))
+      r_h = Return.level(Rb, WB, h, level = levels[j + 1], Weight.level(WB, Rb, h, level = levels[j+1]))
       hierarchy = split(h[levels[j]], h[levels[j + 1]])
       for (i in 1:ncol(r_h)){
         r_h[, i] = r_l[, hierarchy[[i]][1, 1]]
@@ -173,7 +174,8 @@ function(Rp, wp, Rb, wb, h, ...)
       bs[[i]] = as.xts(matrix(rep(bs[[i]], ncol(returns.b2[[i]])), nrow(r), 
                               ncol(returns.b2[[i]])), index(r))
     }
-    bs[length(bs)] = bs[length(bs) - 1]
+    # Use the last iteration index for the number of columns to set the last list element
+    bs[[length(bs)]] = as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b2[[i]])), nrow(r), ncol(returns.b2[[i]])), index(r))
 
     # Attribution at each level
     level = list()
@@ -187,8 +189,9 @@ function(Rp, wp, Rb, wb, h, ...)
 
     # Security/Asset selection
     select = reclass(weights.p[[length(weights.p)]], rp) * 
-            ((1 + r) / (1 + returns.b[[length(returns.b)]]) - 1) * 
-            ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+      ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
+      ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+    
     # Get the multi-period summary
     general = cbind(allocation, selection)
     general = rbind(as.data.frame(general), (apply(1 + general, 2, prod) - 1))
