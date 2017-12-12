@@ -5,8 +5,6 @@
 #' defined manually in the same way as the \code{buildHierarchy}'s 
 #' output. If for the selected level the values in the hierarchy are numeric, 
 #' the aggregation of returns or weights is performed by quintiles.
-#' \code{Weight.transform} makes transformation of weights to the xts object
-#' conformable with returns.
 #'
 #' @aliases Return.level
 #' @param Rp xts, data frame or matrix of portfolio returns
@@ -48,7 +46,11 @@ function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
     # FUNCTION:
     # Transform data to the xts objects    
     Rp = checkData(Rp, method = "xts")
-    wp = Weight.transform(wp, Rp)
+    if (is.vector(wp)){
+      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wp) = colnames(Rp)
+    }
     
     if(is.null(relativeWeights)){
       relativeWeights=matrix(1, nrow = NROW(wp), ncol = NCOL(wp))
