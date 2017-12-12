@@ -1,6 +1,6 @@
 Package: PortfolioAttribution
 Type: Package
-Title:  Performance attribution tools used for identifying sources of portfolio return and risk.
+Title: Performance attribution tools used for identifying sources of portfolio return and risk.
 Version: 0.3
 Date: $Date$
 Author: Andrii Babii
@@ -18,3 +18,4 @@ License: GPL
 URL: http://r-forge.r-project.org/projects/returnanalytics/
 Contributors: David Carino, Doug Martin, Brian Peterson, Peter Carl
 Copyright: (c) 2004-2013
+RoxygenNote: 6.0.1
