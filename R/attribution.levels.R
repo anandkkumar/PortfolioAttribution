@@ -28,6 +28,9 @@
 #' @param h data.frame with the hierarchy obtained from the buildHierarchy 
 #' function or defined manually in the same style as buildHierarchy's
 #' output
+#' @param anchored TRUE/FALSE, to indicate if the weights at each level should be
+#' anchored based on prior level's decision, as outlined in the Morningstar
+#' methodology documented referenced below
 #' @param \dots The remaining passthrough parameters represent the levels in the
 #' heirarchy to aggregate by
 #' @return returns the list with geometric excess returns including annualized
@@ -38,6 +41,7 @@
 #' @seealso \code{\link{Attribution.geometric}}
 #' @references Bacon, C. \emph{Practical Portfolio Performance Measurement and
 #' Attribution}. Wiley. 2004. p. 215-220
+#' @reference \url{https://corporate.morningstar.com/us/documents/MethodologyDocuments/MethodologyPapers/EquityPerformanceAttributionMeth.pdf}
 #' @keywords multi-level attribution, geometric attribution
 #' @examples
 #' 
@@ -49,7 +53,7 @@
 #' 
 #' @export
 Attribution.levels <-
-function(Rp, wp, Rb, wb, h, ...)
+function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
 {   # @author Andrii Babii
   
     # DESCRIPTION:
@@ -174,15 +178,25 @@ function(Rp, wp, Rb, wb, h, ...)
                       ncol(last(returns.b)[[1]])), index(rp))
     
     returns.b2 = list()
+    weights.p2 = list()
+    weights.b2 = list()
     for (j in 1:(length(levels) - 1)){ 
-      # make benchmark returns conformable at different levels
+      # make benchmark returns & weights conformable at different levels
+      wp_l = Weight.level(WP, Rp, h, level = levels[j])
+      wb_l = Weight.level(WB, Rb, h, level = levels[j])
+      wp_h = Weight.level(WP, Rp, h, level = levels[j+1])
+      wb_h = Weight.level(WB, Rb, h, level = levels[j+1])
       r_l = Return.level(Rb, WB, h, level = levels[j], Weight.level(WB, Rb, h, level = levels[j]))
       r_h = Return.level(Rb, WB, h, level = levels[j + 1], Weight.level(WB, Rb, h, level = levels[j+1]))
       hierarchy = split(h[levels[j]], h[levels[j + 1]])
       for (i in 1:ncol(r_h)){
         r_h[, i] = r_l[, hierarchy[[i]][1, 1]]
+        wp_h[, i] = wp_l[, hierarchy[[i]][1, 1]]
+        wb_h[, i] = wb_l[, hierarchy[[i]][1, 1]]
       }
       returns.b2[[j]] = r_h
+      weights.p2[[j]] = wp_h
+      weights.b2[[j]] = wb_h
     }
 
     for (i in 1:(length(bs) - 1)){
@@ -197,9 +211,15 @@ function(Rp, wp, Rb, wb, h, ...)
     level[[1]] = (weights.p[[1]] - weights.b[[1]]) * ((1 + returns.b[[1]]) 
                                                       / (1 + b) - 1)
     for (i in 2:length(levels)){ 
-      level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+      if(anchored){
+      level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
                    ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
                    ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+      } else{
+      level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+        ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
+        ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+      }
     }
 
     # Security/Asset selection
