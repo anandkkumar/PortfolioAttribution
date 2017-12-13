@@ -28,6 +28,9 @@
 #' @param h data.frame with the hierarchy obtained from the buildHierarchy 
 #' function or defined manually in the same style as buildHierarchy's
 #' output
+#' @param geometric TRUE/FALSE,  whether to use geometric or arithmetic excess
+#' returns for the attribution analysis. By default arithmetic is selected
+#' methodology documented referenced below
 #' @param anchored TRUE/FALSE, to indicate if the weights at each level should be
 #' anchored based on prior level's decision, as outlined in the Morningstar
 #' methodology documented referenced below
@@ -41,7 +44,7 @@
 #' @seealso \code{\link{Attribution.geometric}}
 #' @references Bacon, C. \emph{Practical Portfolio Performance Measurement and
 #' Attribution}. Wiley. 2004. p. 215-220
-#' @reference \url{https://corporate.morningstar.com/us/documents/MethodologyDocuments/MethodologyPapers/EquityPerformanceAttributionMeth.pdf}
+#' @references \url{https://corporate.morningstar.com/us/documents/MethodologyDocuments/MethodologyPapers/EquityPerformanceAttributionMeth.pdf}
 #' @keywords multi-level attribution, geometric attribution
 #' @examples
 #' 
@@ -53,9 +56,9 @@
 #' 
 #' @export
 Attribution.levels <-
-function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
+function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
 {   # @author Andrii Babii
-  
+    
     # DESCRIPTION:
     # Function to perform the geometric attribution analysis.
     
@@ -65,13 +68,13 @@ function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
     # Rb       xts, data frame or matrix of benchmark returns
     # wb       vector, xts, data frame or matrix of benchmark weights
     # h        data.frame with the hierarchy
-  
+    
     # Outputs: 
     # This function returns the list with total attribution effects 
     # (allocation, selection and total) including total multi-period 
     # attribution effects, attribution effects at each level and security
     # selection
-  
+    
     # FUNCTION:
     Rp = checkData(Rp)
     Rb = checkData(Rb)
@@ -104,16 +107,16 @@ function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
     }
     if (ncol(Rb) != ncol(Rp)){
       stop("Please use benchmark xts that has columns with benchmarks for each
-            asset or one common benchmark for all assets")
+           asset or one common benchmark for all assets")
     }
-
+    
     levels <- unlist(list(...))
     if (!is.null(levels)) stopifnot(is.character(levels))
     if (length(levels) == 0 | length(levels) == 1){
       stop("Use Attribution function for the single level. This function is for
            the multi-level attribution")
     }
-
+    
     # Get portfolio and benchmark returns
     if (is.vector(WP)  & is.vector(WB)){
       rp = Return.portfolio(Rp, WP)
@@ -125,13 +128,23 @@ function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
     names(rp) = "Total"
     names(rb) = "Total"
     
-    # Geometric excess returns + annualized geometric excess returns
-    excess.returns = (1 + rp) / (1 + coredata(rb)) - 1
-    if (nrow(rp) > 1){
-      er = Return.annualized.excess(rp, rb)
-      excess.returns = rbind(as.matrix(excess.returns), er)
+    if(geometric){
+      # Geometric excess returns + annualized geometric excess returns
+      excess.returns = (1 + rp) / (1 + coredata(rb)) - 1
+      if (nrow(rp) > 1){
+        er = Return.annualized.excess(rp, rb)
+        excess.returns = rbind(as.matrix(excess.returns), er)
+      }
+      colnames(excess.returns) = "Geometric"
+    } else{
+      # Arithmetic excess returns + annualized arithmetic excess returns
+      excess.returns = rp - coredata(rb)
+      if (nrow(rp) > 1){
+        er = Return.annualized.excess(rp, rb, geometric = FALSE)
+        excess.returns = rbind(as.matrix(excess.returns), er)
+      }
+      colnames(excess.returns) = "Arithmetic"
     }
-    colnames(excess.returns) = "Geometric"
     
     # Transform the hierarchy to the correct form
     for (i in 2:length(levels)){
@@ -159,16 +172,23 @@ function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
     names(weights.p) = levels
     names(returns.b) = levels
     names(weights.b) = levels
-
+    
     # Total attribution effects
     allocation = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
                         length(levels))
-    allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
-    for (i in 2:length(levels)){
-      allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+    if(geometric){
+      allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
+      for (i in 2:length(levels)){
+        allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+      }
+      selection = (1 + rp) / (1 + last(bs)[[1]]) - 1
+    } else{
+      allocation[, 1] = bs[[1]] - coredata(rb) # Allocation 1
+      for (i in 2:length(levels)){
+        allocation[, i] = bs[[i]] - bs[[i-1]]
+      }
+      selection = rp - last(bs)[[1]]
     }
-    selection = (1 + rp) / (1 + last(bs)[[1]]) - 1
-    total = (1 + rp) / coredata(1 + rb) - 1 # Total excess return
     
     # Transform portfolio, benchmark returns and semi-notional funds returns to
     # conformable matrices for multi-level attribution
@@ -198,35 +218,54 @@ function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
       weights.p2[[j]] = wp_h
       weights.b2[[j]] = wb_h
     }
-
+    
     for (i in 1:(length(bs) - 1)){
       bs[[i]] = as.xts(matrix(rep(bs[[i]], ncol(returns.b2[[i]])), nrow(r), 
                               ncol(returns.b2[[i]])), index(r))
     }
     # Use the last iteration index for the number of columns to set the last list element
     bs[[length(bs)]] = as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b2[[i]])), nrow(r), ncol(returns.b2[[i]])), index(r))
-
+    
     # Attribution at each level
     level = list()
-    level[[1]] = (weights.p[[1]] - weights.b[[1]]) * ((1 + returns.b[[1]]) 
-                                                      / (1 + b) - 1)
+    if(geometric) {
+      level[[1]] = (weights.p[[1]] - weights.b[[1]]) * ((1 + returns.b[[1]]) 
+                                                        / (1 + b) - 1)
+    } else{
+      level[[1]] = (weights.p[[1]] - weights.b[[1]]) * (returns.b[[1]] - b)
+    }
     for (i in 2:length(levels)){ 
-      if(anchored){
-      level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
-                   ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
-                   ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+      if(geometric){
+        if(anchored){
+          level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+            ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
+            ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+        } else{
+          level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+            ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
+            ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+        }
       } else{
-      level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
-        ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
-        ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+        if(anchored){
+          level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+            (returns.b[[i]] - returns.b2[[i-1]])
+        } else{
+          level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+            (returns.b[[i]] - returns.b2[[i-1]])
+        }        
       }
     }
-
-    # Security/Asset selection
-    select = reclass(weights.p[[length(weights.p)]], rp) * 
-      ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
-      ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
     
+    if(geometric){
+      # Security/Asset selection
+      select = reclass(weights.p[[length(weights.p)]], rp) * 
+        ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
+        ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+    } else{
+      # Security/Asset selection
+      select = reclass(weights.p[[length(weights.p)]], rp) * 
+        (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+    }
     # Get the multi-period summary
     general = cbind(allocation, selection)
     general = rbind(as.data.frame(general), (apply(1 + general, 2, prod) - 1))
@@ -238,7 +277,7 @@ function(Rp, wp, Rb, wb, h, anchored = TRUE, ...)
     select = rbind(as.data.frame(select), (apply(1 + select, 2, prod) - 1))
     rownames(general)[nrow(general)] = "Total"
     rownames(select)[nrow(select)] = "Total"
-        
+    
     # Label the output
     result = list()
     labels = paste(rep("Level", length(levels)), 1:length(levels))
