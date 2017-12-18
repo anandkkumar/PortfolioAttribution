@@ -242,3 +242,286 @@ test_that("FactSet BF 2-factor geometric example for one period" , {
   expect_equal(attribution_results$`Excess returns`[1], 0.000518317, tolerance=epsilon)
 }
 )
+
+
+
+data(factset_sample_single_currency_heirarchical_top_down_arithmetic)
+# Note that the FactSet sample has all returns, weights and attribution effects as percentages
+cnames = c(factset_example$Industry[2:8], rep("ALL", 5), factset_example$Industry[15:20], rep("ALL", 4))
+primary_ids = c(factset_example$Industry[2:8], paste(factset_example$Sector[9:13],"ALL", sep = "-"),
+           factset_example$Industry[15:20],
+           paste(factset_example$Sector[21:24],"ALL", sep = "-"))
+
+heirarchy = data.frame(
+  primary_id = primary_ids,
+  sector = c(factset_example$Sector[2:8], factset_example$Sector[9:13], factset_example$Sector[15:24]),
+  industry = cnames,
+  stringsAsFactors = FALSE
+)
+
+
+Wp = factset_example$Port.Weight[c(2:13,15:24)]/100
+Wb = factset_example$Bmk.Weight[c(2:13,15:24)]/100
+
+Rp = matrix(factset_example$Port.Total.Return[c(2:13,15:24)]/100,ncol=22,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),primary_ids))
+Rb = matrix(factset_example$Bmk.Total.Return[c(2:13,15:24)]/100,ncol=22,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),primary_ids))
+
+
+test_that("FactSet BF 2-factor heirarchical arithmetic example for one period" , {
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, heirarchy, geometric = FALSE, anchored = TRUE, c("sector", "industry"))
+
+  total_level1_top_down_allocation_effect = factset_example$Top.Down.Allocation.Effect[1]/100 +
+                                            sum(factset_example$Top.Down.Allocation.Effect[9:14]/100) +
+                                            sum(factset_example$Top.Down.Allocation.Effect[21:24]/100)
+  total_level2_top_down_allocation_effect = sum(factset_example$Top.Down.Allocation.Effect[2:8]/100) +
+                                            sum(factset_example$Top.Down.Allocation.Effect[15:20]/100)
+  total_selection_effect = sum(factset_example$Top.Down.Selection.Effect[2:13]/100) +
+                            sum(factset_example$Top.Down.Selection.Effect[15:24]/100)
+
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Level 1 Allocation"], total_level1_top_down_allocation_effect, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Level 2 Allocation"], total_level2_top_down_allocation_effect, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Selection"], total_selection_effect, tolerance = epsilon)
+
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Consumer Discretionary"],
+               factset_example$Top.Down.Allocation.Effect[1]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Consumer Staples"],
+               factset_example$Top.Down.Allocation.Effect[9]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Energy"],
+               factset_example$Top.Down.Allocation.Effect[10]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Financials"],
+               factset_example$Top.Down.Allocation.Effect[11]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Health Care"],
+               factset_example$Top.Down.Allocation.Effect[12]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Industrials"],
+               factset_example$Top.Down.Allocation.Effect[13]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Information Technology"],
+               factset_example$Top.Down.Allocation.Effect[14]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Materials"],
+               factset_example$Top.Down.Allocation.Effect[21]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Real Estate"],
+               factset_example$Top.Down.Allocation.Effect[22]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Telecommunication Services"],
+               factset_example$Top.Down.Allocation.Effect[23]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[1, "Utilities"],
+               factset_example$Top.Down.Allocation.Effect[24]/100, tolerance = epsilon)
+
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Discretionary-Automobiles"],
+               factset_example$Top.Down.Allocation.Effect[2]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Discretionary-Hotels Restaurants & Leisure"],
+               factset_example$Top.Down.Allocation.Effect[3]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Discretionary-Internet & Direct Marketing Retail"],
+               factset_example$Top.Down.Allocation.Effect[4]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Discretionary-Media"],
+               factset_example$Top.Down.Allocation.Effect[5]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Discretionary-Multiline Retail"],
+               factset_example$Top.Down.Allocation.Effect[6]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Discretionary-Specialty Retail"],
+               factset_example$Top.Down.Allocation.Effect[7]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Discretionary-Textiles Apparel & Luxury Goods"],
+               factset_example$Top.Down.Allocation.Effect[8]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Consumer Staples-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Energy-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Financials-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Health Care-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Industrials-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Information Technology-Communications Equipment"],
+               factset_example$Top.Down.Allocation.Effect[15]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Information Technology-Internet Software & Services"],
+               factset_example$Top.Down.Allocation.Effect[16]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Information Technology-IT Services"],
+               factset_example$Top.Down.Allocation.Effect[17]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Information Technology-Semiconductors & Semiconductor Equipment"],
+               factset_example$Top.Down.Allocation.Effect[18]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Information Technology-Software"],
+               factset_example$Top.Down.Allocation.Effect[19]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Information Technology-Technology Hardware Storage & Peripherals"],
+               factset_example$Top.Down.Allocation.Effect[20]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Materials-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Real Estate-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Telecommunication Services-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[1, "Utilities-ALL"], 0, tolerance = epsilon)
+
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Discretionary-Automobiles"],
+               factset_example$Top.Down.Selection.Effect[2]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Discretionary-Hotels Restaurants & Leisure"],
+               factset_example$Top.Down.Selection.Effect[3]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Discretionary-Internet & Direct Marketing Retail"],
+               factset_example$Top.Down.Selection.Effect[4]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Discretionary-Media"],
+               factset_example$Top.Down.Selection.Effect[5]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Discretionary-Multiline Retail"],
+               factset_example$Top.Down.Selection.Effect[6]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Discretionary-Specialty Retail"],
+               factset_example$Top.Down.Selection.Effect[7]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Discretionary-Textiles Apparel & Luxury Goods"],
+               factset_example$Top.Down.Selection.Effect[8]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Consumer Staples-ALL"],
+               factset_example$Top.Down.Selection.Effect[9]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Energy-ALL"],
+               factset_example$Top.Down.Selection.Effect[10]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Financials-ALL"],
+               factset_example$Top.Down.Selection.Effect[11]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Health Care-ALL"],
+               factset_example$Top.Down.Selection.Effect[12]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Industrials-ALL"],
+               factset_example$Top.Down.Selection.Effect[13]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Information Technology-Communications Equipment"],
+               factset_example$Top.Down.Selection.Effect[15]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Information Technology-Internet Software & Services"],
+               factset_example$Top.Down.Selection.Effect[16]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Information Technology-IT Services"],
+               factset_example$Top.Down.Selection.Effect[17]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Information Technology-Semiconductors & Semiconductor Equipment"],
+               factset_example$Top.Down.Selection.Effect[18]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Information Technology-Software"],
+               factset_example$Top.Down.Selection.Effect[19]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Information Technology-Technology Hardware Storage & Peripherals"],
+               factset_example$Top.Down.Selection.Effect[20]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Materials-ALL"],
+               factset_example$Top.Down.Selection.Effect[21]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Real Estate-ALL"],
+               factset_example$Top.Down.Selection.Effect[22]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Telecommunication Services-ALL"],
+               factset_example$Top.Down.Selection.Effect[23]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[1, "Utilities-ALL"],
+               factset_example$Top.Down.Selection.Effect[24]/100, tolerance = epsilon)
+
+  expect_equal(as.numeric(attribution_results$`Excess returns`[,"Arithmetic"]), 0.000518217316, tolerance = epsilon)
+}
+)
+
+
+# Samle example with returns constructed as one-period time series data
+Rp = xts(matrix(c(rep(NA, 22),
+                      factset_example$Port.Total.Return[c(2:13,15:24)]/100),ncol=22,byrow=TRUE,
+                    dimnames=list(c("Rp", "Rp"),primary_ids)),
+             order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
+Rb = xts(matrix(c(rep(NA, 22),
+                      factset_example$Bmk.Total.Return[c(2:13,15:24)]/100),ncol=22,byrow=TRUE,
+                    dimnames=list(c("Rb", "Rb"),primary_ids)),
+             order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
+
+test_that("FactSet BF 2-factor heirarchical arithmetic example for one period using time-series data" , {
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, heirarchy, geometric = FALSE, anchored = TRUE, c("sector", "industry"))
+
+  total_level1_top_down_allocation_effect = factset_example$Top.Down.Allocation.Effect[1]/100 +
+    sum(factset_example$Top.Down.Allocation.Effect[9:14]/100) +
+    sum(factset_example$Top.Down.Allocation.Effect[21:24]/100)
+  total_level2_top_down_allocation_effect = sum(factset_example$Top.Down.Allocation.Effect[2:8]/100) +
+    sum(factset_example$Top.Down.Allocation.Effect[15:20]/100)
+  total_selection_effect = sum(factset_example$Top.Down.Selection.Effect[2:13]/100) +
+    sum(factset_example$Top.Down.Selection.Effect[15:24]/100)
+
+  expect_equal(attribution_results$`Multi-level attribution`[2, "Level 1 Allocation"], total_level1_top_down_allocation_effect, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`[2, "Level 2 Allocation"], total_level2_top_down_allocation_effect, tolerance = epsilon) #F
+  expect_equal(attribution_results$`Multi-level attribution`[2, "Selection"], total_selection_effect, tolerance = epsilon)
+
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Consumer Discretionary"],
+               factset_example$Top.Down.Allocation.Effect[1]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Consumer Staples"],
+               factset_example$Top.Down.Allocation.Effect[9]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Energy"],
+               factset_example$Top.Down.Allocation.Effect[10]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Financials"],
+               factset_example$Top.Down.Allocation.Effect[11]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Health Care"],
+               factset_example$Top.Down.Allocation.Effect[12]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Industrials"],
+               factset_example$Top.Down.Allocation.Effect[13]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Information Technology"],
+               factset_example$Top.Down.Allocation.Effect[14]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Materials"],
+               factset_example$Top.Down.Allocation.Effect[21]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Real Estate"],
+               factset_example$Top.Down.Allocation.Effect[22]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Telecommunication Services"],
+               factset_example$Top.Down.Allocation.Effect[23]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Utilities"],
+               factset_example$Top.Down.Allocation.Effect[24]/100, tolerance = epsilon)
+
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Discretionary-Automobiles"],
+               factset_example$Top.Down.Allocation.Effect[2]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Discretionary-Hotels Restaurants & Leisure"],
+               factset_example$Top.Down.Allocation.Effect[3]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Discretionary-Internet & Direct Marketing Retail"],
+               factset_example$Top.Down.Allocation.Effect[4]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Discretionary-Media"],
+               factset_example$Top.Down.Allocation.Effect[5]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Discretionary-Multiline Retail"],
+               factset_example$Top.Down.Allocation.Effect[6]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Discretionary-Specialty Retail"],
+               factset_example$Top.Down.Allocation.Effect[7]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Discretionary-Textiles Apparel & Luxury Goods"],
+               factset_example$Top.Down.Allocation.Effect[8]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Consumer Staples-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Energy-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Financials-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Health Care-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Industrials-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Information Technology-Communications Equipment"],
+               factset_example$Top.Down.Allocation.Effect[15]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Information Technology-Internet Software & Services"],
+               factset_example$Top.Down.Allocation.Effect[16]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Information Technology-IT Services"],
+               factset_example$Top.Down.Allocation.Effect[17]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Information Technology-Semiconductors & Semiconductor Equipment"],
+               factset_example$Top.Down.Allocation.Effect[18]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Information Technology-Software"],
+               factset_example$Top.Down.Allocation.Effect[19]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Information Technology-Technology Hardware Storage & Peripherals"],
+               factset_example$Top.Down.Allocation.Effect[20]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Materials-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Real Estate-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Telecommunication Services-ALL"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Utilities-ALL"], 0, tolerance = epsilon)
+
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Discretionary-Automobiles"],
+               factset_example$Top.Down.Selection.Effect[2]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Discretionary-Hotels Restaurants & Leisure"],
+               factset_example$Top.Down.Selection.Effect[3]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Discretionary-Internet & Direct Marketing Retail"],
+               factset_example$Top.Down.Selection.Effect[4]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Discretionary-Media"],
+               factset_example$Top.Down.Selection.Effect[5]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Discretionary-Multiline Retail"],
+               factset_example$Top.Down.Selection.Effect[6]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Discretionary-Specialty Retail"],
+               factset_example$Top.Down.Selection.Effect[7]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Discretionary-Textiles Apparel & Luxury Goods"],
+               factset_example$Top.Down.Selection.Effect[8]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Consumer Staples-ALL"],
+               factset_example$Top.Down.Selection.Effect[9]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Energy-ALL"],
+               factset_example$Top.Down.Selection.Effect[10]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Financials-ALL"],
+               factset_example$Top.Down.Selection.Effect[11]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Health Care-ALL"],
+               factset_example$Top.Down.Selection.Effect[12]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Industrials-ALL"],
+               factset_example$Top.Down.Selection.Effect[13]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Information Technology-Communications Equipment"],
+               factset_example$Top.Down.Selection.Effect[15]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Information Technology-Internet Software & Services"],
+               factset_example$Top.Down.Selection.Effect[16]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Information Technology-IT Services"],
+               factset_example$Top.Down.Selection.Effect[17]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Information Technology-Semiconductors & Semiconductor Equipment"],
+               factset_example$Top.Down.Selection.Effect[18]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Information Technology-Software"],
+               factset_example$Top.Down.Selection.Effect[19]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Information Technology-Technology Hardware Storage & Peripherals"],
+               factset_example$Top.Down.Selection.Effect[20]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Materials-ALL"],
+               factset_example$Top.Down.Selection.Effect[21]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Real Estate-ALL"],
+               factset_example$Top.Down.Selection.Effect[22]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Telecommunication Services-ALL"],
+               factset_example$Top.Down.Selection.Effect[23]/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Security selection`[2, "Utilities-ALL"],
+               factset_example$Top.Down.Selection.Effect[24]/100, tolerance = epsilon)
+
+  expect_equal(as.numeric(attribution_results$`Excess returns`[2,"Arithmetic"]), 0.000518217316, tolerance = epsilon)
+}
+)

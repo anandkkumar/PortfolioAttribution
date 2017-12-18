@@ -119,11 +119,19 @@ function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
     
     # Get portfolio and benchmark returns
     if (is.vector(WP)  & is.vector(WB)){
-      rp = Return.portfolio(Rp, WP)
-      rb = Return.portfolio(Rb, WB)
+      # For now we assume that if it's an error it's because we only have
+      # a single observation and not time series data
+      rp = tryCatch({
+        Return.portfolio(Rp, WP, geometric = geometric)
+      }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
+      )
+      rb = tryCatch({
+        Return.portfolio(Rb, WB, geometric = geometric)
+      }, error = function(e) { return(as.matrix(sum(WB*Rb))) }
+      )
     } else{
-      rp = Return.rebalancing(Rp, WP)
-      rb = Return.rebalancing(Rb, WB)
+      rp = Return.rebalancing(Rp, WP, geometric = geometric)
+      rb = Return.rebalancing(Rb, WB, geometric = geometric)
     }
     names(rp) = "Total"
     names(rb) = "Total"
@@ -192,11 +200,18 @@ function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
     
     # Transform portfolio, benchmark returns and semi-notional funds returns to
     # conformable matrices for multi-level attribution
-    b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
-                      ncol(returns.b[[1]])), index(rb))
-    r = as.xts(matrix(rep(rp, ncol(last(returns.b)[[1]])), nrow(rp), 
-                      ncol(last(returns.b)[[1]])), index(rp))
-    
+    if(NROW(Rp) == 1)
+    {
+      b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
+                        ncol(returns.b[[1]])), index(Rb))
+      r = as.xts(matrix(rep(rp, ncol(returns.p[[1]])), nrow(rp), 
+                        ncol(returns.p[[1]])), index(Rp))
+    } else{
+      b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
+                        ncol(returns.b[[1]])), index(rb))
+      r = as.xts(matrix(rep(rp, ncol(last(returns.p)[[1]])), nrow(rp),
+                        ncol(last(returns.p)[[1]])), index(rp))
+    }
     returns.b2 = list()
     weights.p2 = list()
     weights.b2 = list()
