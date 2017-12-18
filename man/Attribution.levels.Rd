@@ -4,7 +4,8 @@
 \alias{Attribution.levels}
 \title{provides multi-level sector-based geometric attribution}
 \usage{
-Attribution.levels(Rp, wp, Rb, wb, h, ...)
+Attribution.levels(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE,
+  ...)
 }
 \arguments{
 \item{Rp}{xts, data frame or matrix of portfolio returns}
@@ -18,6 +19,14 @@ Attribution.levels(Rp, wp, Rb, wb, h, ...)
 \item{h}{data.frame with the hierarchy obtained from the buildHierarchy 
 function or defined manually in the same style as buildHierarchy's
 output}
+
+\item{geometric}{TRUE/FALSE,  whether to use geometric or arithmetic excess
+returns for the attribution analysis. By default arithmetic is selected
+methodology documented referenced below}
+
+\item{anchored}{TRUE/FALSE, to indicate if the weights at each level should be
+anchored based on prior level's decision, as outlined in the Morningstar
+methodology documented referenced below}
 
 \item{\dots}{The remaining passthrough parameters represent the levels in the
 heirarchy to aggregate by}
@@ -61,6 +70,8 @@ wb = attrib.weights[2, ], h = attrib.hierarchy, c("type", "Sector"))
 \references{
 Bacon, C. \emph{Practical Portfolio Performance Measurement and
 Attribution}. Wiley. 2004. p. 215-220
+
+\url{https://corporate.morningstar.com/us/documents/MethodologyDocuments/MethodologyPapers/EquityPerformanceAttributionMeth.pdf}
 }
 \seealso{
 \code{\link{Attribution.geometric}}

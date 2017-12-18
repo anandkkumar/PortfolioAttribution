@@ -27,7 +27,7 @@ heirarchy = data.frame(
 )
 
 test_that("Multi-level Geometric example using data in Tables 9.4" , {
-  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, heirarchy, c("level1", "level2", "level3"))
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, heirarchy, geometric = TRUE, anchored = FALSE, c("level1", "level2", "level3"))
   
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 1 Allocation"], 0.002373644, tolerance = epsilon)
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 2 Allocation"], -0.000867662, tolerance = epsilon)
