@@ -257,9 +257,7 @@ function (Rp, wp, Rb, wb,
     linking = linking[1]
     
     currency = !(is.null(dim(wpf)) & is.null(dim(wbf)) & 
-                   is.null(dim(S)) & is.null(dim(Fp)) & is.null(dim(Fb)) &
-                   is.null(dim(Rpl)) & is.null(dim(Rpl)) & 
-                   is.null(dim(Rpl)))
+                   is.null(dim(S)) & is.null(dim(Fp)) & is.null(dim(Fb)))
     
     if (geometric == FALSE & linking != "davies.laker"){ 
       # The function makes all computations for the arithmetic attribution
