@@ -393,7 +393,7 @@ test_that("FactSet BF 2-factor heirarchical arithmetic example for one period" ,
 )
 
 
-# Samle example with returns constructed as one-period time series data
+# Same example with returns constructed as one-period time series data
 Rp = xts(matrix(c(rep(NA, 22),
                       factset_example$Port.Total.Return[c(2:13,15:24)]/100),ncol=22,byrow=TRUE,
                     dimnames=list(c("Rp", "Rp"),primary_ids)),
@@ -523,5 +523,200 @@ test_that("FactSet BF 2-factor heirarchical arithmetic example for one period us
                factset_example$Top.Down.Selection.Effect[24]/100, tolerance = epsilon)
 
   expect_equal(as.numeric(attribution_results$`Excess returns`[2,"Arithmetic"]), 0.000518217316, tolerance = epsilon)
+}
+)
+
+
+
+data(factset_sample_multi_currency_2factor_arithmetic)
+# Note that the FactSet sample has all returns, weights and attribution effects as percentages
+cnames = factset_example$Sector
+
+Wp = factset_example$Port.Weight/100
+Wb = factset_example$Bmk.Weight/100
+
+Rp = matrix(factset_example$Port.Total.Return/100,ncol=11,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),cnames))
+Rb = matrix(factset_example$Bmk.Total.Return/100,ncol=11,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),cnames))
+Rpl = matrix(factset_example$Port.Total.Return.Local/100,ncol=11,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),cnames))
+Rbl = matrix(factset_example$Bmk.Total.Return.Local/100,ncol=11,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),cnames))
+
+
+test_that("FactSet BF 2-factor arithmetic multi-currency example for one period with currency effect as the difference between attribution in base currency and local currency" , {
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results_local = Attribution(Rpl, Wp, Rbl, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
+  
+  expect_equal(as.numeric(attribution_results$Allocation[,"Consumer.Discretionary"]), 
+               factset_example$Allocation.Effect[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Consumer.Staples"]), 
+               factset_example$Allocation.Effect[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Energy"]), 
+               factset_example$Allocation.Effect[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Financials"]), 
+               factset_example$Allocation.Effect[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Health.Care"]), 
+               factset_example$Allocation.Effect[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Industrials"]), 
+               factset_example$Allocation.Effect[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Information.Technology"]), 
+               factset_example$Allocation.Effect[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Materials"]), 
+               factset_example$Allocation.Effect[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Real.Estate"]), 
+               factset_example$Allocation.Effect[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Telecommunication.Services"]), 
+               factset_example$Allocation.Effect[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Utilities"]),  
+               factset_example$Allocation.Effect[11]/100, tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results$Selection[,"Consumer.Discretionary"]), 
+               factset_example$Selection.Effect[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Consumer.Staples"]), 
+               factset_example$Selection.Effect[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Energy"]),
+               factset_example$Selection.Effect[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Financials"]),
+               factset_example$Selection.Effect[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Health.Care"]),
+               factset_example$Selection.Effect[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Industrials"]),
+               factset_example$Selection.Effect[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Information.Technology"]),
+               factset_example$Selection.Effect[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Materials"]),
+               factset_example$Selection.Effect[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Real.Estate"]),
+               factset_example$Selection.Effect[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Telecommunication.Services"]),
+               factset_example$Selection.Effect[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Utilities"]),
+               factset_example$Selection.Effect[11]/100, tolerance = epsilon)
+  
+  expect_null(attribution_results$Interaction)
+  
+  expect_equal(as.numeric(attribution_results$Allocation[,"Total"]), -0.00154535597482145, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Total"]), -0.00979618400454548, tolerance = epsilon)
+  
+  expect_equal(attribution_results$`Excess returns`[1], -0.011341539979, tolerance=epsilon)
+
+    
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Consumer.Discretionary"]), 
+               factset_example$Allocation.Effect.Local[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Consumer.Staples"]), 
+               factset_example$Allocation.Effect.Local[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Energy"]), 
+               factset_example$Allocation.Effect.Local[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Financials"]), 
+               factset_example$Allocation.Effect.Local[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Health.Care"]), 
+               factset_example$Allocation.Effect.Local[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Industrials"]), 
+               factset_example$Allocation.Effect.Local[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Information.Technology"]), 
+               factset_example$Allocation.Effect.Local[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Materials"]), 
+               factset_example$Allocation.Effect.Local[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Real.Estate"]), 
+               factset_example$Allocation.Effect.Local[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Telecommunication.Services"]), 
+               factset_example$Allocation.Effect.Local[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Utilities"]),  
+               factset_example$Allocation.Effect.Local[11]/100, tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Consumer.Discretionary"]), 
+               factset_example$Selection.Effect.Local[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Consumer.Staples"]), 
+               factset_example$Selection.Effect.Local[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Energy"]),
+               factset_example$Selection.Effect.Local[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Financials"]),
+               factset_example$Selection.Effect.Local[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Health.Care"]),
+               factset_example$Selection.Effect.Local[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Industrials"]),
+               factset_example$Selection.Effect.Local[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Information.Technology"]),
+               factset_example$Selection.Effect.Local[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Materials"]),
+               factset_example$Selection.Effect.Local[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Real.Estate"]),
+               factset_example$Selection.Effect.Local[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Telecommunication.Services"]),
+               factset_example$Selection.Effect.Local[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Utilities"]),
+               factset_example$Selection.Effect.Local[11]/100, tolerance = epsilon)
+  
+  expect_null(attribution_results_local$Interaction)
+
+  expect_equal(as.numeric(attribution_results_local$Allocation[,"Total"]), -0.000266595048395356, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$Selection[,"Total"]), -0.00967827356917747, tolerance = epsilon)
+  
+  expect_equal(attribution_results_local$`Excess returns`[1], -0.009944868618, tolerance=epsilon)
+  
+
+  # Total Currency Effect at each level
+  expect_equal(as.numeric(attribution_results$Allocation[,"Consumer.Discretionary"] + 
+                            attribution_results$Selection[,"Consumer.Discretionary"] -
+                            attribution_results_local$Allocation[,"Consumer.Discretionary"] - 
+                            attribution_results_local$Selection[,"Consumer.Discretionary"]), 
+               factset_example$Total.Currency.Effect[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Consumer.Staples"] +
+                            attribution_results$Selection[,"Consumer.Staples"] -
+                            attribution_results_local$Allocation[,"Consumer.Staples"] -
+                            attribution_results_local$Selection[,"Consumer.Staples"]), 
+               factset_example$Total.Currency.Effect[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Energy"] + 
+                            attribution_results$Selection[,"Energy"] -
+                            attribution_results_local$Allocation[,"Energy"] -
+                            attribution_results_local$Selection[,"Energy"]), 
+               factset_example$Total.Currency.Effect[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Financials"] +
+                            attribution_results$Selection[,"Financials"] - 
+                            attribution_results_local$Allocation[,"Financials"] -
+                            attribution_results_local$Selection[,"Financials"]), 
+               factset_example$Total.Currency.Effect[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Health.Care"] +
+                            attribution_results$Selection[,"Health.Care"] - 
+                            attribution_results_local$Allocation[,"Health.Care"] -
+                            attribution_results_local$Selection[,"Health.Care"]), 
+               factset_example$Total.Currency.Effect[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Industrials"] +
+                            attribution_results$Selection[,"Industrials"] -
+                            attribution_results_local$Allocation[,"Industrials"] -
+                            attribution_results_local$Selection[,"Industrials"]), 
+               factset_example$Total.Currency.Effect[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Information.Technology"] +
+                            attribution_results$Selection[,"Information.Technology"] -
+                            attribution_results_local$Allocation[,"Information.Technology"] -
+                            attribution_results_local$Selection[,"Information.Technology"]), 
+               factset_example$Total.Currency.Effect[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Materials"] +
+                            attribution_results$Selection[,"Materials"] -
+                            attribution_results_local$Allocation[,"Materials"] -
+                            attribution_results_local$Selection[,"Materials"]), 
+               factset_example$Total.Currency.Effect[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Real.Estate"] +
+                            attribution_results$Selection[,"Real.Estate"] -
+                            attribution_results_local$Allocation[,"Real.Estate"] -
+                            attribution_results_local$Selection[,"Real.Estate"]), 
+               factset_example$Total.Currency.Effect[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Telecommunication.Services"] +
+                            attribution_results$Selection[,"Telecommunication.Services"] -
+                            attribution_results_local$Allocation[,"Telecommunication.Services"] -
+                            attribution_results_local$Selection[,"Telecommunication.Services"]), 
+               factset_example$Total.Currency.Effect[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Utilities"] +
+                            attribution_results$Selection[,"Utilities"] -
+                            attribution_results_local$Allocation[,"Utilities"] -
+                            attribution_results_local$Selection[,"Utilities"]),  
+               factset_example$Total.Currency.Effect[11]/100, tolerance = epsilon)
+  
+  # Total Currency Effect for the whole portfolio
+  expect_equal(as.numeric(attribution_results$Selection[,"Total"] + attribution_results$Allocation[,"Total"] -
+                          attribution_results_local$Selection[,"Total"] - attribution_results_local$Allocation[,"Total"]), 
+               -0.00139667136179411, tolerance = epsilon)
 }
 )
