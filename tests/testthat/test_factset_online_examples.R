@@ -916,3 +916,129 @@ test_that("FactSet BF 2-factor geometric multi-currency example for one period w
                -0.0013764971602499, tolerance = epsilon)
 }
 )
+
+
+
+test_that("FactSet BF 2-factor geometric multi-currency example for one period with currency effect with standard geometric API" , {
+  
+  attribution_results = Attribution.geometric(Rp, Wp, Rb, Wb, Rpl = Rpl, Rbl = Rbl, Rbh = Rbl)
+  
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Consumer.Discretionary"]), 
+               factset_example$Geometric.Allocation.Effect.Local[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Consumer.Staples"]), 
+               factset_example$Geometric.Allocation.Effect.Local[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Energy"]), 
+               factset_example$Geometric.Allocation.Effect.Local[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Financials"]), 
+               factset_example$Geometric.Allocation.Effect.Local[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Health.Care"]), 
+               factset_example$Geometric.Allocation.Effect.Local[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Industrials"]), 
+               factset_example$Geometric.Allocation.Effect.Local[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Information.Technology"]), 
+               factset_example$Geometric.Allocation.Effect.Local[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Materials"]), 
+               factset_example$Geometric.Allocation.Effect.Local[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Real.Estate"]), 
+               factset_example$Geometric.Allocation.Effect.Local[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Telecommunication.Services"]), 
+               factset_example$Geometric.Allocation.Effect.Local[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Utilities"]),  
+               factset_example$Geometric.Allocation.Effect.Local[11]/100, tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results$Selection[1,"Consumer.Discretionary"]), 
+               factset_example$Geometric.Selection.Effect.Local[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Consumer.Staples"]), 
+               factset_example$Geometric.Selection.Effect.Local[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Energy"]),
+               factset_example$Geometric.Selection.Effect.Local[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Financials"]),
+               factset_example$Geometric.Selection.Effect.Local[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Health.Care"]),
+               factset_example$Geometric.Selection.Effect.Local[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Industrials"]),
+               factset_example$Geometric.Selection.Effect.Local[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Information.Technology"]),
+               factset_example$Geometric.Selection.Effect.Local[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Materials"]),
+               factset_example$Geometric.Selection.Effect.Local[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Real.Estate"]),
+               factset_example$Geometric.Selection.Effect.Local[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Telecommunication.Services"]),
+               factset_example$Geometric.Selection.Effect.Local[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Utilities"]),
+               factset_example$Geometric.Selection.Effect.Local[11]/100, tolerance = epsilon)
+  
+  expect_null(attribution_results$Interaction)
+  
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Total"]), -0.000266696010962075, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Total"]), -0.0096845216607695, tolerance = epsilon)
+  # Total Currency Effect for the whole portfolio
+  expect_equal(attribution_results$`Currency management`[1,"Currency attribution"], -0.0013764971602499, tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results$`Excess returns`[1, "Geometric"]), -0.0113105205, tolerance=epsilon)
+}
+)
+
+
+
+test_that("FactSet BF 2-factor geometric multi-currency example for one period with currency effect with standard main API" , {
+  
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, Rpl = Rpl, Rbl = Rbl, Rbh = Rbl, geometric = TRUE)
+
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Consumer.Discretionary"]), 
+               factset_example$Geometric.Allocation.Effect.Local[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Consumer.Staples"]), 
+               factset_example$Geometric.Allocation.Effect.Local[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Energy"]), 
+               factset_example$Geometric.Allocation.Effect.Local[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Financials"]), 
+               factset_example$Geometric.Allocation.Effect.Local[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Health.Care"]), 
+               factset_example$Geometric.Allocation.Effect.Local[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Industrials"]), 
+               factset_example$Geometric.Allocation.Effect.Local[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Information.Technology"]), 
+               factset_example$Geometric.Allocation.Effect.Local[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Materials"]), 
+               factset_example$Geometric.Allocation.Effect.Local[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Real.Estate"]), 
+               factset_example$Geometric.Allocation.Effect.Local[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Telecommunication.Services"]), 
+               factset_example$Geometric.Allocation.Effect.Local[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Utilities"]),  
+               factset_example$Geometric.Allocation.Effect.Local[11]/100, tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results$Selection[1,"Consumer.Discretionary"]), 
+               factset_example$Geometric.Selection.Effect.Local[1]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Consumer.Staples"]), 
+               factset_example$Geometric.Selection.Effect.Local[2]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Energy"]),
+               factset_example$Geometric.Selection.Effect.Local[3]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Financials"]),
+               factset_example$Geometric.Selection.Effect.Local[4]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Health.Care"]),
+               factset_example$Geometric.Selection.Effect.Local[5]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Industrials"]),
+               factset_example$Geometric.Selection.Effect.Local[6]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Information.Technology"]),
+               factset_example$Geometric.Selection.Effect.Local[7]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Materials"]),
+               factset_example$Geometric.Selection.Effect.Local[8]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Real.Estate"]),
+               factset_example$Geometric.Selection.Effect.Local[9]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Telecommunication.Services"]),
+               factset_example$Geometric.Selection.Effect.Local[10]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Utilities"]),
+               factset_example$Geometric.Selection.Effect.Local[11]/100, tolerance = epsilon)
+  
+  expect_null(attribution_results$Interaction)
+  
+  expect_equal(as.numeric(attribution_results$Allocation[1,"Total"]), -0.000266696010962075, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[1,"Total"]), -0.0096845216607695, tolerance = epsilon)
+  # Total Currency Effect for the whole portfolio
+  expect_equal(attribution_results$`Currency management`[1,"Currency attribution"], -0.0013764971602499, tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results$`Excess returns`[1, "Geometric"]), -0.0113105205, tolerance=epsilon)
+}
+)
