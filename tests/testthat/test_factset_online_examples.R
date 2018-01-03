@@ -270,7 +270,7 @@ Rb = matrix(factset_example$Bmk.Total.Return[c(2:13,15:24)]/100,ncol=22,byrow=TR
 
 
 test_that("FactSet BF 2-factor heirarchical arithmetic example for one period" , {
-  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, heirarchy, geometric = FALSE, anchored = TRUE, c("sector", "industry"))
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = heirarchy, h_levels = c("sector", "industry"), geometric = FALSE, anchored = TRUE)
 
   total_level1_top_down_allocation_effect = factset_example$Top.Down.Allocation.Effect[1]/100 +
                                             sum(factset_example$Top.Down.Allocation.Effect[9:14]/100) +
@@ -404,7 +404,7 @@ Rb = xts(matrix(c(rep(NA, 22),
              order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
 
 test_that("FactSet BF 2-factor heirarchical arithmetic example for one period using time-series data" , {
-  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, heirarchy, geometric = FALSE, anchored = TRUE, c("sector", "industry"))
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = heirarchy, h_levels = c("sector", "industry"), geometric = FALSE, anchored = TRUE)
 
   total_level1_top_down_allocation_effect = factset_example$Top.Down.Allocation.Effect[1]/100 +
     sum(factset_example$Top.Down.Allocation.Effect[9:14]/100) +
@@ -1040,5 +1040,156 @@ test_that("FactSet BF 2-factor geometric multi-currency example for one period w
   expect_equal(attribution_results$`Currency management`[1,"Currency attribution"], -0.0013764971602499, tolerance = epsilon)
   
   expect_equal(as.numeric(attribution_results$`Excess returns`[1, "Geometric"]), -0.0113105205, tolerance=epsilon)
+}
+)
+
+
+
+
+data(factset_sample_multi_currency_heirarchical_top_down_arithmetic)
+# Note that the FactSet sample has all returns, weights and attribution effects as percentages
+sectors = as.character(factset_example$Sector[factset_example$Industry != ""])
+industries = as.character(factset_example$Industry[factset_example$Industry != ""])
+primary_ids = paste(sectors, industries, sep="-")
+
+heirarchy = data.frame(
+  primary_id = primary_ids,
+  sector = sectors,
+  industry = industries,
+  stringsAsFactors = FALSE
+)
+
+Wp = factset_example$Port.Weight[factset_example$Industry != ""]/100
+Wb = factset_example$Bmk.Weight[factset_example$Industry != ""]/100
+
+Rp = matrix(factset_example$Port.Total.Return[factset_example$Industry != ""]/100,ncol=66,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),primary_ids))
+Rb = matrix(factset_example$Bmk.Total.Return[factset_example$Industry != ""]/100,ncol=66,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),primary_ids))
+Rpl = matrix(factset_example$Port.Total.Return.Local[factset_example$Industry != ""]/100,ncol=66,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),primary_ids))
+Rbl = matrix(factset_example$Bmk.Total.Return.Local[factset_example$Industry != ""]/100,ncol=66,byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),primary_ids))
+
+test_that("FactSet BF 2-factor heirarchical arithmetic multi-currency example for one period with currency effect as the difference between attribution in base currency and local currency" , {
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = heirarchy, h_levels = c("sector", "industry"), geometric = FALSE, anchored = TRUE)
+  attribution_results_local = Attribution.levels(Rpl, Wp, Rbl, Wb, h = heirarchy, h_levels = c("sector", "industry"), geometric = FALSE, anchored = TRUE)
+  
+  total_level1_top_down_allocation_effect = sum(factset_example$Top.Down.Allocation.Effect[factset_example$Industry == ""]/100)
+  total_level2_top_down_allocation_effect = sum(factset_example$Top.Down.Allocation.Effect[factset_example$Industry != ""]/100)
+  total_selection_effect = sum(factset_example$Top.Down.Selection.Effect[factset_example$Industry != ""]/100)
+  
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Level 1 Allocation"], total_level1_top_down_allocation_effect, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Level 2 Allocation"], total_level2_top_down_allocation_effect, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Selection"], total_selection_effect, tolerance = epsilon)
+  
+  
+  # The attribution results sort the columns alphabetically and so to compare we resort them by what's in the heirarchy
+  expect_equal(as.numeric(attribution_results$`Attribution at each level`$`Level 1`[1,][order(unique(heirarchy$sector))]), 
+               factset_example$Top.Down.Allocation.Effect[factset_example$Industry == ""]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$`Attribution at each level`$`Level 2`[1,][order(unique(heirarchy$primary_id))]), 
+               factset_example$Top.Down.Allocation.Effect[factset_example$Industry != ""]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$`Security selection`[1,][order(unique(heirarchy$primary_id))]), 
+               factset_example$Top.Down.Selection.Effect[factset_example$Industry != ""]/100, tolerance = epsilon)
+  
+  
+  
+  total_level1_top_down_allocation_effect_local = sum(factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry == ""]/100)
+  total_level2_top_down_allocation_effect_local = sum(factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry != ""]/100)
+  total_selection_effect_local = sum(factset_example$Top.Down.Selection.Effect.Local[factset_example$Industry != ""]/100)
+  
+  expect_equal(attribution_results_local$`Multi-level attribution`[1, "Level 1 Allocation"], 
+               total_level1_top_down_allocation_effect_local, tolerance = epsilon)
+  expect_equal(attribution_results_local$`Multi-level attribution`[1, "Level 2 Allocation"], 
+               total_level2_top_down_allocation_effect_local, tolerance = epsilon)
+  expect_equal(attribution_results_local$`Multi-level attribution`[1, "Selection"], total_selection_effect_local, tolerance = epsilon)
+  
+  
+  # The attribution results sort the columns alphabetically and so to compare we resort them by what's in the heirarchy
+  expect_equal(as.numeric(attribution_results_local$`Attribution at each level`$`Level 1`[1,][order(unique(heirarchy$sector))]), 
+               factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry == ""]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$`Attribution at each level`$`Level 2`[1,][order(unique(heirarchy$primary_id))]), 
+               factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry != ""]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$`Security selection`[1,][order(unique(heirarchy$primary_id))]), 
+               factset_example$Top.Down.Selection.Effect.Local[factset_example$Industry != ""]/100, tolerance = epsilon)
+  
+  # Currency effects at level 2
+  expect_equal(as.numeric(attribution_results$`Attribution at each level`$`Level 2`[1,][order(unique(heirarchy$primary_id))] + 
+    attribution_results$`Security selection`[1,][order(unique(heirarchy$primary_id))] - 
+    attribution_results_local$`Attribution at each level`$`Level 2`[1,][order(unique(heirarchy$primary_id))] - 
+    attribution_results_local$`Security selection`[1,][order(unique(heirarchy$primary_id))]),
+    factset_example$Top.Down.Currency.Effect[factset_example$Industry != ""]/100, tolerance = epsilon)
+
+  # Total allocation effects
+  expect_equal(attribution_results$`Multi-level attribution`[1,"Level 1 Allocation"] +
+               attribution_results$`Multi-level attribution`[1,"Level 2 Allocation"], 
+               -0.00904031651594325, tolerance = epsilon)
+  expect_equal(attribution_results_local$`Multi-level attribution`[1,"Level 1 Allocation"] +
+                 attribution_results_local$`Multi-level attribution`[1,"Level 2 Allocation"], 
+               -0.00809058881963037, tolerance = epsilon)
+  
+  # Total selection effects
+  expect_equal(attribution_results$`Multi-level attribution`[1,"Selection"], -0.002301223463, tolerance = epsilon)
+  expect_equal(attribution_results_local$`Multi-level attribution`[1,"Selection"], -0.001854279798, tolerance = epsilon)
+  
+  # Total effects
+  expect_equal(sum(attribution_results$`Multi-level attribution`[1,]), -0.0113415399790682, tolerance = epsilon)
+  expect_equal(sum(attribution_results_local$`Multi-level attribution`[1,]), -0.009944868617, tolerance = epsilon)
+  
+  # Total currency effect  
+  expect_equal(sum(attribution_results$`Multi-level attribution`[1,]) - 
+               sum(attribution_results_local$`Multi-level attribution`[1,]),
+               -0.00139667136186056, tolerance = epsilon)
+  
+  # Excess returns
+  expect_equal(as.numeric(attribution_results$`Excess returns`[,"Arithmetic"]), -0.011341539979, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results_local$`Excess returns`[,"Arithmetic"]), -0.009944868617, tolerance = epsilon)
+}
+)
+
+
+
+
+test_that("FactSet BF 2-factor heirarchical arithmetic multi-currency example for one period with currency effect with standard API" , {
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, Rpl, Rbl, Rbh = Rbl, h = heirarchy, h_levels = c("sector", "industry"), geometric = FALSE, anchored = TRUE)
+
+  total_level1_top_down_allocation_effect = sum(factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry == ""]/100)
+  total_level2_top_down_allocation_effect = sum(factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry != ""]/100)
+  total_selection_effect = sum(factset_example$Top.Down.Selection.Effect.Local[factset_example$Industry != ""]/100)
+  
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Level 1 Allocation"], total_level1_top_down_allocation_effect, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Level 2 Allocation"], total_level2_top_down_allocation_effect, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`[1, "Selection"], total_selection_effect, tolerance = epsilon)
+  
+  
+  # The attribution results sort the columns alphabetically and so to compare we resort them by what's in the heirarchy
+  expect_equal(as.numeric(attribution_results$`Attribution at each level`$`Level 1`[1,][order(unique(heirarchy$sector))]), 
+               factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry == ""]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$`Attribution at each level`$`Level 2`[1,][order(unique(heirarchy$primary_id))]), 
+               factset_example$Top.Down.Allocation.Effect.Local[factset_example$Industry != ""]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$`Security selection`[1,][order(unique(heirarchy$primary_id))]), 
+               factset_example$Top.Down.Selection.Effect.Local[factset_example$Industry != ""]/100, tolerance = epsilon)
+  
+  # Total allocation effects
+  expect_equal(attribution_results$`Multi-level attribution`[1,"Level 1 Allocation"] +
+                 attribution_results$`Multi-level attribution`[1,"Level 2 Allocation"], 
+               -0.00809058881963037, tolerance = epsilon)
+
+  # Total selection effects
+  expect_equal(attribution_results$`Multi-level attribution`[1,"Selection"], -0.001854279798, tolerance = epsilon)
+
+  # Total allocation effect
+  expect_equal(sum(attribution_results$`Multi-level attribution`[1,]), -0.009944868617, tolerance = epsilon)
+  
+  # Total currency effect
+  expect_equal(attribution_results$`Currency management`[1,"Currency attribution"], -0.00139667136186056, tolerance = epsilon)
+
+  # Total effects
+  expect_equal(sum(attribution_results$`Multi-level attribution`[1,]) + 
+               attribution_results$`Currency management`[1,"Currency attribution"], 
+               -0.0113415399790682, tolerance = epsilon)
+
+  # Excess returns
+  expect_equal(as.numeric(attribution_results$`Excess returns`[,"Arithmetic"]), -0.011341539979, tolerance = epsilon)
 }
 )
