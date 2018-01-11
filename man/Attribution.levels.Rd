@@ -4,8 +4,8 @@
 \alias{Attribution.levels}
 \title{provides multi-level sector-based geometric attribution}
 \usage{
-Attribution.levels(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE,
-  ...)
+Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA, h,
+  h_levels, geometric = FALSE, anchored = TRUE)
 }
 \arguments{
 \item{Rp}{xts, data frame or matrix of portfolio returns}
@@ -16,9 +16,19 @@ Attribution.levels(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE,
 
 \item{wb}{vector, xts, data frame or matrix of benchmark weights}
 
+\item{Rpl}{xts, data frame or matrix of portfolio returns in local currency}
+
+\item{Rbl}{xts, data frame or matrix of benchmark returns in local currency}
+
+\item{Rbh}{xts, data frame or matrix of benchmark returns hedged into the
+base currency}
+
 \item{h}{data.frame with the hierarchy obtained from the buildHierarchy 
 function or defined manually in the same style as buildHierarchy's
 output}
+
+\item{h_levels}{The remaining passthrough parameters represent the levels in the
+heirarchy to aggregate by}
 
 \item{geometric}{TRUE/FALSE,  whether to use geometric or arithmetic excess
 returns for the attribution analysis. By default arithmetic is selected
@@ -27,9 +37,6 @@ methodology documented referenced below}
 \item{anchored}{TRUE/FALSE, to indicate if the weights at each level should be
 anchored based on prior level's decision, as outlined in the Morningstar
 methodology documented referenced below}
-
-\item{\dots}{The remaining passthrough parameters represent the levels in the
-heirarchy to aggregate by}
 }
 \value{
 returns the list with geometric excess returns including annualized

@@ -108,6 +108,10 @@ function(Rp, wp, Rb, wb,
     # selection effect) including total multi-period  attribution effects
   
     # FUNCTION:
+  
+    # Transform data to the xts objects
+    Rb = checkData(Rb)
+    Rp = checkData(Rp)
     WP = wp # Save original weights in order to avoid double conversion later
     WB = wb
     WPF = wpf # Save original weights in order to avoid double conversion later

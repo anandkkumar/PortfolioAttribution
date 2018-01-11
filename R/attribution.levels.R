@@ -25,17 +25,21 @@
 #' @param wp vector, xts, data frame or matrix of portfolio weights
 #' @param Rb xts, data frame or matrix of benchmark returns
 #' @param wb vector, xts, data frame or matrix of benchmark weights
+#' @param Rpl xts, data frame or matrix of portfolio returns in local currency
+#' @param Rbl xts, data frame or matrix of benchmark returns in local currency
+#' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
+#' base currency
 #' @param h data.frame with the hierarchy obtained from the buildHierarchy 
 #' function or defined manually in the same style as buildHierarchy's
 #' output
+#' @param h_levels The remaining passthrough parameters represent the levels in the
+#' heirarchy to aggregate by
 #' @param geometric TRUE/FALSE,  whether to use geometric or arithmetic excess
 #' returns for the attribution analysis. By default arithmetic is selected
 #' methodology documented referenced below
 #' @param anchored TRUE/FALSE, to indicate if the weights at each level should be
 #' anchored based on prior level's decision, as outlined in the Morningstar
 #' methodology documented referenced below
-#' @param \dots The remaining passthrough parameters represent the levels in the
-#' heirarchy to aggregate by
 #' @return returns the list with geometric excess returns including annualized
 #' geometric excess returns, total attribution effects (allocation, selection 
 #' and total) including total multi-period attribution effects, attribution 
@@ -56,7 +60,7 @@
 #' 
 #' @export
 Attribution.levels <-
-function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
+function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric = FALSE, anchored = TRUE)
 {   # @author Andrii Babii
     
     # DESCRIPTION:
@@ -110,7 +114,7 @@ function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
            asset or one common benchmark for all assets")
     }
     
-    levels <- unlist(list(...))
+    levels <- unlist(list(h_levels))
     if (!is.null(levels)) stopifnot(is.character(levels))
     if (length(levels) == 0 | length(levels) == 1){
       stop("Use Attribution function for the single level. This function is for
@@ -135,6 +139,57 @@ function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
     }
     names(rp) = "Total"
     names(rb) = "Total"
+    
+    currency = !(is.null(dim(Rpl)) & is.null(dim(Rbl)) & is.null(dim(Rbh)))
+    if(currency){
+      Rpl = checkData(Rpl)
+      Rbl = checkData(Rbl)
+      Rbh = checkData(Rbh)
+      
+      if (nrow(wp) < nrow(Rpl)){ # Rebalancing occurs next day
+        Rpl = Rpl[2:nrow(Rpl)]
+        Rbl = Rbl[2:nrow(Rbl)]
+      }
+      if (ncol(Rbl) == 1){
+        Rbl = matrix(rep(coredata(Rbl), ncol(Rpl)), nrow(Rpl), ncol(Rpl))
+      }
+      if (ncol(Rbl) != ncol(Rpl)){
+        stop("Please use benchmark xts that has columns with benchmarks for each
+           asset or one common benchmark for all assets")
+      }
+      
+      # Get portfolio and benchmark local returns
+      if (is.vector(WP)  & is.vector(WB)){
+        # For now we assume that if it's an error it's because we only have
+        # a single observation and not time series data
+        rpl = tryCatch({
+          Return.portfolio(Rpl, WP, geometric = geometric)
+        }, error = function(e) { return(as.matrix(sum(WP*Rpl))) }
+        )
+        rbl = tryCatch({
+          Return.portfolio(Rbl, WB, geometric = geometric)
+        }, error = function(e) { return(as.matrix(sum(WB*Rbl))) }
+        )
+      } else{
+        rpl = Return.rebalancing(Rpl, WP, geometric = geometric)
+        rbl = Return.rebalancing(Rbl, WB, geometric = geometric)
+      }
+      names(rpl) = "Total"
+      names(rbl) = "Total"
+      
+      # Compute currency effect
+      bsl = reclass(rowSums(Rbl * wp), Rpl)
+      bsh = reclass(rowSums(((wp - wb) * Rbh + wb * Rbl)), Rpl)
+      if(geometric){
+        hedge = (1 + bsl) / (1 + bsh) - 1
+        currency.attr = (1 + rp) * (1 + rbl) / (1 + rpl) / (1 + rb) - 1
+      } else{
+        hedge = bsl - bsh
+        currency.attr = (rp - rpl) - (rb - rbl)
+      }
+      curr = cbind(hedge, currency.attr)
+      colnames(curr) = c("Hedging", "Currency attribution")
+    }
     
     if(geometric){
       # Geometric excess returns + annualized geometric excess returns
@@ -169,60 +224,114 @@ function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
     weights.b = list()
     bs = list()
     for(i in 1:length(levels)){
-      weights.p[[i]] = Weight.level(WP, Rp, h, level = levels[i])
-      weights.b[[i]] = Weight.level(WB, Rb, h, level = levels[i])
-      returns.p[[i]] = Return.level(Rp, WP, h, level = levels[i], weights.p[[i]])
-      returns.b[[i]] = Return.level(Rb, WB, h, level = levels[i], weights.b[[i]])
-      # semi-notional funds returns
-      bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rp)  
+      if(!currency){
+        weights.p[[i]] = Weight.level(WP, Rp, h, level = levels[i])
+        weights.b[[i]] = Weight.level(WB, Rb, h, level = levels[i])
+        returns.p[[i]] = Return.level(Rp, WP, h, level = levels[i], weights.p[[i]])
+        returns.b[[i]] = Return.level(Rb, WB, h, level = levels[i], weights.b[[i]])
+        # semi-notional funds returns
+        bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rp)  
+      } else{
+        weights.p[[i]] = Weight.level(WP, Rpl, h, level = levels[i])
+        weights.b[[i]] = Weight.level(WB, Rbl, h, level = levels[i])
+        returns.p[[i]] = Return.level(Rpl, WP, h, level = levels[i], weights.p[[i]])
+        returns.b[[i]] = Return.level(Rbl, WB, h, level = levels[i], weights.b[[i]])
+        # semi-notional funds returns
+        bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rpl)  
+      }
     }
     names(returns.p) = levels
     names(weights.p) = levels
     names(returns.b) = levels
     names(weights.b) = levels
     
-    # Total attribution effects
-    allocation = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
-                        length(levels))
-    if(geometric){
-      allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
-      for (i in 2:length(levels)){
-        allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+    if(!currency){
+      # Total attribution effects
+      allocation = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
+                          length(levels))
+      if(geometric){
+        allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
+        for (i in 2:length(levels)){
+          allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+        }
+        selection = (1 + rp) / (1 + last(bs)[[1]]) - 1
+      } else{
+        allocation[, 1] = bs[[1]] - coredata(rb) # Allocation 1
+        for (i in 2:length(levels)){
+          allocation[, i] = bs[[i]] - bs[[i-1]]
+        }
+        selection = rp - last(bs)[[1]]
       }
-      selection = (1 + rp) / (1 + last(bs)[[1]]) - 1
     } else{
-      allocation[, 1] = bs[[1]] - coredata(rb) # Allocation 1
-      for (i in 2:length(levels)){
-        allocation[, i] = bs[[i]] - bs[[i-1]]
+      # Total attribution effects
+      allocation = matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
+                          length(levels))
+      if(geometric){
+        allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rbl) - 1 # Allocation 1
+        for (i in 2:length(levels)){
+          allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+        }
+        selection = (1 + rpl) / (1 + last(bs)[[1]]) - 1
+      } else{
+        allocation[, 1] = bs[[1]] - coredata(rbl) # Allocation 1
+        for (i in 2:length(levels)){
+          allocation[, i] = bs[[i]] - bs[[i-1]]
+        }
+        selection = rpl - last(bs)[[1]]
       }
-      selection = rp - last(bs)[[1]]
     }
     
     # Transform portfolio, benchmark returns and semi-notional funds returns to
     # conformable matrices for multi-level attribution
-    if(NROW(Rp) == 1)
-    {
-      b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
-                        ncol(returns.b[[1]])), index(Rb))
-      r = as.xts(matrix(rep(rp, ncol(returns.p[[1]])), nrow(rp), 
-                        ncol(returns.p[[1]])), index(Rp))
+    if(!currency){
+      if(NROW(Rp) == 1)
+      {
+        b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
+                          ncol(returns.b[[1]])), index(Rb))
+        r = as.xts(matrix(rep(rp, ncol(returns.p[[1]])), nrow(rp), 
+                          ncol(returns.p[[1]])), index(Rp))
+      } else{
+        b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
+                          ncol(returns.b[[1]])), index(rb))
+        r = as.xts(matrix(rep(rp, ncol(last(returns.p)[[1]])), nrow(rp),
+                          ncol(last(returns.p)[[1]])), index(rp))
+      }
     } else{
-      b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
-                        ncol(returns.b[[1]])), index(rb))
-      r = as.xts(matrix(rep(rp, ncol(last(returns.p)[[1]])), nrow(rp),
-                        ncol(last(returns.p)[[1]])), index(rp))
+      if(NROW(Rpl) == 1)
+      {
+        b = as.xts(matrix(rep(rbl, ncol(returns.b[[1]])), nrow(rbl), 
+                          ncol(returns.b[[1]])), index(Rbl))
+        r = as.xts(matrix(rep(rpl, ncol(returns.p[[1]])), nrow(rpl), 
+                          ncol(returns.p[[1]])), index(Rpl))
+      } else{
+        b = as.xts(matrix(rep(rbl, ncol(returns.b[[1]])), nrow(rbl), 
+                          ncol(returns.b[[1]])), index(rbl))
+        r = as.xts(matrix(rep(rpl, ncol(last(returns.p)[[1]])), nrow(rpl),
+                          ncol(last(returns.p)[[1]])), index(rpl))
+      }
     }
+    
     returns.b2 = list()
     weights.p2 = list()
     weights.b2 = list()
     for (j in 1:(length(levels) - 1)){ 
-      # make benchmark returns & weights conformable at different levels
-      wp_l = Weight.level(WP, Rp, h, level = levels[j])
-      wb_l = Weight.level(WB, Rb, h, level = levels[j])
-      wp_h = Weight.level(WP, Rp, h, level = levels[j+1])
-      wb_h = Weight.level(WB, Rb, h, level = levels[j+1])
-      r_l = Return.level(Rb, WB, h, level = levels[j], Weight.level(WB, Rb, h, level = levels[j]))
-      r_h = Return.level(Rb, WB, h, level = levels[j + 1], Weight.level(WB, Rb, h, level = levels[j+1]))
+      if(!currency){
+        # make benchmark returns & weights conformable at different levels
+        wp_l = Weight.level(WP, Rp, h, level = levels[j])
+        wb_l = Weight.level(WB, Rb, h, level = levels[j])
+        wp_h = Weight.level(WP, Rp, h, level = levels[j+1])
+        wb_h = Weight.level(WB, Rb, h, level = levels[j+1])
+        r_l = Return.level(Rb, WB, h, level = levels[j], Weight.level(WB, Rb, h, level = levels[j]))
+        r_h = Return.level(Rb, WB, h, level = levels[j + 1], Weight.level(WB, Rb, h, level = levels[j+1]))
+      } else{
+        # make benchmark returns & weights conformable at different levels
+        wp_l = Weight.level(WP, Rpl, h, level = levels[j])
+        wb_l = Weight.level(WB, Rbl, h, level = levels[j])
+        wp_h = Weight.level(WP, Rpl, h, level = levels[j+1])
+        wb_h = Weight.level(WB, Rbl, h, level = levels[j+1])
+        r_l = Return.level(Rbl, WB, h, level = levels[j], Weight.level(WB, Rbl, h, level = levels[j]))
+        r_h = Return.level(Rbl, WB, h, level = levels[j + 1], Weight.level(WB, Rbl, h, level = levels[j+1]))
+      }
       hierarchy = split(h[levels[j]], h[levels[j + 1]])
       for (i in 1:ncol(r_h)){
         r_h[, i] = r_l[, hierarchy[[i]][1, 1]]
@@ -271,15 +380,28 @@ function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
       }
     }
     
-    if(geometric){
-      # Security/Asset selection
-      select = reclass(weights.p[[length(weights.p)]], rp) * 
-        ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
-        ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+    if(!currency){
+      if(geometric){
+        # Security/Asset selection
+        select = reclass(weights.p[[length(weights.p)]], rp) * 
+          ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
+          ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+      } else{
+        # Security/Asset selection
+        select = reclass(weights.p[[length(weights.p)]], rp) * 
+          (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+      }
     } else{
-      # Security/Asset selection
-      select = reclass(weights.p[[length(weights.p)]], rp) * 
-        (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+      if(geometric){
+        # Security/Asset selection
+        select = reclass(weights.p[[length(weights.p)]], rpl) * 
+          ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
+          ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+      } else{
+        # Security/Asset selection
+        select = reclass(weights.p[[length(weights.p)]], rpl) * 
+          (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+      }
     }
     # Get the multi-period summary
     general = cbind(allocation, selection)
@@ -304,7 +426,14 @@ function(Rp, wp, Rb, wb, h, geometric = FALSE, anchored = TRUE, ...)
     result[[2]] = general
     result[[3]] = level
     result[[4]] = select
+    if (!currency){
     names(result) = c("Excess returns", "Multi-level attribution", 
                       "Attribution at each level", "Security selection")
+    } else{
+      result[[5]] = curr
+      names(result) = c("Excess returns", "Multi-level attribution", 
+                        "Attribution at each level", "Security selection", 
+                        "Currency management")
+    }
     return(result)
 }

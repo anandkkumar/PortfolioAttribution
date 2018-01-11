@@ -116,7 +116,7 @@ test_that("Multi-level weights & return computations" , {
 )
 
 test_that("Multi-level Geometric example from Morningstar methodology paper" , {
-  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, heirarchy, geometric = TRUE, anchored = TRUE, c("region", "sector", "market_cap"))
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = heirarchy, h_levels = c("region", "sector", "market_cap"), geometric = TRUE, anchored = TRUE)
   
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 1 Allocation"], 0.0029, tolerance = epsilon)
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 2 Allocation"], -0.0166, tolerance = epsilon)
