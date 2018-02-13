@@ -18,7 +18,7 @@ Rb = xts(matrix(c(NA, NA, NA, NA, NA, NA,
                 dimnames=list(c("Rb", "Rb"),cnames)), 
          order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
 
-heirarchy = data.frame(
+hierarchy = data.frame(
   primary_id = cnames, 
   level1 = c("Equities", "Equities", "Equities", "Equities", "Bonds", "Bonds"),
   level2 = c("US", "US", "Europe", "Europe", "Govt", "Corp"),
@@ -27,7 +27,7 @@ heirarchy = data.frame(
 )
 
 test_that("Multi-level Geometric example using data in Tables 9.4" , {
-  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = heirarchy, h_levels = c("level1", "level2", "level3"), geometric = TRUE, anchored = FALSE)
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = hierarchy, h_levels = c("level1", "level2", "level3"), geometric = TRUE, anchored = FALSE)
   
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 1 Allocation"], 0.002373644, tolerance = epsilon)
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 2 Allocation"], -0.000867662, tolerance = epsilon)
