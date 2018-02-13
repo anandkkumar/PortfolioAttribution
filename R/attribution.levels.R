@@ -116,7 +116,7 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     
     levels <- unlist(list(h_levels))
     if (!is.null(levels)) stopifnot(is.character(levels))
-    if (length(levels) == 0 | length(levels) == 1){
+    if (length(levels) == 0){
       stop("Use Attribution function for the single level. This function is for
            the multi-level attribution")
     }
@@ -210,11 +210,13 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     }
     
     # Transform the hierarchy to the correct form
-    for (i in 2:length(levels)){
-      if (is.numeric(h[[levels[i]]])){
-        h = HierarchyQuintiles(h, levels[i])
+    if(length(levels) > 1){
+      for (i in 2:length(levels)){
+        if (is.numeric(h[[levels[i]]])){
+          h = HierarchyQuintiles(h, levels[i])
+        }
+        h[[levels[i]]] = paste(h[[levels[i - 1]]],  h[[levels[i]]], sep = "-")
       }
-      h[[levels[i]]] = paste(h[[levels[i - 1]]],  h[[levels[i]]], sep = "-")
     }
     
     # Get returns and weights at all levels
@@ -251,14 +253,18 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
                           length(levels))
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
-        for (i in 2:length(levels)){
-          allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+        if(length(levels) > 1){
+          for (i in 2:length(levels)){
+            allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+          }
         }
         selection = (1 + rp) / (1 + last(bs)[[1]]) - 1
       } else{
         allocation[, 1] = bs[[1]] - coredata(rb) # Allocation 1
-        for (i in 2:length(levels)){
-          allocation[, i] = bs[[i]] - bs[[i-1]]
+        if(length(levels) > 1){
+          for (i in 2:length(levels)){
+            allocation[, i] = bs[[i]] - bs[[i-1]]
+          }
         }
         selection = rp - last(bs)[[1]]
       }
@@ -268,14 +274,18 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
                           length(levels))
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rbl) - 1 # Allocation 1
-        for (i in 2:length(levels)){
-          allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+        if(length(levels) > 1){
+          for (i in 2:length(levels)){
+            allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
+          }
         }
         selection = (1 + rpl) / (1 + last(bs)[[1]]) - 1
       } else{
         allocation[, 1] = bs[[1]] - coredata(rbl) # Allocation 1
-        for (i in 2:length(levels)){
-          allocation[, i] = bs[[i]] - bs[[i-1]]
+        if(length(levels) > 1){
+          for (i in 2:length(levels)){
+            allocation[, i] = bs[[i]] - bs[[i-1]]
+          }
         }
         selection = rpl - last(bs)[[1]]
       }
@@ -314,41 +324,48 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     returns.b2 = list()
     weights.p2 = list()
     weights.b2 = list()
-    for (j in 1:(length(levels) - 1)){ 
-      if(!currency){
-        # make benchmark returns & weights conformable at different levels
-        wp_l = Weight.level(WP, Rp, h, level = levels[j])
-        wb_l = Weight.level(WB, Rb, h, level = levels[j])
-        wp_h = Weight.level(WP, Rp, h, level = levels[j+1])
-        wb_h = Weight.level(WB, Rb, h, level = levels[j+1])
-        r_l = Return.level(Rb, WB, h, level = levels[j], Weight.level(WB, Rb, h, level = levels[j]))
-        r_h = Return.level(Rb, WB, h, level = levels[j + 1], Weight.level(WB, Rb, h, level = levels[j+1]))
-      } else{
-        # make benchmark returns & weights conformable at different levels
-        wp_l = Weight.level(WP, Rpl, h, level = levels[j])
-        wb_l = Weight.level(WB, Rbl, h, level = levels[j])
-        wp_h = Weight.level(WP, Rpl, h, level = levels[j+1])
-        wb_h = Weight.level(WB, Rbl, h, level = levels[j+1])
-        r_l = Return.level(Rbl, WB, h, level = levels[j], Weight.level(WB, Rbl, h, level = levels[j]))
-        r_h = Return.level(Rbl, WB, h, level = levels[j + 1], Weight.level(WB, Rbl, h, level = levels[j+1]))
+    if(length(levels) > 1){
+      for (j in 1:(length(levels) - 1)){ 
+        if(!currency){
+          # make benchmark returns & weights conformable at different levels
+          wp_l = Weight.level(WP, Rp, h, level = levels[j])
+          wb_l = Weight.level(WB, Rb, h, level = levels[j])
+          wp_h = Weight.level(WP, Rp, h, level = levels[j+1])
+          wb_h = Weight.level(WB, Rb, h, level = levels[j+1])
+          r_l = Return.level(Rb, WB, h, level = levels[j], Weight.level(WB, Rb, h, level = levels[j]))
+          r_h = Return.level(Rb, WB, h, level = levels[j + 1], Weight.level(WB, Rb, h, level = levels[j+1]))
+        } else{
+          # make benchmark returns & weights conformable at different levels
+          wp_l = Weight.level(WP, Rpl, h, level = levels[j])
+          wb_l = Weight.level(WB, Rbl, h, level = levels[j])
+          wp_h = Weight.level(WP, Rpl, h, level = levels[j+1])
+          wb_h = Weight.level(WB, Rbl, h, level = levels[j+1])
+          r_l = Return.level(Rbl, WB, h, level = levels[j], Weight.level(WB, Rbl, h, level = levels[j]))
+          r_h = Return.level(Rbl, WB, h, level = levels[j + 1], Weight.level(WB, Rbl, h, level = levels[j+1]))
+        }
+        hierarchy = split(h[levels[j]], h[levels[j + 1]])
+        for (i in 1:ncol(r_h)){
+          r_h[, i] = r_l[, hierarchy[[i]][1, 1]]
+          wp_h[, i] = wp_l[, hierarchy[[i]][1, 1]]
+          wb_h[, i] = wb_l[, hierarchy[[i]][1, 1]]
+        }
+        returns.b2[[j]] = r_h
+        weights.p2[[j]] = wp_h
+        weights.b2[[j]] = wb_h
       }
-      hierarchy = split(h[levels[j]], h[levels[j + 1]])
-      for (i in 1:ncol(r_h)){
-        r_h[, i] = r_l[, hierarchy[[i]][1, 1]]
-        wp_h[, i] = wp_l[, hierarchy[[i]][1, 1]]
-        wb_h[, i] = wb_l[, hierarchy[[i]][1, 1]]
-      }
-      returns.b2[[j]] = r_h
-      weights.p2[[j]] = wp_h
-      weights.b2[[j]] = wb_h
     }
     
-    for (i in 1:(length(bs) - 1)){
-      bs[[i]] = as.xts(matrix(rep(bs[[i]], ncol(returns.b2[[i]])), nrow(r), 
-                              ncol(returns.b2[[i]])), index(r))
+    if(length(bs) > 1){
+      for (i in 1:(length(bs) - 1)){
+        bs[[i]] = as.xts(matrix(rep(bs[[i]], ncol(returns.b2[[i]])), nrow(r), 
+                                ncol(returns.b2[[i]])), index(r))
+      }
+      # Use the last iteration index for the number of columns to set the last list element
+      bs[[length(bs)]] = as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b2[[i]])), nrow(r), ncol(returns.b2[[i]])), index(r))
+    } else{
+      # Use the last iteration index for the number of columns to set the last list element
+      bs[[length(bs)]] = as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b[[1]])), nrow(r), ncol(returns.b[[1]])), index(r))
     }
-    # Use the last iteration index for the number of columns to set the last list element
-    bs[[length(bs)]] = as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b2[[i]])), nrow(r), ncol(returns.b2[[i]])), index(r))
     
     # Attribution at each level
     level = list()
@@ -358,28 +375,29 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     } else{
       level[[1]] = (weights.p[[1]] - weights.b[[1]]) * (returns.b[[1]] - b)
     }
-    for (i in 2:length(levels)){ 
-      if(geometric){
-        if(anchored){
-          level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
-            ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
-            ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+    if(length(levels) > 1){
+      for (i in 2:length(levels)){ 
+        if(geometric){
+          if(anchored){
+            level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+              ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
+              ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+          } else{
+            level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+              ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
+              ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+          }
         } else{
-          level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
-            ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
-            ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+          if(anchored){
+            level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+              (returns.b[[i]] - returns.b2[[i-1]])
+          } else{
+            level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+              (returns.b[[i]] - returns.b2[[i-1]])
+          }        
         }
-      } else{
-        if(anchored){
-          level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
-            (returns.b[[i]] - returns.b2[[i-1]])
-        } else{
-          level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
-            (returns.b[[i]] - returns.b2[[i-1]])
-        }        
       }
     }
-    
     if(!currency){
       if(geometric){
         # Security/Asset selection
