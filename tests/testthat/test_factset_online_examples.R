@@ -1202,9 +1202,9 @@ test_that("FactSet BF 2-factor heirarchical arithmetic multi-currency example fo
 
 # Note that the FactSet sample has all returns, weights and attribution effects as percentages
 data(factset_sample_single_currency_multi_period_daily_bmk_returns)
-data(factset_sample_single_currency_multi_period_daily_bmk_avg_weights)
+data(factset_sample_single_currency_multi_period_daily_bmk_bgn_weights)
 data(factset_sample_single_currency_multi_period_daily_port_returns)
-data(factset_sample_single_currency_multi_period_daily_port_avg_weights)
+data(factset_sample_single_currency_multi_period_daily_port_bgn_weights)
 data(factset_sample_single_currency_multi_period_residual_free_port_cml_2factor_geometric_daily)
 
 bmk_returns = factset_example_daily_bmk_returns[,c(-1, -2,-24)]
