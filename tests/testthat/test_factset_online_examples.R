@@ -44,6 +44,9 @@ test_that("FactSet BF 3-factor arithmetic example for one period" , {
   expect_equal(as.numeric(attribution_results$Allocation[,"Utilities"]),  
                factset_example$Allocation.Effect[11]/100, tolerance = epsilon)
   
+  # All the tests commented below are due to the fact that FactSet doesn't report selection when 
+  # the weights are zero in a hierarchical dataset.
+  
   expect_equal(as.numeric(attribution_results$Selection[,"Consumer.Discretionary"]), 
                factset_example$Selection.Effect[1]/100, tolerance = epsilon)
   # expect_equal(as.numeric(attribution_results$Selection[,"Consumer.Staples"]), 
@@ -1191,5 +1194,121 @@ test_that("FactSet BF 2-factor heirarchical arithmetic multi-currency example fo
 
   # Excess returns
   expect_equal(as.numeric(attribution_results$`Excess returns`[,"Arithmetic"]), -0.011341539979, tolerance = epsilon)
+}
+)
+
+
+
+
+# Note that the FactSet sample has all returns, weights and attribution effects as percentages
+data(factset_sample_single_currency_multi_period_daily_bmk_returns)
+data(factset_sample_single_currency_multi_period_daily_bmk_avg_weights)
+data(factset_sample_single_currency_multi_period_daily_port_returns)
+data(factset_sample_single_currency_multi_period_daily_port_avg_weights)
+data(factset_sample_single_currency_multi_period_residual_free_port_cml_2factor_geometric_daily)
+
+bmk_returns = factset_example_daily_bmk_returns[,c(-1, -2,-24)]
+rownames(bmk_returns) = bmk_returns$Symbol
+bmk_returns = t(bmk_returns[,-1]/100)
+rownames(bmk_returns) = as.character(as.Date(rownames(bmk_returns), "%m/%d/%Y"))
+
+bmk_weights = factset_example_daily_bmk_avg_weights[,c(-1, -2)]
+rownames(bmk_weights) = bmk_weights$Symbol
+bmk_weights = t(bmk_weights[,-1]/100)
+# The packages assumes the weights to be effective the day after the given date
+rownames(bmk_weights) = as.character(as.Date(rownames(bmk_weights), "%m/%d/%Y")-1)
+
+port_returns = factset_example_daily_port_returns[,c(-1, -2,-24)]
+rownames(port_returns) = port_returns$Symbol
+port_returns = t(port_returns[,-1]/100)
+rownames(port_returns) = as.character(as.Date(rownames(port_returns), "%m/%d/%Y"))
+
+port_weights = factset_example_daily_port_avg_weights[,c(-1, -2)]
+rownames(port_weights) = port_weights$Symbol
+port_weights = t(port_weights[,-1]/100)
+# The packages assumes the weights to be effective the day after the given date
+rownames(port_weights) = as.character(as.Date(rownames(port_weights), "%m/%d/%Y")-1)
+
+heirarchy = data.frame(
+  primary_id = colnames(bmk_returns),
+  sector = factset_example_daily_bmk_returns$Sector,
+  stringsAsFactors = FALSE
+)
+
+test_that("FactSet BF 2-factor geometric example for single currency for multiple periods" , {
+  attribution_results = Attribution.levels(port_returns, port_weights, bmk_returns, bmk_weights, h = heirarchy, h_levels = "sector", geometric = TRUE, anchored = TRUE)
+  
+  total_effects = factset_example_single_currency_multi_period_2factor_geometric %>% 
+    dplyr::select(Name, Type, Symbol, dplyr::ends_with(".Total"))
+  total_overall_effects = total_effects %>% dplyr::filter(Type == "Total")
+  total_sector_effects = total_effects %>% dplyr::filter(Type == "Sector")
+  
+  # Total combined allocation & selection effects
+  expect_equal(attribution_results$`Multi-level attribution`["Total",]$`Level 1 Allocation`, 
+               total_overall_effects$Geometric.Allocation.Effect.Total/100, tolerance = epsilon)
+  expect_equal(attribution_results$`Multi-level attribution`["Total",]$Selection, 
+               total_overall_effects$Geometric.Selection.Effect.Total/100, tolerance = epsilon)
+  
+  
+  # The total combined effect value is incorrect in FactSet. The value as computed by FactSet does not 
+  # equal the total cumulative excess return as it supposed to.
+  # The commented test below has the comparison with FactSet's computed value.
+  
+  # expect_equal((1+attribution_results$`Multi-level attribution`["Total",]$`Level 1 Allocation`)*
+  #                (1+attribution_results$`Multi-level attribution`["Total",]$Selection)-1,
+  #              total_overall_effects$Geometric.Total.Effect.Total/100,
+  #              tolerance = epsilon
+  # )
+  
+  # We compare against the excess return value for total attribution effect
+  expect_equal((1+attribution_results$`Multi-level attribution`["Total",]$`Level 1 Allocation`)*
+                 (1+attribution_results$`Multi-level attribution`["Total",]$Selection)-1,
+               0.0009976918,
+               tolerance = epsilon
+  )
+  
+  # Total Sector Allocation effects
+  expect_equal(as.vector(t(attribution_results$`Attribution at each level`$`Level 1`["Total",])), 
+               total_sector_effects$Geometric.Allocation.Effect.Total/100, tolerance = epsilon)
+  # Total Sector Selection effects
+  expect_equal(as.vector(t(attribution_results$`Security selection`["Total",])), 
+               total_sector_effects$Geometric.Selection.Effect.Total/100, tolerance = epsilon)
+  # Total Sector combined effects
+  expect_equal((1+as.vector(t(attribution_results$`Attribution at each level`$`Level 1`["Total",]))) *
+                 (1+as.vector(t(attribution_results$`Security selection`["Total",])))-1,
+               total_sector_effects$Geometric.Total.Effect.Total/100,
+               tolerance = epsilon
+  )
+  
+  periodic_effects = factset_example_single_currency_multi_period_2factor_geometric %>% 
+    dplyr::select(Name, Type, Symbol, dplyr::ends_with("2017"))
+  periodic_overall_effects = periodic_effects %>% dplyr::filter(Type == "Total") %>% dplyr::select(-Name, -Type, -Symbol)
+  periodic_overall_allocation_effects = periodic_overall_effects %>% dplyr::select(dplyr::contains("Allocation"))
+  periodic_overall_selection_effects = periodic_overall_effects %>% dplyr::select(dplyr::contains("Selection"))
+
+    
+  # Total periodic allocation & selection effects
+  expect_equal(attribution_results$`Multi-level attribution`[-NROW(attribution_results$`Multi-level attribution`),]$`Level 1 Allocation`,
+               as.vector(t(periodic_overall_allocation_effects))/100, tolerance = epsilon
+  )
+  expect_equal(attribution_results$`Multi-level attribution`[-NROW(attribution_results$`Multi-level attribution`),]$Selection,
+               as.vector(t(periodic_overall_selection_effects))/100, tolerance = epsilon
+  )
+  
+  periodic_sector_effects = periodic_effects %>% dplyr::filter(Type == "Sector")
+  periodic_sector_allocation_effects = t(periodic_sector_effects %>% dplyr::select(dplyr::contains("Allocation")))
+  computed_periodic_sector_allocation_effects = 
+    attribution_results$`Attribution at each level`$`Level 1`[-NROW(attribution_results$`Attribution at each level`$`Level 1`),]
+  dimnames(periodic_sector_allocation_effects) = dimnames(computed_periodic_sector_allocation_effects)
+  
+  # Periodic allocation effects
+  expect_equal(computed_periodic_sector_allocation_effects, as.data.frame(periodic_sector_allocation_effects/100), tolerance = epsilon)
+  
+  periodic_sector_selection_effects = t(periodic_sector_effects %>% dplyr::select(dplyr::contains("Selection")))
+  computed_periodic_selection_effects = attribution_results$`Security selection`[-NROW(attribution_results$`Security selection`),]
+  dimnames(periodic_sector_selection_effects) = dimnames(computed_periodic_selection_effects)
+
+  # Periodic selection effects
+  expect_equal(computed_periodic_selection_effects, as.data.frame(periodic_sector_selection_effects/100), tolerance = epsilon)
 }
 )
