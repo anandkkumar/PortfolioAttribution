@@ -64,10 +64,10 @@ function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
     returns = as.xts(matrix(NA, ncol = length(h), nrow = nrow(Rp)), index(Rp))
     for(i in 1:length(h)){
       if(all(relativeWeights[, i] != 0)){
-        returns[, i] = rowSums(Rp[, h[[i]]] * coredata(wp[, h[[i]]])/
+        returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE] * coredata(wp[, h[[i]], drop = FALSE])/
                                coredata(matrix(rep(relativeWeights[, i], length(h[[i]])), ncol = length(h[[i]]))))
       } else{
-        returns[, i] = rowSums(Rp[, h[[i]]])
+        returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE])
       }
     }
     colnames(returns) = names(h)

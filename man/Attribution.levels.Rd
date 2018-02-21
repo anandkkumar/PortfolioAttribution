@@ -28,7 +28,7 @@ function or defined manually in the same style as buildHierarchy's
 output}
 
 \item{h_levels}{The remaining passthrough parameters represent the levels in the
-heirarchy to aggregate by}
+hierarchy to aggregate by}
 
 \item{geometric}{TRUE/FALSE,  whether to use geometric or arithmetic excess
 returns for the attribution analysis. By default arithmetic is selected

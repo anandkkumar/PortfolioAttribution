@@ -52,9 +52,9 @@ Weight.level <-
       h = HierarchyQuintiles(h, level)
     }
     h = split(h$primary_id, h[level])
-    weights = wp[, 1:length(h)]
+    weights = wp[, 1:length(h), drop=FALSE]
     for(i in 1:length(h)){
-      weights[, i] = rowSums(wp[, h[[i]]])
+      weights[, i] = rowSums(wp[, h[[i]], drop=FALSE])
     }
     colnames(weights) = names(h)
     return(weights)

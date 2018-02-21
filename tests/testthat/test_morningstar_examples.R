@@ -20,7 +20,7 @@ Rb = xts(matrix(c(NA, NA, NA, NA, NA, NA, NA, NA,
                 dimnames=list(c("Rb", "Rb"),cnames)), 
          order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
 
-heirarchy = data.frame(
+hierarchy = data.frame(
   primary_id = cnames, 
   region = c("Asia", "Asia", "Asia", "Asia", "Europe", "Europe", "Europe", "Europe"),
   sector = c("Cyclical", "Cyclical", "Defensive", "Defensive", "Cyclical", "Cyclical", "Defensive", "Defensive"),
@@ -31,7 +31,7 @@ heirarchy = data.frame(
 test_that("Multi-level weights & return computations" , {
 
   levels <- unlist(list(c("region", "sector", "market_cap")))
-  h = heirarchy
+  h = hierarchy
   # Transform the hierarchy
   for (i in 2:length(levels)){
     h[[levels[i]]] = paste(h[[levels[i - 1]]],  h[[levels[i]]], sep = "-")
@@ -116,7 +116,7 @@ test_that("Multi-level weights & return computations" , {
 )
 
 test_that("Multi-level Geometric example from Morningstar methodology paper" , {
-  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = heirarchy, h_levels = c("region", "sector", "market_cap"), geometric = TRUE, anchored = TRUE)
+  attribution_results = Attribution.levels(Rp, Wp, Rb, Wb, h = hierarchy, h_levels = c("region", "sector", "market_cap"), geometric = TRUE, anchored = TRUE)
   
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 1 Allocation"], 0.0029, tolerance = epsilon)
   expect_equal(attribution_results$`Multi-level attribution`[2, "Level 2 Allocation"], -0.0166, tolerance = epsilon)
