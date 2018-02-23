@@ -105,74 +105,67 @@ test_that("FactSet BF 3-factor arithmetic example for one period" , {
 
 data(factset_sample_single_currency_2factor_arithmetic)
 # Note that the FactSet sample has all returns, weights and attribution effects as percentages
-cnames = factset_example$Sector
+#cnames = factset_example$Sector
+sector_measures = factset_example %>% dplyr::filter(Type=="Sector")
+cnames = sector_measures$Name
 
-Wp = factset_example$Port.Weight/100
-Wb = factset_example$Bmk.Weight/100
+Wp = sector_measures$Port.Weight/100
+Wb = sector_measures$Bmk.Weight/100
 
-Rp = matrix(factset_example$Port.Total.Return/100,ncol=11,byrow=TRUE,
+Rp = matrix(sector_measures$Port.Total.Return/100,ncol=NROW(sector_measures),byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
-Rb = matrix(factset_example$Bmk.Total.Return/100,ncol=11,byrow=TRUE,
+Rb = matrix(sector_measures$Bmk.Total.Return/100,ncol=NROW(sector_measures),byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
 
-test_that("FactSet BF 2-factor arithmetic example for one period" , {
+test_that("FactSet BF 2-factor arithmetic example for one period at sector level" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
   
-  expect_equal(as.numeric(attribution_results$Allocation[,"Consumer.Discretionary"]), 
-               factset_example$Allocation.Effect[1]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Consumer.Staples"]), 
-               factset_example$Allocation.Effect[2]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Energy"]), 
-               factset_example$Allocation.Effect[3]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Financials"]), 
-               factset_example$Allocation.Effect[4]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Health.Care"]), 
-               factset_example$Allocation.Effect[5]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Industrials"]), 
-               factset_example$Allocation.Effect[6]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Information.Technology"]), 
-               factset_example$Allocation.Effect[7]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Materials"]), 
-               factset_example$Allocation.Effect[8]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Real.Estate"]), 
-               factset_example$Allocation.Effect[9]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Telecommunication.Services"]), 
-               factset_example$Allocation.Effect[10]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Allocation[,"Utilities"]),  
-               factset_example$Allocation.Effect[11]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,-(NROW(sector_measures)+1)]), sector_measures$Allocation.Effect/100, tolerance = epsilon)
   
-  expect_equal(as.numeric(attribution_results$Selection[,"Consumer.Discretionary"]), 
-               factset_example$Selection.Effect[1]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Consumer.Staples"]), 
-               factset_example$Selection.Effect[2]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Energy"]),
-               factset_example$Selection.Effect[3]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Financials"]),
-               factset_example$Selection.Effect[4]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Health.Care"]),
-               factset_example$Selection.Effect[5]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Industrials"]),
-               factset_example$Selection.Effect[6]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Information.Technology"]),
-               factset_example$Selection.Effect[7]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Materials"]),
-               factset_example$Selection.Effect[8]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Real.Estate"]),
-               factset_example$Selection.Effect[9]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Telecommunication.Services"]),
-               factset_example$Selection.Effect[10]/100, tolerance = epsilon)
-  expect_equal(as.numeric(attribution_results$Selection[,"Utilities"]),
-               factset_example$Selection.Effect[11]/100, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,-(NROW(sector_measures)+1)]), sector_measures$Selection.Effect/100, tolerance = epsilon)
   
   expect_null(attribution_results$Interaction)
 
-  expect_equal(as.numeric(attribution_results$Allocation[,"Total"]), 0.0007407, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Allocation[,"Total"]), 0.000740734529004427, tolerance = epsilon)
   expect_equal(as.numeric(attribution_results$Selection[,"Total"]), -0.000222517213043738, tolerance = epsilon)
 
   expect_equal(attribution_results$`Excess returns`[1], 0.000518217316, tolerance=epsilon)
 }
 )
 
+security_measures = factset_example %>% dplyr::filter(Type=="Security")
+cnames = security_measures$Name
+
+Wp = security_measures$Port.Weight/100
+Wb = security_measures$Bmk.Weight/100
+
+Rp = matrix(security_measures$Port.Total.Return/100,ncol=NROW(security_measures),byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),cnames))
+Rb = matrix(security_measures$Bmk.Total.Return/100,ncol=NROW(security_measures),byrow=TRUE,
+            dimnames=list(c(as.character(Sys.Date())),cnames))
+
+hierarchy = data.frame(
+  primary_id = security_measures$Name,
+  sector = security_measures$Sector,
+  stringsAsFactors = FALSE
+)
+
+
+test_that("FactSet BF 2-factor arithmetic example for one period at security level" , {
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
+  
+  expect_equal(as.numeric(attribution_results$Allocation[,-(NROW(security_measures)+1)]), security_measures$Allocation.Effect/100, tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results$Selection[,-(NROW(security_measures)+1)]), security_measures$Selection.Effect/100, tolerance = epsilon)
+  
+  expect_null(attribution_results$Interaction)
+  
+  expect_equal(as.numeric(attribution_results$Allocation[,"Total"]), 0.000518217316, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Total"]), 0, tolerance = epsilon)
+  
+  expect_equal(attribution_results$`Excess returns`[1], 0.000518217316, tolerance=epsilon)
+}
+)
 
 
 data(factset_sample_single_currency_2factor_geometric)
