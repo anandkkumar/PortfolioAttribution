@@ -105,7 +105,6 @@ test_that("FactSet BF 3-factor arithmetic example for one period" , {
 
 data(factset_sample_single_currency_2factor_arithmetic)
 # Note that the FactSet sample has all returns, weights and attribution effects as percentages
-#cnames = factset_example$Sector
 sector_measures = factset_example %>% dplyr::filter(Type=="Sector")
 cnames = sector_measures$Name
 
@@ -150,7 +149,6 @@ hierarchy = data.frame(
   stringsAsFactors = FALSE
 )
 
-
 test_that("FactSet BF 2-factor arithmetic example for one period at security level" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
   
@@ -166,6 +164,7 @@ test_that("FactSet BF 2-factor arithmetic example for one period at security lev
   expect_equal(attribution_results$`Excess returns`[1], 0.000518217316, tolerance=epsilon)
 }
 )
+
 
 
 data(factset_sample_single_currency_2factor_geometric)
