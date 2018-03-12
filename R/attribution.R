@@ -114,7 +114,8 @@
 #' base currency
 #' @param bf TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
 #' Beebower arithmetic attribution. By default Brinson, Hood and Beebower 
-#' attribution is selected
+#' attribution is selected. This is only used for Arithmetic attribution while Geometric
+#' attribution only supports Brinson Fachler.
 #' @param method Used to select the priority between allocation and selection 
 #' effects in arithmetic attribution. May be any of: \itemize{ \item none - 
 #' present allocation, selection and interaction effects independently, 
