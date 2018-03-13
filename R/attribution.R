@@ -136,7 +136,7 @@
 #' returns for the attribution analysis. By default arithmetic is selected
 #' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
 #' effects for each period. By default unadjusted attribution effects are 
-#' returned
+#' returned (only used for arithmetic attribution i.e. when geometric = FALSE)
 #' @return returns a list with the following components: excess returns with
 #' annualized excess returns over all periods, attribution effects (allocation, 
 #' selection and interaction)
