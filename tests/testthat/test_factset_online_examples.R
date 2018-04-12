@@ -24,60 +24,62 @@ test_that("FactSet BF 3-factor arithmetic example for one period" , {
   expect_equal(as.numeric(attribution_results$Allocation[,-NCOL(attribution_results$Allocation)]), 
                factset_example$Allocation.Effect/100, tolerance = epsilon)
   
-  # All the tests commented below are due to the fact that FactSet doesn't report selection when 
-  # the weights are zero in a hierarchical dataset.
-  
   expect_equal(as.numeric(attribution_results$Selection[,"Consumer Discretionary"]), 
                factset_example$Selection.Effect[1]/100, tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Consumer Staples"]), 
-  #              factset_example$Selection.Effect[2], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Energy"]), 
-  #              factset_example$Selection.Effect[3], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Financials"]), 
-  #              factset_example$Selection.Effect[4], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Health Care"]), 
-  #              factset_example$Selection.Effect[5], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Industrials"]), 
-  #              factset_example$Selection.Effect[6], tolerance = epsilon)
   expect_equal(as.numeric(attribution_results$Selection[,"Information Technology"]),
                factset_example$Selection.Effect[7]/100, tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Materials"]), 
-  #              factset_example$Selection.Effect[8], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Real Estate"]), 
-  #              factset_example$Selection.Effect[9], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Telecommunication Services"]), 
-  #              factset_example$Selection.Effect[10], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Utilities"]),  
-  #              factset_example$Selection.Effect[11], tolerance = epsilon)
-  
+
   expect_equal(as.numeric(attribution_results$Interaction[,"Consumer Discretionary"]), 
                factset_example$Interaction.Effect[1]/100, tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Consumer Staples"]), 
-  #              factset_example$Interaction.Effect[2], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Energy"]), 
-  #              factset_example$Interaction.Effect[3], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Financials"]), 
-  #              factset_example$Interaction.Effect[4], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Health Care"]), 
-  #              factset_example$Interaction.Effect[5], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Industrials"]), 
-  #              factset_example$Interaction.Effect[6], tolerance = epsilon)
   expect_equal(as.numeric(attribution_results$Interaction[,"Information Technology"]), 
                factset_example$Interaction.Effect[7]/100, tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Materials"]), 
-  #              factset_example$Interaction.Effect[8], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Real Estate"]), 
-  #              factset_example$Interaction.Effect[9], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Telecommunication Services"]), 
-  #              factset_example$Interaction.Effect[10], tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Utilities"]),  
-  #              factset_example$Interaction.Effect[11], tolerance = epsilon)
 
   expect_equal(as.numeric(attribution_results$Allocation[,"Total"]), 0.0007407, tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Selection[,"Total"]), 0.000695061, tolerance = epsilon)
-  # expect_equal(as.numeric(attribution_results$Interaction[,"Total"]), -0.022946782, tolerance = epsilon)
   
   expect_equal(attribution_results$`Excess returns`[1], 0.0005182, tolerance=epsilon)
+
+  skip("The following tests are skipped due to the fact that FactSet doesn't report effects when the weights are zero in a hierarchical dataset")
+  
+  expect_equal(as.numeric(attribution_results$Selection[,"Consumer Staples"]),
+               factset_example$Selection.Effect[2], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Energy"]),
+               factset_example$Selection.Effect[3], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Financials"]),
+               factset_example$Selection.Effect[4], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Health Care"]),
+               factset_example$Selection.Effect[5], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Industrials"]),
+               factset_example$Selection.Effect[6], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Materials"]),
+               factset_example$Selection.Effect[8], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Real Estate"]),
+               factset_example$Selection.Effect[9], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Telecommunication Services"]),
+               factset_example$Selection.Effect[10], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Selection[,"Utilities"]),
+               factset_example$Selection.Effect[11], tolerance = epsilon)
+  
+  expect_equal(as.numeric(attribution_results$Interaction[,"Consumer Staples"]),
+               factset_example$Interaction.Effect[2], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Energy"]),
+               factset_example$Interaction.Effect[3], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Financials"]),
+               factset_example$Interaction.Effect[4], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Health Care"]),
+               factset_example$Interaction.Effect[5], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Industrials"]),
+               factset_example$Interaction.Effect[6], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Materials"]),
+               factset_example$Interaction.Effect[8], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Real Estate"]),
+               factset_example$Interaction.Effect[9], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Telecommunication Services"]),
+               factset_example$Interaction.Effect[10], tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Utilities"]),
+               factset_example$Interaction.Effect[11], tolerance = epsilon)
+
+  expect_equal(as.numeric(attribution_results$Selection[,"Total"]), 0.000695061, tolerance = epsilon)
+  expect_equal(as.numeric(attribution_results$Interaction[,"Total"]), -0.022946782, tolerance = epsilon)
 }
 )
 
@@ -906,17 +908,6 @@ test_that("FactSet BF 2-factor geometric example for single currency for multipl
   expect_equal(attribution_results$`Multi-level attribution`["Total",]$Selection, 
                total_overall_effects$Geometric.Selection.Effect.Total/100, tolerance = epsilon)
   
-  
-  # The total combined effect value is incorrect in FactSet. The value as computed by FactSet does not 
-  # equal the total cumulative excess return as it supposed to.
-  # The commented test below has the comparison with FactSet's computed value.
-  
-  # expect_equal((1+attribution_results$`Multi-level attribution`["Total",]$`Level 1 Allocation`)*
-  #                (1+attribution_results$`Multi-level attribution`["Total",]$Selection)-1,
-  #              total_overall_effects$Geometric.Total.Effect.Total/100,
-  #              tolerance = epsilon
-  # )
-  
   # We compare against the excess return value for total attribution effect
   expect_equal((1+attribution_results$`Multi-level attribution`["Total",]$`Level 1 Allocation`)*
                  (1+attribution_results$`Multi-level attribution`["Total",]$Selection)-1,
@@ -967,5 +958,13 @@ test_that("FactSet BF 2-factor geometric example for single currency for multipl
 
   # Periodic selection effects
   expect_equal(computed_periodic_selection_effects, as.data.frame(periodic_sector_selection_effects/100), tolerance = epsilon)
+  
+  skip("We skip the following test since the total combined effect value is incorrect in FactSet. The value as computed by FactSet does not equal the total cumulative excess return as it supposed to.")
+  
+  expect_equal((1+attribution_results$`Multi-level attribution`["Total",]$`Level 1 Allocation`)*
+                 (1+attribution_results$`Multi-level attribution`["Total",]$Selection)-1,
+               total_overall_effects$Geometric.Total.Effect.Total/100,
+               tolerance = epsilon
+  )
 }
 )
