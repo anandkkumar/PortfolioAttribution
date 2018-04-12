@@ -43,7 +43,8 @@ base currency}
 
 \item{bf}{TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
 Beebower arithmetic attribution. By default Brinson, Hood and Beebower 
-attribution is selected}
+attribution is selected. This is only used for Arithmetic attribution while Geometric
+attribution only supports Brinson Fachler.}
 
 \item{method}{Used to select the priority between allocation and selection 
 effects in arithmetic attribution. May be any of: \itemize{ \item none - 
@@ -68,7 +69,7 @@ returns for the attribution analysis. By default arithmetic is selected}
 
 \item{adjusted}{TRUE/FALSE, whether to show original or smoothed attribution
 effects for each period. By default unadjusted attribution effects are 
-returned}
+returned (only used for arithmetic attribution i.e. when geometric = FALSE)}
 }
 \value{
 returns a list with the following components: excess returns with
