@@ -30,19 +30,19 @@ Fb = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
 
 test_that("Ankrim-Hensel Example in Table 6.2" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, Wpf, Wbf, S, Fp, Fb, bf=FALSE, method="none", linking = "none", geometric = FALSE)
-  expect_true(abs(attribution_results$Allocation[2,"UK.equities"] - 0) < epsilon)
-  expect_true(abs(attribution_results$Allocation[2,"Japanese.equities"] - (-0.01136)) < epsilon)
-  expect_true(abs(attribution_results$Allocation[2,"US.equities"] - (-0.00264)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"UK equities"] - 0) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"Japanese equities"] - (-0.01136)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"US equities"] - (-0.00264)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Total"] - (-0.014)) < epsilon)
   
-  expect_true(abs(attribution_results$Selection[2,"UK.equities"] - 0.04) < epsilon)
-  expect_true(abs(attribution_results$Selection[2,"Japanese.equities"] - (-0.0022)) < epsilon)
-  expect_true(abs(attribution_results$Selection[2,"US.equities"] - (-0.0096)) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"UK equities"] - 0.04) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"Japanese equities"] - (-0.0022)) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"US equities"] - (-0.0096)) < epsilon)
   expect_true(abs(attribution_results$Selection[2,"Total"] - 0.0282) < epsilon)
   
-  expect_true(abs(attribution_results$Interaction[2,"UK.equities"] - 0) < epsilon)
-  expect_true(abs(attribution_results$Interaction[2,"Japanese.equities"] - (-0.0011)) < epsilon)
-  expect_true(abs(attribution_results$Interaction[2,"US.equities"] - 0.0024) < epsilon)
+  expect_true(abs(attribution_results$Interaction[2,"UK equities"] - 0) < epsilon)
+  expect_true(abs(attribution_results$Interaction[2,"Japanese equities"] - (-0.0011)) < epsilon)
+  expect_true(abs(attribution_results$Interaction[2,"US equities"] - 0.0024) < epsilon)
   expect_true(abs(attribution_results$Interaction[2,"Total"] - 0.0013) < epsilon)
   
   expect_true(abs(attribution_results$`Currency management`[2,"UK equities"] - 0.009) < epsilon)

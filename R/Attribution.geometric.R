@@ -239,8 +239,10 @@ function(Rp, wp, Rb, wb,
     }
     
     # Total attribution effects are computed as a sum of individual effects
-    allocation = cbind(allocation, rowSums(allocation)) 
-    selection = cbind(selection, rowSums(selection))
+    # We use the zoo version of cbind to avoid the column names from being mangled 
+    # which the version in xts does without the option to override that behavior
+    allocation = as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
+    selection = as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
     colnames(allocation)[ncol(allocation)] = "Total"
     colnames(selection)[ncol(selection)] = "Total"
     

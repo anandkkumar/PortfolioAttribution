@@ -20,14 +20,14 @@ Rb = xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
 
 test_that("BF Example in Table 5.4 for arithmetic top-down approach with time series data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
-  expect_true(abs(attribution_results$Allocation[2,"UK.equities"] - 0) < epsilon)
-  expect_true(abs(attribution_results$Allocation[2,"Japanese.equities"] - (-0.0104)) < epsilon)
-  expect_true(abs(attribution_results$Allocation[2,"US.equities"] - (-0.0016)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"UK equities"] - 0) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"Japanese equities"] - (-0.0104)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"US equities"] - (-0.0016)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Total"] - (-0.012)) < epsilon)
   
-  expect_true(abs(attribution_results$Selection[2,"UK.equities"] - 0.04) < epsilon)
-  expect_true(abs(attribution_results$Selection[2,"Japanese.equities"] - (-0.003))  < epsilon)
-  expect_true(abs(attribution_results$Selection[2,"US.equities"] - (-0.006))  < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"UK equities"] - 0.04) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"Japanese equities"] - (-0.003))  < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"US equities"] - (-0.006))  < epsilon)
   expect_true(abs(attribution_results$Selection[2,"Total"] - 0.031) < epsilon)
   
   expect_null(attribution_results$Interaction)
@@ -36,14 +36,14 @@ test_that("BF Example in Table 5.4 for arithmetic top-down approach with time se
 
 test_that("BF Example for arithmetic bottom-up approach with time series data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="bottom.up", bf = TRUE, linking = "none", geometric = FALSE)
-  expect_true(abs(attribution_results$Allocation[2,"UK.equities"] - 0) < epsilon)
-  expect_true(abs(attribution_results$Allocation[2,"Japanese.equities"] - (-0.0114)) < epsilon)
-  expect_true(abs(attribution_results$Allocation[2,"US.equities"] - 0.0004) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"UK equities"] - 0) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"Japanese equities"] - (-0.0114)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[2,"US equities"] - 0.0004) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Total"] - (-0.011)) < epsilon)
   
-  expect_true(abs(attribution_results$Selection[2,"UK.equities"] - 0.04) < epsilon)
-  expect_true(abs(attribution_results$Selection[2,"Japanese.equities"] - (-0.002))  < epsilon)
-  expect_true(abs(attribution_results$Selection[2,"US.equities"] - (-0.008))  < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"UK equities"] - 0.04) < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"Japanese equities"] - (-0.002))  < epsilon)
+  expect_true(abs(attribution_results$Selection[2,"US equities"] - (-0.008))  < epsilon)
   expect_true(abs(attribution_results$Selection[2,"Total"] - 0.03) < epsilon)
   
   expect_null(attribution_results$Interaction)
@@ -61,14 +61,14 @@ Rb = checkData(Rb)
 
 test_that("BF Example in Table 5.4 for arithmetic top-down approach with single observation data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
-  expect_true(abs(attribution_results$Allocation[1,"UK.equities"] - 0) < epsilon)
-  expect_true(abs(attribution_results$Allocation[1,"Japanese.equities"] - (-0.0104)) < epsilon)
-  expect_true(abs(attribution_results$Allocation[1,"US.equities"] - (-0.0016)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
+  expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0104)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[1,"US equities"] - (-0.0016)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Total"] - (-0.012)) < epsilon)
   
-  expect_true(abs(attribution_results$Selection[1,"UK.equities"] - 0.04) < epsilon)
-  expect_true(abs(attribution_results$Selection[1,"Japanese.equities"] - (-0.003))  < epsilon)
-  expect_true(abs(attribution_results$Selection[1,"US.equities"] - (-0.006))  < epsilon)
+  expect_true(abs(attribution_results$Selection[1,"UK equities"] - 0.04) < epsilon)
+  expect_true(abs(attribution_results$Selection[1,"Japanese equities"] - (-0.003))  < epsilon)
+  expect_true(abs(attribution_results$Selection[1,"US equities"] - (-0.006))  < epsilon)
   expect_true(abs(attribution_results$Selection[1,"Total"] - 0.031) < epsilon)
   
   expect_null(attribution_results$Interaction)
@@ -77,14 +77,14 @@ test_that("BF Example in Table 5.4 for arithmetic top-down approach with single 
 
 test_that("BF Example for arithmetic bottom-up approach with single observation data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="bottom.up", bf = TRUE, linking = "none", geometric = FALSE)
-  expect_true(abs(attribution_results$Allocation[1,"UK.equities"] - 0) < epsilon)
-  expect_true(abs(attribution_results$Allocation[1,"Japanese.equities"] - (-0.0114)) < epsilon)
-  expect_true(abs(attribution_results$Allocation[1,"US.equities"] - 0.0004) < epsilon)
+  expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
+  expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0114)) < epsilon)
+  expect_true(abs(attribution_results$Allocation[1,"US equities"] - 0.0004) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Total"] - (-0.011)) < epsilon)
   
-  expect_true(abs(attribution_results$Selection[1,"UK.equities"] - 0.04) < epsilon)
-  expect_true(abs(attribution_results$Selection[1,"Japanese.equities"] - (-0.002))  < epsilon)
-  expect_true(abs(attribution_results$Selection[1,"US.equities"] - (-0.008))  < epsilon)
+  expect_true(abs(attribution_results$Selection[1,"UK equities"] - 0.04) < epsilon)
+  expect_true(abs(attribution_results$Selection[1,"Japanese equities"] - (-0.002))  < epsilon)
+  expect_true(abs(attribution_results$Selection[1,"US equities"] - (-0.008))  < epsilon)
   expect_true(abs(attribution_results$Selection[1,"Total"] - 0.03) < epsilon)
   
   expect_null(attribution_results$Interaction)

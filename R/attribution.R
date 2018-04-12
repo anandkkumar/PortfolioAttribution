@@ -288,9 +288,11 @@ function (Rp, wp, Rb, wb,
         # Contribution to currency
         Cc = (wp - wb) * (Re - E) + (wpf - wbf) * (Rpbf - E) 
         # Forward premium
-        Df = (wp - wb) * (Rd - D) 
-        Cc = cbind(Cc, rowSums(Cc))
-        Df = cbind(Df, rowSums(Df))
+        Df = (wp - wb) * (Rd - D)
+        # We use the zoo version of cbind to avoid the column names from being mangled 
+        # which the version in xts does without the option to override that behavior
+        Cc = as.xts(zoo::cbind.zoo(Cc, rowSums(Cc)))
+        Df = as.xts(zoo::cbind.zoo(Df, rowSums(Df)))
         colnames(Cc) = c(colnames(S), "Total")
         colnames(Df) = colnames(Cc)
       }
@@ -342,11 +344,13 @@ function (Rp, wp, Rb, wb,
       
       # Get total attribution effects 
       n = ncol(allocation)               # number of segments
-      allocation = cbind(allocation, rowSums(allocation))
+      # We use the zoo version of cbind to avoid the column names from being mangled 
+      # which the version in xts does without the option to override that behavior
+      allocation = as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
       names(allocation)[n + 1] = "Total"  
-      selection = cbind(selection, rowSums(selection))
+      selection = as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
       names(selection)[n + 1] = "Total"   
-      interaction = cbind(interaction, rowSums(interaction))
+      interaction = as.xts(zoo::cbind.zoo(interaction, rowSums(interaction)))
       names(interaction)[n + 1] = "Total"
       
       # Adjust attribution effects using one of linking methods if there are
