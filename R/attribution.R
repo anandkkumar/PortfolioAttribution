@@ -113,7 +113,7 @@
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
 #' base currency
 #' @param bf TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
-#' Beebower arithmetic attribution. By default Brinson, Hood and Beebower 
+#' Beebower arithmetic attribution. By default Brinson and Fachler
 #' attribution is selected. This is only used for Arithmetic attribution while Geometric
 #' attribution only supports Brinson Fachler.
 #' @param method Used to select the priority between allocation and selection 
@@ -167,7 +167,7 @@
 Attribution <- 
 function (Rp, wp, Rb, wb, 
           wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
-          bf = FALSE,
+          bf = TRUE,
           method = c("none", "top.down", "bottom.up"), 
           linking = c("carino", 
                       "menchero", 

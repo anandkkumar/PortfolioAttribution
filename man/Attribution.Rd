@@ -5,7 +5,7 @@
 \title{performs sector-based single-level attribution}
 \usage{
 Attribution(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA, Fp = NA,
-  Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = FALSE,
+  Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE,
   method = c("none", "top.down", "bottom.up"), linking = c("carino",
   "menchero", "grap", "frongello", "davies.laker"), geometric = FALSE,
   adjusted = FALSE)
@@ -42,7 +42,7 @@ The first date should coincide with the first date of benchmark returns}
 base currency}
 
 \item{bf}{TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
-Beebower arithmetic attribution. By default Brinson, Hood and Beebower 
+Beebower arithmetic attribution. By default Brinson and Fachler
 attribution is selected. This is only used for Arithmetic attribution while Geometric
 attribution only supports Brinson Fachler.}
 
