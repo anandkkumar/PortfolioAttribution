@@ -133,7 +133,8 @@
 #' By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
 #' if the data does not imply multi-period attribution.
 #' @param geometric TRUE/FALSE, whether to use geometric or arithmetic excess
-#' returns for the attribution analysis. By default arithmetic is selected
+#' returns for the attribution analysis. By default this is set to FALSE, which results
+#' in arithmetic excess return attribution.
 #' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
 #' effects for each period. By default unadjusted attribution effects are 
 #' returned
@@ -186,7 +187,8 @@ function (Rp, wp, Rb, wb,
     # wbf      vector, xts, data frame or matrix with benchmark weights of 
     #          currency forward contracts
     # S        (T+1) x n xts, data frame or matrix with spot rates
-    # F        (T+1) x n xts, data frame or matrix with forward rates
+    # Fp       (T+1) x n xts, data frame or matrix with forward rates for portfolio
+    # Fb       (T+1) x n xts, data frame or matrix with forward rates for benchmark
     # Rpl      xts, data frame or matrix of portfolio returns in local currency
     # Rbl      xts, data frame or matrix of benchmark returns in local currency
     # Rbh      xts, data frame or matrix of benchmark returns hedged into the

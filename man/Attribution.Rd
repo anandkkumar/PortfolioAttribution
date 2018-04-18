@@ -63,7 +63,8 @@ By default grap linking is selected. This option is ignored if 'geometric' is se
 if the data does not imply multi-period attribution.}
 
 \item{geometric}{TRUE/FALSE, whether to use geometric or arithmetic excess
-returns for the attribution analysis. By default arithmetic is selected}
+returns for the attribution analysis. By default this is set to FALSE, which results
+in arithmetic excess return attribution.}
 
 \item{adjusted}{TRUE/FALSE, whether to show original or smoothed attribution
 effects for each period. By default unadjusted attribution effects are 

@@ -31,8 +31,8 @@ output}
 hierarchy to aggregate by}
 
 \item{geometric}{TRUE/FALSE,  whether to use geometric or arithmetic excess
-returns for the attribution analysis. By default arithmetic is selected
-methodology documented referenced below}
+returns for the attribution analysis. By default this is set to FALSE, which results
+in arithmetic excess return attribution.}
 
 \item{anchored}{TRUE/FALSE, to indicate if the weights at each level should be
 anchored based on prior level's decision, as outlined in the Morningstar
