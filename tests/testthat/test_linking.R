@@ -21,7 +21,7 @@ test_that("Multi-period attribution example in Table 8.1 structured as quarterly
   Wp = checkData(Wp)
   Wb = checkData(Wb)
   
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "none")
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down")
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0104)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"US equities"] - (-0.0016)) < epsilon)
@@ -82,7 +82,7 @@ test_that("Multi-period attribution example in Table 8.1 structured as daily dat
   Wp = checkData(Wp)
   Wb = checkData(Wb)
 
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "none")
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down")
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0104)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"US equities"] - (-0.0016)) < epsilon)
@@ -144,7 +144,7 @@ test_that("Multi-period attribution example in Table 8.1 structured as data on a
   Wp = checkData(Wp)
   Wb = checkData(Wb)
   
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "none")
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down")
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0104)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"US equities"] - (-0.0016)) < epsilon)

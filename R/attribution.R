@@ -130,7 +130,8 @@
 #' \item grap - linking approach developed by GRAP
 #' \item frongello - Frongello's linking method
 #' \item davies.laker - Davies and Laker's linking method}
-#' By default Carino linking is selected
+#' By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
+#' if the data does not imply multi-period attribution.
 #' @param geometric TRUE/FALSE, whether to use geometric or arithmetic excess
 #' returns for the attribution analysis. By default arithmetic is selected
 #' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
@@ -167,12 +168,8 @@ Attribution <-
 function (Rp, wp, Rb, wb, 
           wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
           bf = TRUE,
-          method = c("none", "top.down", "bottom.up"), 
-          linking = c("carino", 
-                      "menchero", 
-                      "grap", 
-                      "frongello", 
-                      "davies.laker"),
+          method = "none", 
+          linking = "grap",
           geometric = FALSE, adjusted = FALSE)
 {   # @author Andrii Babii
 
@@ -253,9 +250,20 @@ function (Rp, wp, Rb, wb,
       stop("Please use benchmark xts that has columns with benchmarks for each
             asset or one common benchmark for all assets")
     }
-    method = method[1]
-    linking = linking[1]
     
+    method = switch(method,
+                    "none" = "none",
+                    "top.down" = "top.down", 
+                    "bottom.up" = "bottom.up",
+                    stop("Valid methods are 'none', 'top.down' and 'bottom.up'"))
+    linking = switch(linking,
+                     "carino" = "carino", 
+                     "menchero" = "menchero", 
+                     "grap" = "grap", 
+                     "frongello" = "frongello", 
+                     "davies.laker" = "davies.laker",
+                     stop("Valid linking options are 'carino', 'menchero', 'grap', 'frongello', 'davies.laker'"))
+
     currency = !(is.null(dim(wpf)) & is.null(dim(wbf)) & 
                    is.null(dim(S)) & is.null(dim(Fp)) & is.null(dim(Fb)))
     

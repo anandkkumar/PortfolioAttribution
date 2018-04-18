@@ -5,10 +5,8 @@
 \title{performs sector-based single-level attribution}
 \usage{
 Attribution(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA, Fp = NA,
-  Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE,
-  method = c("none", "top.down", "bottom.up"), linking = c("carino",
-  "menchero", "grap", "frongello", "davies.laker"), geometric = FALSE,
-  adjusted = FALSE)
+  Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE, method = "none",
+  linking = "grap", geometric = FALSE, adjusted = FALSE)
 }
 \arguments{
 \item{Rp}{T x n xts, data frame or matrix of portfolio returns}
@@ -61,7 +59,8 @@ summary of arithmetic attribution effects. May be any of:
 \item grap - linking approach developed by GRAP
 \item frongello - Frongello's linking method
 \item davies.laker - Davies and Laker's linking method}
-By default Carino linking is selected}
+By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
+if the data does not imply multi-period attribution.}
 
 \item{geometric}{TRUE/FALSE, whether to use geometric or arithmetic excess
 returns for the attribution analysis. By default arithmetic is selected}

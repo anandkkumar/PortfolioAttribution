@@ -19,7 +19,7 @@ Rb = matrix(factset_example$Bmk.Total.Return/100,ncol=11,byrow=TRUE,
 
 
 test_that("FactSet BF 3-factor arithmetic example for one period" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, geometric = FALSE)
   
   expect_equal(as.numeric(attribution_results$Allocation[,-NCOL(attribution_results$Allocation)]), 
                factset_example$Allocation.Effect/100, tolerance = epsilon)
@@ -98,7 +98,7 @@ Rb = matrix(factset_example$Bmk.Total.Return/100,ncol=11,byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
 
 test_that("FactSet BF 2-factor arithmetic example for one period" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, geometric = FALSE)
   
   expect_equal(as.numeric(attribution_results$Allocation[,-NCOL(attribution_results$Allocation)]), 
                factset_example$Allocation.Effect/100, tolerance = epsilon)
@@ -131,7 +131,7 @@ Rb = matrix(factset_example$Bmk.Total.Return/100,ncol=11,byrow=TRUE,
 
 
 test_that("FactSet BF 2-factor geometric example for one period" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, linking = "none", geometric = TRUE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, geometric = TRUE)
   
   expect_equal(as.numeric(attribution_results$Allocation[1,-NCOL(attribution_results$Allocation)]), 
                factset_example$Geometric.Allocation.Effect/100, tolerance = epsilon)
@@ -451,8 +451,8 @@ Rbl = matrix(factset_example$Bmk.Total.Return.Local/100,ncol=11,byrow=TRUE,
 
 
 test_that("FactSet BF 2-factor arithmetic multi-currency example for one period with currency effect as the difference between attribution in base currency and local currency" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
-  attribution_results_local = Attribution(Rpl, Wp, Rbl, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, geometric = FALSE)
+  attribution_results_local = Attribution(Rpl, Wp, Rbl, Wb, method="top.down", bf = TRUE, geometric = FALSE)
   
   expect_equal(as.numeric(attribution_results$Allocation[,-NCOL(attribution_results$Allocation)]), 
                factset_example$Allocation.Effect/100, tolerance = epsilon)
@@ -566,8 +566,8 @@ Rbl = matrix(factset_example$Bmk.Total.Return.Local/100,ncol=11,byrow=TRUE,
 
 
 test_that("FactSet BF 2-factor geometric multi-currency example for one period with currency effect as the difference between attribution in base currency and local currency" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, linking = "none", geometric = TRUE)
-  attribution_results_local = Attribution(Rpl, Wp, Rbl, Wb, method="none", bf = TRUE, linking = "none", geometric = TRUE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, geometric = TRUE)
+  attribution_results_local = Attribution(Rpl, Wp, Rbl, Wb, method="none", bf = TRUE, geometric = TRUE)
   
   expect_equal(as.numeric(attribution_results$Allocation[1,-NCOL(attribution_results$Allocation)]), 
                factset_example$Geometric.Allocation.Effect/100, tolerance = epsilon)

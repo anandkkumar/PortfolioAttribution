@@ -19,7 +19,7 @@ Rb = xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
          order.by=c(Sys.yearqtr(), as.yearqtr(as.Date(as.yearqtr(Sys.Date()))-1)))
 
 test_that("BF Example in Table 5.4 for arithmetic top-down approach with time series data" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, geometric = FALSE)
   expect_true(abs(attribution_results$Allocation[2,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Japanese equities"] - (-0.0104)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"US equities"] - (-0.0016)) < epsilon)
@@ -35,7 +35,7 @@ test_that("BF Example in Table 5.4 for arithmetic top-down approach with time se
 )
 
 test_that("BF Example for arithmetic bottom-up approach with time series data" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="bottom.up", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="bottom.up", bf = TRUE, geometric = FALSE)
   expect_true(abs(attribution_results$Allocation[2,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Japanese equities"] - (-0.0114)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"US equities"] - 0.0004) < epsilon)
@@ -60,7 +60,7 @@ Rb = matrix(c(0.10, -0.04, 0.08),ncol=3,byrow=TRUE,
 Rb = checkData(Rb)
 
 test_that("BF Example in Table 5.4 for arithmetic top-down approach with single observation data" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, geometric = FALSE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0104)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"US equities"] - (-0.0016)) < epsilon)
@@ -76,7 +76,7 @@ test_that("BF Example in Table 5.4 for arithmetic top-down approach with single 
 )
 
 test_that("BF Example for arithmetic bottom-up approach with single observation data" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="bottom.up", bf = TRUE, linking = "none", geometric = FALSE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="bottom.up", bf = TRUE, geometric = FALSE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0114)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"US equities"] - 0.0004) < epsilon)

@@ -19,7 +19,7 @@ Rb = xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
          order.by=c(Sys.yearqtr(), as.yearqtr(as.Date(as.yearqtr(Sys.Date()))-1)))
 
 test_that("BHB Example for geometric approach with time series data" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, linking = "none", geometric = TRUE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, geometric = TRUE)
   expect_true(abs(attribution_results$Allocation[2,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"Japanese equities"] - (-0.0098)) < epsilon)
   expect_true(abs(attribution_results$Allocation[2,"US equities"] - (-0.0015)) < epsilon)
@@ -60,7 +60,7 @@ Rb = matrix(c(0.10, -0.04, 0.08),ncol=3,byrow=TRUE,
 Rb = checkData(Rb)
 
 test_that("BF Example in Table 5.5 for geometric top-down approach with single observation data" , {
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, linking = "none", geometric = TRUE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, geometric = TRUE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0098)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"US equities"] - (-0.0015)) < epsilon)
