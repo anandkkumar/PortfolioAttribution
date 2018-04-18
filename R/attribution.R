@@ -1,10 +1,10 @@
-#' performs sector-based single-level attribution
+#' performs single-level attribution
 #' 
-#' Performs sector-based single-level attribution analysis. Portfolio 
+#' Performs single-level attribution analysis. Portfolio 
 #' performance measured relative to a benchmark gives an indication of the 
 #' value-added by the portfolio. Equipped with weights and returns of portfolio
 #' segments, we can dissect the value-added into useful components. This 
-#' function is based on the sector-based approach to the attribution. The 
+#' function is based on the group-based approach to the attribution. The 
 #' workhorse is the Brinson model that explains the arithmetic difference 
 #' between portfolio and benchmark returns. That is it breaks down the 
 #' arithmetic excess returns at one level. If returns and weights are available
@@ -18,7 +18,7 @@
 #' similarly to the portfolio and/or benchmark returns annualization. 
 #' 
 #' The arithmetic excess returns are decomposed into the sum of allocation, 
-#' selection and interaction effects across \eqn{n} sectors:
+#' selection and interaction effects across \eqn{n} groups:
 #' \deqn{R_{p}-R_{b}=\sum^{n}_{i=1}\left(A_{i}+S_{i}+I_{i}\right)}
 #' The arithmetic attribution effects for the category i are computed
 #' as suggested in the Brinson, Hood and Beebower (1986):
@@ -39,7 +39,7 @@
 #' \deqn{A_{i}=(w_{pi}-w_{bi})
 #' \times (R_{bi} - R_{b})}{Ai = (wpi - wbi) * (Rbi - Rb)}
 #' Depending on goals we can give priority to the allocation or to 
-#' the selection effects. If the priority is given to the sector allocation
+#' the selection effects. If the priority is given to the group allocation
 #' the interaction term will be combined with the security selection effect
 #' (top-down approach). If the priority is given to the security selection,
 #' the interaction term will be combined with the asset-allocation effect
@@ -118,10 +118,10 @@
 #' @param method Used to select the priority between allocation and selection 
 #' effects in arithmetic attribution. May be any of: \itemize{ \item none - 
 #' present allocation, selection and interaction effects independently, 
-#' \item top.down - the priority is given to the sector allocation. Interaction
+#' \item top.down - the priority is given to the group allocation. Interaction
 #' term is combined with the security selection effect, \item bottom.up - the 
 #' priority is given to the security selection. Interaction term is combined 
-#' with the sector allocation effect} 
+#' with the group allocation effect} 
 #' By default "none" is selected
 #' @param linking Used to select the linking method to present the multi-period
 #' summary of arithmetic attribution effects. May be any of: 
