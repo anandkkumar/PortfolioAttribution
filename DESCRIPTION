@@ -5,9 +5,10 @@ Version: 1.0
 Date: $Date$
 Author: Andrii Babii
 Maintainer: Anand Krishnakumar <andykris21@yahoo.com>
-Description: This package provides functions for the ex-post portfolio attribution methods described in Christopherson, Carino and Ferson (2009), Bacon (2008), and several other sources. The package was initially created as a part of the Google Summer of Code (GSoC) 2012 project.
+Description: This package provides functions for the ex-post portfolio attribution methods described in Christopherson, Carino and Ferson (2009), Bacon (2008), and several other sources. The package was initially created as a part of the Google Summer of Code (GSoC) 2012 project. Since then it has undergone some minor enhancements & revisions for accuracy, consistency and improved usability.
 Imports:
-    dplyr
+    dplyr,
+    testthat
 Depends:
     R (>= 2.15.0),
     PerformanceAnalytics(>= 1.0.4.3),
