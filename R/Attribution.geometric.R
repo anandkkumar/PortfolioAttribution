@@ -102,6 +102,17 @@ function(Rp, wp, Rb, wb,
     # wp       xts of portfolio weights
     # Rb       xts of benchmark returns
     # wb       xts of benchmark weights
+    # wpf      vector, xts, data frame or matrix with portfolio weights of
+    #          currency forward contracts
+    # wbf      vector, xts, data frame or matrix with benchmark weights of 
+    #          currency forward contracts
+    # S        (T+1) x n xts, data frame or matrix with spot rates
+    # Fp       (T+1) x n xts, data frame or matrix with forward rates for portfolio
+    # Fb       (T+1) x n xts, data frame or matrix with forward rates for benchmark
+    # Rpl      xts, data frame or matrix of portfolio returns in local currency
+    # Rbl      xts, data frame or matrix of benchmark returns in local currency
+    # Rbh      xts, data frame or matrix of benchmark returns hedged into the
+    #          base currency
   
     # Outputs: 
     # This function returns the list with attribution effects (allocation or

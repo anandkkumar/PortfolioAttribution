@@ -1,21 +1,26 @@
 Package: PortfolioAttribution
 Type: Package
 Title: Performance attribution tools used for identifying sources of portfolio return and risk.
-Version: 0.3
+Version: 1.0
 Date: $Date$
 Author: Andrii Babii
-Maintainer: Andrii Babii <babiy.andrew@gmail.com>
+Maintainer: Anand Krishnakumar, Peter Carl
 Description: This package provides functions for the ex-post portfolio attribution methods described in Christopherson, Carino and Ferson (2009), Bacon (2008), and several other sources. The package was initially created as a part of the Google Summer of Code (GSoC) 2012 project.
+Imports:
+    dplyr
 Depends:
     R (>= 2.15.0),
-    zoo,
+    PerformanceAnalytics(>= 1.0.4.3),
     xts (>= 0.8),
-    PerformanceAnalytics(>= 1.0.4.3)
+    zoo
 Suggests:
+    FinancialInstrument,
+    knitr,
     plyr,
-    FinancialInstrument
+    rmarkdown
 License: GPL
-URL: http://r-forge.r-project.org/projects/returnanalytics/
-Contributors: David Carino, Doug Martin, Brian Peterson, Peter Carl
-Copyright: (c) 2004-2013
+URL: https://github.com/braverock/PortfolioAttribution
+Contributors: Brian Peterson, Peter Carl, Andrii Babii, Anand Krishnakumar
+Copyright: (c) 2004-2018
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr

@@ -1,0 +1,106 @@
+---
+title: "Introduction to Portfolio Attribution"
+author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: introduction.bib
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### <ins>Preliminaries</ins>
+
+The `PortfolioAttribution` package is a implementation of performance return attribution and is largely based on the methodologies documented in the book _Practical Portfolio Performance Measurement and Attribution by Bacon [-@bacon2008practical]_.
+
+Performance attribution allows us to decompose the value added by the portfolio into different components and, thus, to evaluate the quality of investment decisions. This is achieved by the decomposition of the excess returns, relative to a benchmark.
+
+The foundations of performance attribution were established in two articles published by _Brinson et al. [-@brinson1986determinants]_ and _Brinson and Fachler [-@brinson1985measuring]_ now collectively know as the Brinson model. The excess return of a portfolio over a benchmark can be defined as arithmetic excess return or geometric excess return.
+
+### <ins>Arithmetic attribution</ins>
+Arithmetic excess return is the profit in excess of a notional or benchmark fund expressed as a percentage of the initial amount invested.
+
+\[
+E^{A} = R_{p}-R_{b}
+\]
+
+
+Arithmetic attribution looks to decompose the arithmetic excess return into three attribution effects, allocation, interaction and selection effects based on the Brinson model. 
+
+Let's assume we divide the portfolio & benchmark into $n$ categories (e.g. by Sector). There are two ways to compute the arithmetic attribution effects as outlined below.
+
+#### Brinson, Hood and Beebower
+
+This method is based on the _Brinson et al. [-@brinson1986determinants]_ article and defines allocation, interaction and selection effects for each category $i$ as
+
+\[
+  \begin{aligned}
+    A_i & =(w_{pi}-w_{bi})\times R_{bi} \\
+    S_i & = w_{bi}\times(R_{pi}-R_{bi}) \\
+    I_i & = (w_{pi}-w_{bi})\times(R_{pi}-R_{bi})
+  \end{aligned}
+\]
+
+The relationship between these attribution effects and the total arithmetic excess return for the portfolio over the benchmark is given by
+
+\[
+E^A =R_p - R_b = \sum ^n_{i=1} A_i + \sum ^n_{i=1} S_i + \sum ^n_{i=1} I_i
+\]
+
+
+#### Brinson and Fachler
+
+This method is based on the _Brinson and Fachler [-@brinson1985measuring]_ article and defines interaction and selection effects the same as in the Brinson, Hood and Beebower approach but the allocation effect is defined as
+
+\[
+  A_i = (w_{pi} - w_{bi})\times (R_{bi} - R_b)
+\]
+
+As before, the relationship between these attribution effects and the total arithmetic excess return for the portfolio over the benchmark is given by
+
+\[
+E^A =R_p - R_b = \sum ^n_{i=1} A_i + \sum ^n_{i=1} S_i + \sum ^n_{i=1} I_i
+\]
+
+
+### <ins>Geometric attribution</ins>
+Geometric Excess Return is the profit in excess of a notional or benchmark fund expressed as a percentage of the final value of the notional or benchmark fund.
+
+\[
+E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1
+\]
+
+
+Geometric attribution extends the Brinson Fachler model to decompose the geometric excess return into two attribution effects, allocation, and selection effects. There is no interaction effect in this approach. 
+
+Let's assume we divide the portfolio & benchmark into $n$ categories (e.g. by Sector). The allocation, and selection effects for each category $i$ are defined as
+
+\[
+  \begin{aligned}
+    A_i^G & = (w_{pi} - w_{bi}) \times \frac{(1 + R_{bi})}{(1 + R_b)} - 1 \\
+    S_i^G & = w_{pi} \times \left(\frac{(1 + R_{pi})}{(1 + R_{bi})} - 1\right) \times \frac{(1 + R_{bi})}{(1 + R_{bs})}
+  \end{aligned}
+\]
+
+where $R_{bs}$, referred to as the allocation notional return, is given by
+
+\[
+R_{bs} = \sum^{n}_{i=1}\left(w_{pi} \times R_{bi} \right)
+\]
+
+
+The relationship between the attribution effects and the total geometric excess return for the entire portfolio over the benchmark is given by
+\[
+E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1 = \left((1 + \sum ^{n}_{i=1} A_i^G) \times (1 + \sum ^{n}_{i=1} S_i^G)\right) - 1
+\]
+
+
+### <ins>References</ins>
