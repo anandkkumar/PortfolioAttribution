@@ -1,0 +1,74 @@
+---
+title: "Brison, Hood & Beebower Arithmetic Attribution"
+author: "Anand Krishnakumar"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Brison, Hood & Beebower Arithmetic Attribution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(PortfolioAttribution)
+```
+
+This vignette shows how to perform a single period arithmetic attribution analysis using the Brinson, Hood & Beebower model using the `PortfolioAttribution` package. For a brief introduction to portfolio performance attribution, this model, the package and references, please refer to the [introduction vignette](introduction.html).
+
+
+
+### Define your data inputs
+
+Say you have a simple three category portfolio & benchmark as defined below.
+
+```{r, echo=FALSE, results='asis'}
+data("sample_data", package = "PortfolioAttribution")
+knitr::kable(simple_portf_1)
+```
+
+This sample data from the package is available in the package as a dataset to use.
+```{r}
+library(PortfolioAttribution)
+data("sample_data", package = "PortfolioAttribution")
+simple_portf_1
+```
+
+The portfolio & benchmark weights and returns are first extracted.
+
+```{r}
+wp = as.numeric(simple_portf_1[1,])
+Rp = data.frame(simple_portf_1[2,], row.names = Sys.Date(), check.names = FALSE)
+wb = as.numeric(simple_portf_1[3,])
+Rb = data.frame(simple_portf_1[4,], row.names = Sys.Date(), check.names = FALSE)
+```
+
+To run attribution on this data using the Brinson, Hood & Beebower model, the following command is used.
+
+```{r}
+attribution_results = Attribution(Rp, wp, Rb, wb, bf = FALSE)
+```
+
+The different attribution effects by category as well as their totals can be inspected.
+
+```{r}
+attribution_results$Allocation
+attribution_results$Selection
+attribution_results$Interaction
+```
+
+As expected the total arithmetic excess return equals the sum of the total for each attribution effect
+
+```{r}
+excess_returns = attribution_results$`Excess returns`
+excess_returns
+
+total_effects = attribution_results$Allocation[1,"Total"] + attribution_results$Selection[1,"Total"] + attribution_results$Interaction[1,"Total"]
+total_effects
+```
+
+
