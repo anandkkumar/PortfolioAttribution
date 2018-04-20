@@ -1,7 +1,7 @@
 library(PortfolioAttribution)
 library(testthat)
 
-context("Multi-currency Attribution Examples from Pratical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
+context("Multi-currency Attribution Examples from Practical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
 epsilon = 5e-5
 
 cnames = c("UK equities", "Japanese equities", "US equities")

@@ -1,7 +1,7 @@
 library(PortfolioAttribution)
 library(testthat)
 
-context("Geometric multi-level Attribution Examples from Pratical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
+context("Geometric multi-level Attribution Examples from Practical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
 epsilon = 5e-5
 
 cnames = c("Financial", "Software", "Autos", "Chemicals", "Govt", "Corp")

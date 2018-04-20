@@ -1,7 +1,7 @@
 library(PortfolioAttribution)
 library(testthat)
 
-context("Geometric Attribution Examples from Pratical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
+context("Geometric Attribution Examples from Practical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
 
 cnames = c("UK equities", "Japanese equities", "US equities")
 

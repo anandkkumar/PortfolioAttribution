@@ -1,7 +1,7 @@
 library(PortfolioAttribution)
 library(testthat)
 
-context("Examples for linking approaches from Pratical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
+context("Examples for linking approaches from Practical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
 epsilon = 1e-4
 
 cnames = c("UK equities", "Japanese equities", "US equities")

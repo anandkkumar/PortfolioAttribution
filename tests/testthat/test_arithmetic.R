@@ -3,7 +3,7 @@ library(testthat)
 
 #----------------------------------------------------------------------------------------------
 
-context("BHB & BF Examples from Pratical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
+context("BHB & BF Examples from Practical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
 
 cnames = c("UK equities", "Japanese equities", "US equities")
 
@@ -157,7 +157,7 @@ test_that("BF Example in Table 5.4 for top-down approach with single observation
 
 #----------------------------------------------------------------------------------------------
 
-context("Examples comparing top-down & bottom-up approaches from Pratical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
+context("Examples comparing top-down & bottom-up approaches from Practical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
 
 
 # BF Example using one-period time series data
