@@ -118,6 +118,7 @@ Some common aspects to the different functions are:
 * the rows in the returns & weights data represent periods while the columns represent assets or categories
 * the package requires that the return data have row indexes defined as dates or periods compatible with the `xts` package
 * the portfolio & benchmark returns & weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio & benchmark data must match.
+* similarly, in a multi-period data set, if an asset or category drops out of the portfolio or benchmark, a return and weight of 0 must be specified. In other words the number of assets or categories for each period must be the same.
 * the package treats the weights provided as __end-of-peroid__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.
 * in addition to the attribution effects, the attribution methods also report the total excess returns for each period and annualizes when appropriate
 * the type of object returned is a `list`
