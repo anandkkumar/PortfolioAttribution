@@ -308,23 +308,27 @@ function (Rp, wp, Rb, wb,
       }
       
       # Get total portfolio returns including any forward contracts, if present
-      if (is.vector(WP)  & is.vector(WB)){
-        # For now we assume that if it's an error it's because we only have
-        # a single observation and not time series data
-        rp = tryCatch({
-          Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
-        }, error = function(e) { return(as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpbf)))) }
-        )
-        rb = tryCatch({
-          Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
-        }, error = function(e) { return(as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))) }
-        )
-      } else{
-        rp = Return.rebalancing(Rp, WP, geometric = FALSE)
-        rb = Return.rebalancing(Rb, WB, geometric = FALSE)
+      if (is.vector(WP) & is.vector(WB)){
+        # If we have just one observation we simply sum up the contributions
+        if(NROW(Rp) == 1 & NROW(Rb) == 1) {
+          rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpbf)))
+          rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))
+        } else {
+          rp = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
+          rb = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+        }
+      } else {
+        # If we have just one observation we simply sum up the contributions
+        if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1) {
+          rp = as.matrix(sum(coredata(cbind(WP, WPF))*coredata(cbind(Rp, Rpbf))))
+          rb = as.matrix(sum(coredata(cbind(WB, WBF))*coredata(cbind(Rb, Rpbf))))
+        } else {
+          rp = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
+          rb = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+        }
       }
-      names(rp) = "Total"
-      names(rb) = "Total"
+      names(rp) = rownames(rp) = "Total"
+      names(rb) = rownames(rb) = "Total"
       
       # Get individual attribution effects
       #if the benchmark weights are not specified allocation effect is equal to 0

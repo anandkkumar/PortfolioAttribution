@@ -123,19 +123,23 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     
     # Get portfolio and benchmark returns
     if (is.vector(WP)  & is.vector(WB)){
-      # For now we assume that if it's an error it's because we only have
-      # a single observation and not time series data
-      rp = tryCatch({
-        Return.portfolio(Rp, WP, geometric = geometric)
-      }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
-      )
-      rb = tryCatch({
-        Return.portfolio(Rb, WB, geometric = geometric)
-      }, error = function(e) { return(as.matrix(sum(WB*Rb))) }
-      )
+      # If we have just one observation we simply sum up the contributions
+      if(NROW(Rp) == 1 & NROW(Rb) == 1) {
+        rp = as.matrix(sum(WP*Rp))
+        rb = as.matrix(sum(WB*Rb))
+      } else {
+        rp = Return.portfolio(Rp, WP, geometric = geometric)
+        rb = Return.portfolio(Rb, WB, geometric = geometric)
+      }
     } else{
-      rp = Return.rebalancing(Rp, WP, geometric = geometric)
-      rb = Return.rebalancing(Rb, WB, geometric = geometric)
+      # If we have just one observation we simply sum up the contributions
+      if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1) {
+        rp = as.matrix(sum(coredata(WP)*coredata(Rp)))
+        rb = as.matrix(sum(coredata(WB)*coredata(Rb)))
+      } else {
+        rp = Return.portfolio(Rp, WP, geometric = geometric)
+        rb = Return.portfolio(Rb, WB, geometric = geometric)
+      }
     }
     names(rp) = "Total"
     names(rb) = "Total"
@@ -160,19 +164,23 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
       
       # Get portfolio and benchmark local returns
       if (is.vector(WP)  & is.vector(WB)){
-        # For now we assume that if it's an error it's because we only have
-        # a single observation and not time series data
-        rpl = tryCatch({
-          Return.portfolio(Rpl, WP, geometric = geometric)
-        }, error = function(e) { return(as.matrix(sum(WP*Rpl))) }
-        )
-        rbl = tryCatch({
-          Return.portfolio(Rbl, WB, geometric = geometric)
-        }, error = function(e) { return(as.matrix(sum(WB*Rbl))) }
-        )
+        # If we have just one observation we simply sum up the contributions
+        if(NROW(Rpl) == 1 & NROW(Rbl) == 1) {
+          rpl = as.matrix(sum(WP*Rpl))
+          rbl = as.matrix(sum(WB*Rbl))
+        } else {
+          rpl = Return.portfolio(Rpl, WP, geometric = geometric)
+          rbl = Return.portfolio(Rbl, WB, geometric = geometric)
+        }
       } else{
-        rpl = Return.rebalancing(Rpl, WP, geometric = geometric)
-        rbl = Return.rebalancing(Rbl, WB, geometric = geometric)
+        # If we have just one observation we simply sum up the contributions
+        if(NROW(Rpl) == 1 & NROW(WP) == 1 & NROW(Rbl) == 1 & NROW(WB) == 1) {
+          rpl = as.matrix(sum(coredata(WP)*coredata(Rpl)))
+          rbl = as.matrix(sum(coredata(WB)*coredata(Rbl)))
+        } else {
+          rpl = Return.portfolio(Rpl, WP, geometric = geometric)
+          rbl = Return.portfolio(Rbl, WB, geometric = geometric)
+        }
       }
       names(rpl) = "Total"
       names(rbl) = "Total"

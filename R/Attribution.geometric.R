@@ -166,24 +166,27 @@ function(Rp, wp, Rb, wb,
     currency = !(is.null(dim(Rpl)) & is.null(dim(Rbl)) & is.null(dim(Rbh)))
     
     # Get total portfolio returns
-    if (is.vector(WP)  & is.vector(WB)){
-      # For now we assume that if it's an error it's because we only have
-      # a single observation and not time series data
-      rp = tryCatch({
-        Return.portfolio(Rp, WP)
-      }, error = function(e) { return(as.matrix(sum(WP*Rp))) }
-      )
-      rb = tryCatch({
-        Return.portfolio(Rb, WB)
-      }, error = function(e) { return(as.matrix(sum(WB*Rb))) }
-      )
-      
+    if (is.vector(WP) & is.vector(WB)){
+      # If we have just one observation we simply sum up the contributions
+      if(NROW(Rp) == 1 & NROW(Rb) == 1) {
+        rp = as.matrix(sum(WP*Rp))
+        rb = as.matrix(sum(WB*Rb))
+      } else {
+        rp = Return.portfolio(Rp, WP)
+        rb = Return.portfolio(Rb, WB)
+      }
     } else{
-      rp = Return.rebalancing(Rp, WP)
-      rb = Return.rebalancing(Rb, WB)
+      # If we have just one observation we simply sum up the contributions
+      if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1) {
+        rp = as.matrix(sum(coredata(WP)*coredata(Rp)))
+        rb = as.matrix(sum(coredata(WB)*coredata(Rb)))
+      } else {
+        rp = Return.portfolio(Rp, WP)
+        rb = Return.portfolio(Rb, WB)
+      }
     }
-    names(rp) = "Total"                    
-    names(rb) = "Total"
+    names(rp) = rownames(rp) = "Total"                    
+    names(rb) = rownames(rb) = "Total"
     
     # Allocation notional fund returns
     bs = reclass(rowSums((wp * coredata(Rb[, 1:ncol(wp)]))), rp)
@@ -216,24 +219,28 @@ function(Rp, wp, Rb, wb,
         Rbf = Rbe / (1 + Rbd)
         
         # Recompute total portfolio returns to include forward contracts in the portfolio
-        if (is.vector(WP)  & is.vector(WB) & is.vector(WPF) & is.vector(WBF)){
-          # For now we assume that if it's an error it's because we only have
-          # a single observation and not time series data
-          rp = tryCatch({
-            Return.portfolio(cbind(Rp, Rpf), c(WP, WPF))
-          }, error = function(e) { return(as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpf)))) }
-          )
-          rb = tryCatch({
-            Return.portfolio(cbind(Rb, Rbf), c(WB, WBF))
-          }, error = function(e) { return(as.matrix(sum(c(WB, WBF)*cbind(Rb, Rbf)))) }
-          )
-          
+        if (is.vector(WP) & is.vector(WB) & is.vector(WPF) & is.vector(WBF)){
+          # If we have just one observation we simply sum up the contributions
+          if(NROW(Rp) == 1 & NROW(Rb) == 1 & NROW(Rpf) == 1 & NROW(Rbf) == 1) {
+            rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpf)))
+            rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rbf)))
+          } else {
+            rp = Return.portfolio(cbind(Rp, Rpf), c(WP, WPF))
+            rb = Return.portfolio(cbind(Rb, Rbf), c(WB, WBF))
+          }
         } else{
-          rp = Return.rebalancing(cbind(Rp, Rpf), cbind(WP, WPF))
-          rb = Return.rebalancing(cbind(Rb, Rbf), cbind(WB, WBF))
+          # If we have just one observation we simply sum up the contributions
+          if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1 & 
+             NROW(Rpf) == 1 & NROW(WPF) == 1 & NROW(Rbf) == 1 & NROW(WBF) == 1) {
+            rp = as.matrix(sum(coredata(cbind(WP, WPF))*coredata(cbind(Rp, Rpf))))
+            rb = as.matrix(sum(coredata(cbind(WB, WBF))*coredata(cbind(Rb, Rbf))))
+          } else {
+            rp = Return.portfolio(cbind(Rp, Rpf), cbind(WP, WPF))
+            rb = Return.portfolio(cbind(Rb, Rbf), cbind(WB, WBF))
+          }
         }
-        names(rp) = "Total"                    
-        names(rb) = "Total"
+        names(rp) = rownames(rp) = "Total"                    
+        names(rb) = rownames(rb) = "Total"
       }
       
       bsl = reclass(rowSums(Rbl * wp), Rpl)

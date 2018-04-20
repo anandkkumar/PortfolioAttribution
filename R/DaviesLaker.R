@@ -79,13 +79,8 @@ function(Rp, wp, Rb, wb)
       wb = WB
     }
     
-    if (is.vector(WP)  & is.vector(WB)){
-      rp = Return.portfolio(Rp, WP, geometric = FALSE)
-      rb = Return.portfolio(Rb, WB, geometric = FALSE)
-    } else{
-      rp = Return.rebalancing(Rp, WP, geometric = FALSE)
-      rb = Return.rebalancing(Rb, WB, geometric = FALSE)
-    }
+    rp = Return.portfolio(Rp, WP, geometric = FALSE)
+    rb = Return.portfolio(Rb, WB, geometric = FALSE)
     colnames(rp) = "Total"
     colnames(rb) = "Total"
     # Allocation notional fund returns
