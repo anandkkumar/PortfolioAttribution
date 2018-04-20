@@ -1,0 +1,127 @@
+---
+title: "Top-down v/s bottom-up arithmetic attribution"
+author: "Anand Krishnakumar"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Top-down v/s bottom-up arithmetic attribution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(magrittr)
+library(PortfolioAttribution)
+```
+
+This vignette shows how to perform a single period top-down and bottom-up arithmetic attribution analysis using the Brinson Fachler model with the `PortfolioAttribution` package. For a brief introduction to portfolio performance attribution, please refer to the [introduction vignette](introduction.html) and for an explanation of the two Brinson models, refer to the [Single period arithmetic attribution](single-period-arithmetic.html).
+
+### Top-down v/s bottom-up arithmetic attribution
+
+By default, the `Attribution` method decomposes the arithmetic attribution effects into three effects, allocation, selection and interaction. However, it is fairly common to combine the interaction effect into one of the other two effects depending on the investment process. This is due to the fact that the interaction effect, being a plug term, is not part of the investment decision process and portfolio managers do not seek to add value through interaction.
+
+If portfolio managers follow a top-down process in making allocation decisions first prior to stock selection, it is common to want to combine the interaction effects into the selection effects. Conversely, for bottom-up stock pickers, the interaction effects are combined into the allocation effects. Some practitioners label these two approaches as _Interaction in Selection_ and _Interaction in Allocation_ respectively.
+
+The rest of this vignette illustrates the differences between the approaches using the Brinson and Fachler model.
+
+### Define the data inputs
+
+Say we have a portfolio & benchmark data categorized into sectors as shown below.
+
+```{r, echo=FALSE, results='asis'}
+data("sample_data", package = "PortfolioAttribution")
+knitr::kable(simple_portf_2)
+```
+
+This sample data from the package is available in the package as a data set to use.
+```{r}
+library(PortfolioAttribution)
+data("sample_data", package = "PortfolioAttribution")
+simple_portf_2
+```
+
+The portfolio & benchmark weights and returns are first extracted.
+
+```{r}
+wp = as.numeric(simple_portf_2[1,])
+Rp = data.frame(simple_portf_2[2,], row.names = Sys.Date(), check.names = FALSE)
+wb = as.numeric(simple_portf_2[3,])
+Rb = data.frame(simple_portf_2[4,], row.names = Sys.Date(), check.names = FALSE)
+```
+
+### Comparison of methods
+
+To run the standard attribution analysis on this data using the Brinson & Fachler model that produces three separate effects of allocation, selection & interaction, the following command is used.
+
+```{r}
+# The default value for the 'method' parameter is 'none' 
+# and so explicitly setting this parameter below is not needed.
+attribution_results_standard = Attribution(Rp, wp, Rb, wb, method="none")
+```
+
+To run the top-down attribution analysis on this data using the Brinson & Fachler model that combines interaction effect into the selection effect, the following command is used.
+
+```{r}
+attribution_results_top_down = Attribution(Rp, wp, Rb, wb, method="top.down")
+```
+
+To run the bottom-up attribution analysis on this data using the Brinson & Fachler model that combines interaction effect into the allocation effect, the following command is used.
+
+```{r}
+attribution_results_bottom_up = Attribution(Rp, wp, Rb, wb, method="bottom.up")
+```
+
+As expected, there is no interaction effect with the top-down or bottom-up approaches.
+
+```{r}
+is.null(attribution_results_top_down$Interaction)
+is.null(attribution_results_bottom_up$Interaction)
+```
+
+In all three cases the total excess return is the sum of the attribution effects.
+
+```{r}
+as.numeric(attribution_results_standard$`Excess returns`)
+
+all.equal(as.numeric(attribution_results_standard$`Excess returns`) , as.numeric(attribution_results_standard$Allocation[1,"Total"] + attribution_results_standard$Selection[1,"Total"] + attribution_results_standard$Interaction[1,"Total"]))
+
+all.equal(as.numeric(attribution_results_top_down$`Excess returns`) , as.numeric(attribution_results_top_down$Allocation[1,"Total"] + attribution_results_top_down$Selection[1,"Total"]))
+
+all.equal(as.numeric(attribution_results_bottom_up$`Excess returns`) , as.numeric(attribution_results_bottom_up$Allocation[1,"Total"] + attribution_results_bottom_up$Selection[1,"Total"]))
+```
+
+Shown below is a comparison of the effects with each approach. As expected, the total allocation effect in the standard approach matches that of the top-down approach, while that total selection effect in the standard approach matches that of the bottom-up approach. 
+
+```{r echo=FALSE, results='asis'}
+effects = c("Standard Allocation", 
+            "Standard Selection", 
+            "Standard Interaction",
+            "Top-down Allocation",
+            "Top-down Selection",
+            "Bottom-up Allocation",
+            "Bottom-up Selection")
+aggregated_results = cbind("Effect" = effects,
+                           rbind(as.data.frame(attribution_results_standard$Allocation), 
+                                 as.data.frame(attribution_results_standard$Selection), 
+                                 as.data.frame(attribution_results_standard$Interaction),
+                                 as.data.frame(attribution_results_top_down$Allocation),
+                                 as.data.frame(attribution_results_top_down$Selection),
+                                 as.data.frame(attribution_results_bottom_up$Allocation),
+                                 as.data.frame(attribution_results_bottom_up$Selection))
+                           )
+aggregated_results %>% 
+  dplyr::mutate(Total = kableExtra::cell_spec(Total, "html", 
+                                              color = ifelse(seq_along(Total) %in% c(1,4), 
+                                                             "blue", 
+                                                             ifelse(seq_along(Total) %in% c(2,7), "orange", "black")
+                                              ))) %>%
+  kableExtra::kable("html", escape = FALSE) %>% 
+  kableExtra::row_spec(4:5, background = "#F7F7F7") %>% 
+  kableExtra::column_spec(12, bold = TRUE)
+```
+

@@ -33,7 +33,7 @@ E^{A} = R_{p}-R_{b}
 \]
 
 
-Arithmetic attribution looks to decompose the arithmetic excess return into three attribution effects, allocation, interaction and selection effects based on the Brinson model. 
+Arithmetic attribution looks to decompose the arithmetic excess return into three attribution effects, _allocation_, _interaction_ and _selection_ effects based on the Brinson model. The allocation effect captures the value added by category bets taken by the portfolio manager, while the selection effect captures the value added by selecting individual securities within the asset category. The remaining interaction effect is a plug term that is required in order for the total of the effects to sum up to the total arithmetic excess return.
 
 Let's assume we divide the portfolio & benchmark into $n$ categories (e.g. by Sector). There are two ways to compute the arithmetic attribution effects as outlined below.
 
@@ -79,7 +79,7 @@ E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1
 \]
 
 
-Geometric attribution extends the Brinson Fachler model to decompose the geometric excess return into two attribution effects, allocation, and selection effects. There is no interaction effect in this approach. 
+Geometric attribution extends the Brinson Fachler model to decompose the geometric excess return into two attribution effects, allocation, and selection effects. The semantic meaning of the allocation & selection effects are the same as described earlier with arithmetic attribution. There is no interaction effect in this approach.
 
 Let's assume we divide the portfolio & benchmark into $n$ categories (e.g. by Sector). The allocation, and selection effects for each category $i$ are defined as
 
@@ -104,9 +104,9 @@ E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1 = \left((1 + \sum ^{n}_{i=1} A_i^G) \times 
 
 ### <ins>Package basics</ins>
 
-The `PortfolioAttribution` package supports multiple methodologies and allows for mutli-period attribution analysis. It also support multi-currency portfolios in which case it reports the currency effects. The package also supports the ability to define custom heirarchies to perform multi-level attribution. The various other companion vignettes in this package contain illustrative examples. They use sample data sets that are included with the package so that the users can try these examples on their own.
+The `PortfolioAttribution` package supports multiple methodologies and allows for multi-period attribution analysis. It also support multi-currency portfolios in which case it reports the currency effects. The package also supports the ability to define custom hierarchies to perform multi-level attribution. The various other companion vignettes in this package contain illustrative examples. They use sample data sets that are included with the package so that the users can try these examples on their own.
 
-The attribution functions in this package employ an interface in terms of weights & returns. In other words, it is expected that any positions, prices, transactions and other complexities that go into computing the desired weight and return to use in attribution analysis, has occured in advance and the resulting data is feed in as input to these functions.
+The attribution functions in this package employ an interface in terms of weights & returns. In other words, it is expected that any positions, prices, transactions and other complexities that go into computing the desired weight and return to use in attribution analysis, has occurred in advance and the resulting data is feed in as input to these functions.
 
 The main functions of interest are `Attribution`, `Attribution.levels` and `AttributionFixedIncome`. You can use the `help` command or the `?` shortcut on any of these functions to peruse their documentation.
 
@@ -118,8 +118,8 @@ Some common aspects to the different functions are:
 * the rows in the returns & weights data represent periods while the columns represent assets or categories
 * the package requires that the return data have row indexes defined as dates or periods compatible with the `xts` package
 * the portfolio & benchmark returns & weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio & benchmark data must match.
-* the package treats the weights provided as __end-of-peroid__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight speicified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date subsetting via endpoints.
-* in addition to the attributoin effects, the attribution methods also report the total excess returns for each period and annualizes when appropriate
+* the package treats the weights provided as __end-of-peroid__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.
+* in addition to the attribution effects, the attribution methods also report the total excess returns for each period and annualizes when appropriate
 * the type of object returned is a `list`
 
 There are a number of unit tests included as part of the package that can be executed & examined to better understand the different functions and their expected behavior. These unit tests are available in the `tests` folder and employ the framework defined in the `testthat` package.
