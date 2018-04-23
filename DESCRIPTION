@@ -19,6 +19,7 @@ Suggests:
     knitr,
     plyr,
     rmarkdown
+LazyData: true
 License: GPL
 URL: https://github.com/braverock/PortfolioAttribution
 Contributors: Brian Peterson, Peter Carl, Andrii Babii, Anand Krishnakumar
