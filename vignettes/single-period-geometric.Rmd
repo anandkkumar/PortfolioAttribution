@@ -1,6 +1,6 @@
 ---
 title: "Single period geometric attribution"
-author: "Anand Krishnakumar"
+author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >

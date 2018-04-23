@@ -1,6 +1,6 @@
 ---
 title: "Introduction to multi-currency Portfolio Attribution"
-author: "Anand Krishnakumar"
+author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 bibliography: introduction.bib

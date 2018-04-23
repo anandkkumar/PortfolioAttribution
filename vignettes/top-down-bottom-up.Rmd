@@ -1,6 +1,6 @@
 ---
 title: "Top-down v/s bottom-up arithmetic attribution"
-author: "Anand Krishnakumar"
+author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -19,7 +19,7 @@ library(magrittr)
 library(PortfolioAttribution)
 ```
 
-This vignette shows how to perform a single period top-down and bottom-up arithmetic attribution analysis using the Brinson Fachler model with the `PortfolioAttribution` package. For a brief introduction to portfolio performance attribution, please refer to the [introduction vignette](introduction.html) and for an explanation of the two Brinson models, refer to the [Single period arithmetic attribution](single-period-arithmetic.html).
+This vignette shows how to perform a single period top-down and bottom-up arithmetic attribution analysis using the Brinson Fachler model with the `PortfolioAttribution` package. For a brief introduction to portfolio performance attribution, please refer to the [introduction vignette](introduction.html) and for an explanation of the two Brinson models, refer to the [single period arithmetic attribution vignette](single-period-arithmetic.html).
 
 ### Top-down v/s bottom-up arithmetic attribution
 
