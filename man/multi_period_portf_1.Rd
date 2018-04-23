@@ -4,7 +4,7 @@
 \name{multi_period_portf_1}
 \alias{multi_period_portf_1}
 \title{Multi-period portfolio & benchmark example with security-level data, for use in vignettes}
-\format{A list of 6 members:
+\format{A list with 6 members:
 \describe{
   \item{Rp}{xts object with portfolio returns for each security and period}
   \item{Rb}{xts object with benchmark returns for each security and period}

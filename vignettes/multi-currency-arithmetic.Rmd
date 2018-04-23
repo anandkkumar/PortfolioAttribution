@@ -18,4 +18,12 @@ knitr::opts_chunk$set(
 library(PortfolioAttribution)
 ```
 
-This vignette shows how to perform a single period arithmetic attribution analysis on a multi-currency portfolio using the the `PortfolioAttribution` package. For more details please refer to the [introduction vignette](introduction.html) and the [multi-currency introduction vignette](introduction-multi-currency.html).
+This vignette shows how to perform a single period arithmetic attribution analysis on a multi-currency portfolio using the the `PortfolioAttribution` package with two different approaches. For more details please refer to the [introduction vignette](introduction.html) and the [multi-currency introduction vignette](introduction-multi-currency.html).
+
+
+### <ins>Simple approach</ins>
+
+Some practitioners & attribution platforms simply consider the _currency effect_ to be the difference in effects between running the attribution analysis with returns in the local currency and again with returns in the base currency.
+
+#### Define the data inputs
+
