@@ -1,6 +1,6 @@
-#' performs sector-based geometric attribution 
+#' performs category-based geometric attribution 
 #' 
-#' Performs sector-based geometric attribution of excess return. Calculates 
+#' Performs category-based geometric attribution of excess return. Calculates 
 #' total geometric attribution effects over multiple periods. Used internally
 #' by the \code{\link{Attribution}} function. 
 #' No interaction effects are computed and the allocation & selection effects are as 
@@ -24,7 +24,7 @@
 #' \eqn{b} - total benchmark returns	 
 #' \eqn{n} - number of periods
 #' 
-#' The multi-currency geometric attribution is handled following the Appendix A
+#' The multi-currency geometric attribution is handled following the Appendix B
 #' (Bacon, 2004). 
 #' 
 #' The individual selection effects are computed using:
