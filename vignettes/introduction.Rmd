@@ -104,7 +104,7 @@ E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1 = \left((1 + \sum ^{n}_{i=1} A_i^G) \times 
 
 ### <ins>Multi-currency portfolios</ins>
 
-The `PortfolioAttribution` package reports currency effects for arithmetic and geometric attribution analysis. Some practitioners & attribution platform simply consider the _currency effect_ to be the difference in effects between running the attribution analysis with returns in the local currency and again with returns in the base currency. To replicate this the standard attribution analysis is simply run twice using the methods defined in the package and their difference computed.
+The `PortfolioAttribution` package reports currency effects for arithmetic and geometric attribution analysis. Some practitioners & attribution platforms simply consider the _currency effect_ to be the difference in effects between running the attribution analysis with returns in the local currency and again with returns in the base currency. To replicate this the standard attribution analysis is simply run twice using the methods defined in the package and their difference computed.
 
 However, the package also implements two other approaches that are a little more involved, the approach outlined by _Ankrim and Hensel [-@ankrim1994multicurrency]_ for arithmetic attribution and the approach outlined by _Bacon [-@bacon2008practical]_. For the details on these approaches please refer to the [multi-currency introduction vignette](introduction-multi-currency.html).
 
