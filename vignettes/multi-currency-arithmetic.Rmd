@@ -1,0 +1,21 @@
+---
+title: "Single period arithmetic attribution with currency effects"
+author: "Anand Krishnakumar"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Single period arithmetic attribution with currency effects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(PortfolioAttribution)
+```
+
+This vignette shows how to perform a single period arithmetic attribution analysis on a multi-currency portfolio using the the `PortfolioAttribution` package. For a brief introduction to currency attribution please refer to the [introduction vignette](introduction.html).
