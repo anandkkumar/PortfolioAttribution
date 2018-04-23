@@ -28,27 +28,26 @@
 #' (Bacon, 2004). 
 #' 
 #' The individual selection effects are computed using:
-#' \deqn{w_{pi}\times\left(\frac{1+R_{pLi}}{1+R_{bLi}}-1\right)\times
-#' \left(\frac{1+R_{bLi}}{1+b_{SL}}\right)}
+#' \deqn{w_{pi}\times\left(\frac{1+R_{pli}}{1+R_{bli}}-1\right)\times
+#' \left(\frac{1+R_{bli}}{1+R_{bsl}}\right)}
 #' 
 #' The individual allocation effects are computed using:
-#' \deqn{(w_{pi}-w_{bi})\times\left(\frac{1+R_{bHi}}{1+b_{L}}-1\right)}
+#' \deqn{(w_{pi}-w_{bi})\times\left(\frac{1+R_{bhi}}{1+R_{bl}}-1\right)}
 #' 
 #' Where the total semi-notional returns hedged into the base currency were
 #' used:
-#' \deqn{b_{SH} = \sum_{i}w_{pi}\times R_{bi}((w_{pi} - w_{bi})R_{bHi} + 
-#' w_{bi}R_{bLi})}
+#' \deqn{R_{bsh} = \sum_{i}((w_{pi} - w_{bi})R_{bhi} + w_{bi}R_{bli})}
 #' Total semi-notional returns in the local currency:
-#' \deqn{b_{SL} = \sum_{i}w_{pi}R_{bLi}}
-#' \eqn{R_{pLi}}{RpLi} - portfolio returns in the local currency
-#' \eqn{R_{bLi}}{RbLi} - benchmark returns in the local currency
-#' \eqn{R_{bHi}}{RbHi} - benchmark returns hedged into the base currency
-#' \eqn{b_{L}}{bL} - total benchmark returns in the local currency
-#' \eqn{r_{L}}{rL} - total portfolio returns in the local currency
+#' \deqn{R_{bsl} = \sum_{i}w_{pi}R_{bli}}
+#' \eqn{R_{pli}}{Rpli} - portfolio returns in the local currency
+#' \eqn{R_{bli}}{Rbli} - benchmark returns in the local currency
+#' \eqn{R_{bhi}}{Rbhi} - benchmark returns hedged into the base currency
+#' \eqn{R_{bl}}{Rbl} - total benchmark returns in the local currency
+#' \eqn{R_{pl}}{Rpl} - total portfolio returns in the local currency
 #' The total excess returns are decomposed into:
-#' \deqn{\frac{(1+R_{p})}{1+R_{b}}-1=\frac{1+r_{L}}{1+b_{SL}}\times\frac{1+
-#' b_{SH}}{1+b_{L}}\times\frac{1+b_{SL}}{1+b_{SH}}\times\frac{1+R_{p}}{1+r_{L}}
-#' \times\frac{1+b_{L}}{1+R_{b}}-1}
+#' \deqn{\frac{(1+R_{p})}{1+R_{b}}-1=\frac{1+R_{pl}}{1+R_{bsl}}\times\frac{1+
+#' R_{bsh}}{1+R_{bl}}\times\frac{1+R_{bsl}}{1+R_{bsh}}}\times\frac{1+R_{p}}{1+R_{pl}}
+#' \times\frac{1+R_{bl}}{1+R_{b}}-1}
 #' 
 #' where the first term corresponds to the selection, second to the allocation,
 #' third to the hedging cost transferred and the last two to the naive currency

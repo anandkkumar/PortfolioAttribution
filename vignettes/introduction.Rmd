@@ -104,163 +104,9 @@ E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1 = \left((1 + \sum ^{n}_{i=1} A_i^G) \times 
 
 ### <ins>Multi-currency portfolios</ins>
 
-The `PortfolioAttribution` package reports currency effects for arithmetic and geometric attribution analysis. 
+The `PortfolioAttribution` package reports currency effects for arithmetic and geometric attribution analysis. Some practitioners & attribution platform simply consider the _currency effect_ to be the difference in effects between running the attribution analysis with returns in the local currency and again with returns in the base currency. To replicate this the standard attribution analysis is simply run twice using the methods defined in the package and their difference computed.
 
-#### Multi-currency arithmetic attribution
-
-With arithmetic attriution, the methodology employed follows that described by _Ankrim and Hensel [-@ankrim1994multicurrency]_. According to that approach, the currency return is comprised of two components: the unpredictable _currency surprise_ and the predictable interest rate differential or _forward premium_ between the appropriate currencies.
-
-The currency surprise and forward premium in currency $i$ are given by
-
-\[
-  \begin{aligned}
-    R_{cei} = \frac{S_i^{t+1} - F_i^{t+1}}{S_i^t} \\
-    R_{fpi} = \frac{F_i^{t+1}}{S_i^t} - 1
-  \end{aligned}
-\]
-
-where $S_i^t$ and $S_t^{t+1}$ are the spot rates of the currency $i$ at times $t$ and $t+1$ and $F_i^{t+1}$ is the forward exchange rate of the currency $i$ at time $t$ for conversion through a forward contract at time $t+1$.
-
-Then currency return is the sum of the currency surprise and the forward premium
-
-\[
-R_{ci} = R_{cei} + R_{fpi}
-\]
-
-Assuming the currency surprise and forward premiums are the same in the portfolio & benchmark, the total returns to the portfolio and benchmark can be expanded to include these currency returns
-
-\[
-  \begin{aligned}
-    R_p = \sum^n_{i=1}\left(w_{pi} \times(R_{pi} - R_{cei} - R_{fpi})\right) + \sum^n_{i=1}\left(w_{pi} \times R_{cei}\right) + \sum^n_{i=1}\left(w_{pi} \times R_{fpi}\right) \\
-    R_b = \sum^n_{i=1}\left(w_{bi} \times(R_{bi} - R_{cei} - R_{fpi})\right) + \sum^n_{i=1}\left(w_{bi} \times R_{cei}\right) + \sum^n_{i=1}\left(w_{bi} \times R_{fpi}\right)
-  \end{aligned}
-\]
-
-If the portfolio and benchmark also includes forward currency contracts, these can then be further isolated from the rest of the sources of return. If the weights of the forward contracts in the portfolio and benchmark are $w_{pfi}$ and $w_{bfi}$ respectively, then the forward return due to the curreny contracts can be expressed as
-
-\[
-  R_{fi} = \frac{S_i^{t+1}}{F_i^{t+1}} - 1
-\]
-
-Assuming the currency forward contract returns are the same in the portfolio & benchmark, the total returns to the portfolio and benchmark with the forward contracts included are now expressed as
-
-\[
-  \begin{aligned}
-    R_p = \sum^n_{i=1}\left(w_{pi} \times(R_{pi} - R_{cei} - R_{fpi})\right) + \sum^n_{i=1}\left(w_{pi} \times R_{cei}\right) + \sum^n_{i=1}\left(w_{pi} \times R_{fpi}\right) + \sum^n_{i=1}\left(w_{pfi} \times R_{fi}\right) \\
-    R_b = \sum^n_{i=1}\left(w_{bi} \times(R_{bi} - R_{cei} - R_{fpi})\right) + \sum^n_{i=1}\left(w_{bi} \times R_{cei}\right) + \sum^n_{i=1}\left(w_{bi} \times R_{fpi}\right) + \sum^n_{i=1}\left(w_{bfi} \times R_{fi}\right)
-  \end{aligned}
-\]
-
-The allocation, selection and interaction effects for category $i$ are as shown below, with the selection and interaction effects being the same as the single currency case.
-
-\[
-  \begin{aligned}
-    A_i & = (w_{pi} - w_{bi}) \times (R_{bi} - R_{ci} - R_l) \\
-    S_i & = w_{bi} \times (R_{pi} - R_{bi}) \\
-    I_i & = (w_{pi} - w_{bi}) \times (R_{pi} - R_{bi})
-  \end{aligned}
-\]
-
-where $R_l$ is given by
-
-\[
-R_l = \sum^n_{i=1}\left(w_{bi} \times (R_{bi} - R_{ci}) \right)
-\]
-
-The contribution from currency effects are analagous to asset allocation. The first, _currency management_ effect is the contribution due to the underlying assets and currency forwards (if present) and is defined as
-
-\[
-C_i = (w_{pi} - w_{bi}) \times (R_{cei} - R_{ce}) + (w_{pfi} - w_{bfi}) \times (R_{fi} - R_{ce}) \\
-\]
-
-where $R_{ce}$ is given by
-
-\[
-R_{ce} = \sum^n_{i=1}\left(w_{bi} \times R_{cei} \right)
-\]
-
-The second, _forward premium_ effect is given by
-
-\[
-C_i = (w_{pi} - w_{bi}) \times (R_{fpi} - R_{fp}) \\
-\]
-
-where $R_{fp}$ is given by
-
-\[
-R_{fp} = \sum^n_{i=1}\left(w_{bi} \times R_{fpi} \right)
-\]
-
-#### Multi-currency geometric attribution
-
-For multi-currency geometric attribution the approach adopted is that outlined in _Practical Portfolio Performance Measurement and Attribution by Bacon [-@bacon2008practical]_.
-
-As before, the total portfolio and benchmark returns in the base currency are given by
-
-\[
-R_p = \sum^n_{i=1}\left(w_{pi} \times R_{pi} \right) \\
-R_b = \sum^n_{i=1}\left(w_{bi} \times R_{bi} \right)
-\]
-
-Let's define the portfolio and benchmark returns in _local_ currency in category $i$ as $R_{pLi}$ and $R_{bLi} respectively. The total portfolio and benchmark returns in local currency are then given by
-
-\[
-R_{pL} = \sum^n_{i=1}\left(w_{pi} \times R_{pLi} \right) \\
-R_{bL} = \sum^n_{i=1}\left(w_{bi} \times R_{bLi} \right)
-\]
-
-The allocation semi-notional return in the local currency is given by
-
-\[
-R_{bSL} = \sum^n_{i=1}\left(w_{pi} \times R_{bLi} \right)
-\]
-
-The deviation from the index weighting hedged into the base currency is given by
-
-\[
-R_{bSH} = \sum^n_{i=1}(((w_{pi} - w_{bi}) \times R_{bHi}) + w_{bi} \times R_{bLi})
-\]
-
-where $R_{bHi}$, known as the _hedged index return_ is as defined below, with $R_{fi}$ as defined earlier
-
-\[
-R_{bHi} = \frac{(1 + R_{bi})}{(1 + R_{fi})} - 1
-\]
-
-The allocation and selection effects for category $i$ are defined as
-
-\[
-A_i = (w_{pi} - w_{bi}) \times \left(\frac{(1 + R_{bHi})}{(1 + R_{bL})} - 1 \right) \\
-S_i = w_{pi} \times \left(\frac{(1 + R_{pLi})}{(1 + R_{bLi})} - 1 \right) \times \left(\frac{(1 + R_{bLi})}{(1 + R_{bSL})} \right)
-\]
-
-and the total allocation and selection effect across all categories is given by
-
-\[
-A = \frac{(1 + R_{bsH})}{(1 + R_{bL})} - 1 \\
-S = \frac{(1 + R_{pL})}{(1 + R_{bSL})} - 1
-\]
-
-The currency effects can be broken into two components, one, what Carl Bacon calls _naive currency attribution_ and the other _costs of hedging_. 
-
-The naive currency effect is the difference between the base currency return of the portfolio and the weighted average local return and is defined give by the expression below. It is termed naive because it does not make allowance for the transfer of the costs of hedging due to the allocation bets taken by the portfolio manager and because it does not reflect the compounding effects between market or currency returns.
-
-\[
-C = \frac{(1 + R_p)}{(1 + R_{pL})} \times \frac{(1 + R_{bL})}{(1 + R_b)} - 1
-\]
-
-The costs of hedging represents the costs or benefit of hedging the asset allocator's decision back to the neutral currency benchmark and is given by
-
-\[
-H =  \frac{(1 + R_{bsL})}{(1 + R_{bSH})} - 1
-\]
-
-All of these effects now compound to the total geometric express return as show in the decomposition below
-
-\[
-E^G = \frac{(1 + R_p)}{(1 + R_b)} - 1 = (1 + A) \times (1 + S) \times (1 + C) \times (1 + H) - 1 \\
-E^G = \left(\frac{(1 + R_{bsH})}{(1 + R_{bL})} \right) \times \left(\frac{(1 + R_{pL})}{(1 + R_{bSL})} \right) \times \left(\frac{(1 + R_p)}{(1 + R_{pL})} \times \frac{(1 + R_{bL})}{(1 + R_b)} \right) \times \left(\frac{(1 + R_{bsL})}{(1 + R_{bSH})} \right) - 1
-\]
+However, the package also implements two other approaches that are a little more involved, the approach outlined by _Ankrim and Hensel [-@ankrim1994multicurrency]_ for arithmetic attribution and the approach outlined by _Bacon [-@bacon2008practical]_. For the details on these approaches please refer to the [multi-currency introduction vignette](introduction-multi-currency.html).
 
 
 ### <ins>Package basics</ins>
@@ -281,7 +127,7 @@ Some common aspects to the different functions are:
 * the portfolio & benchmark returns & weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio & benchmark data must match.
 * similarly, in a multi-period data set, if an asset or category drops out of the portfolio or benchmark, a return and weight of 0 must be specified. In other words the number of assets or categories for each period must be the same.
 * the package treats the weights provided as __end-of-peroid__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.
-* in addition to the attribution effects, the attribution methods also report the total excess returns for each period and annualizes when appropriate
+* in addition to the attribution effects, the attribution methods also report the total excess returns for each period and annualizes it when appropriate
 * in the case of multi-currency arithmetic attribution, the weights & returns of forward contracts in the portfolio & benchmarks can also be provided
 * the type of object returned is a `list`
 

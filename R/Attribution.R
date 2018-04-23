@@ -64,10 +64,10 @@
 #' surprise and forward premium should be specified. The multi-currency
 #' arithmetic attribution is handled following Ankrim and Hensel (1992).
 #' Currency returns are decomposed into the sum of the currency surprise and
-#' the forward premium: \deqn{R_{ci} = R_{cei} + R_{fpi}}{Rci = Rcei + Rfpi}
+#' the forward premium: \deqn{R_{ci} = R_{ei} + R_{di}}{Rci = Rcei + Rfpi}
 #' where 
-#' \deqn{R_{cei} = \frac{S_{i}^{t+1} - F_{i}^{t+1}}{S_{i}^{t}}}
-#' \deqn{R_{fpi} = \frac{F_{i}^{t+1}}{S_{i}^{t}} - 1}
+#' \deqn{R_{ei} = \frac{S_{i}^{t+1} - F_{i}^{t+1}}{S_{i}^{t}}}
+#' \deqn{R_{di} = \frac{F_{i}^{t+1}}{S_{i}^{t}} - 1}
 #' \eqn{S_{i}^{t}}{Sit} - spot rate for asset \eqn{i} at time \eqn{t}
 #' \eqn{F_{i}^{t}}{Fit} - forward rate for asset \eqn{i} at time \eqn{t}. 
 #' Excess returns are decomposed into the sum of allocation, selection and 
@@ -80,14 +80,13 @@
 #' Benchmark returns adjusted to the currency:
 #' \deqn{R_{l} = \sum^{n}_{i=1}w_{bi}\times(R_{bi}-R_{ci})}
 #' The contribution from the currency is analogous to asset allocation:
-#' \deqn{C_{i} = (w_{pi} - w_{bi}) \times (R_{cei} - e) + (w_{pfi} - w_{bfi}) 
-#' \times (R_{fi} - e)}
-#' where \deqn{e = \sum^{n}_{i=1}w_{bi}\times R_{cei}}
+#' \deqn{C_{i} = (w_{pi} - w_{bi}) \times (R_{ei} - R_e) + (w_{pfi} - w_{bfi}) 
+#' \times (R_{fi} - R_e)}
+#' where \deqn{R_e = \sum^{n}_{i=1}w_{bi}\times R_{ei}}
 #' The final term, forward premium, is also analogous to the asset allocation:
-#' \deqn{R_{fi} = (w_{pi} - w_{bi}) \times (R_{fpi} - d)}{Rfi = (wpi - wbi) * 
-#' (Rfpi - d)}
-#' where \deqn{d = \sum^{n}_{i=1}w_{bi}\times R_{fpi}}
-#' and \eqn{R_{fpi}} - forward premium
+#' \deqn{D_{i} = (w_{pi} - w_{bi}) \times (R_{di} - R_d)}
+#' where \deqn{R_d = \sum^{n}_{i=1}w_{bi}\times R_{di}}
+#' and \eqn{R_{di}} is the forward premium.
 #' In general if the intent is to estimate statistical parameters, the 
 #' arithmetic excess return is preferred. However, due to the linking 
 #' challenges, it may be preferable to use geometric excess return if the 
@@ -108,12 +107,12 @@
 #' The first date should coincide with the first date of portfolio returns
 #' @param Fb (T+1) x n xts, data frame or matrix with forward rates for contracts in the benchmark. 
 #' The first date should coincide with the first date of benchmark returns
-#' @param Rpl xts, data frame or matrix of portfolio returns in local currency
-#' @param Rbl xts, data frame or matrix of benchmark returns in local currency
-#' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
+#' @param Rpl xts, data frame or matrix of portfolio returns in local currency (only used when geometric is set to TRUE)
+#' @param Rbl xts, data frame or matrix of benchmark returns in local currency (only used when geometric is set to TRUE)
+#' @param Rbh xts, data frame or matrix of benchmark returns hedged into the (only used when geometric is set to TRUE)
 #' base currency
 #' @param bf TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
-#' Beebower arithmetic attribution. By default Brinson and Fachler 
+#' Beebower arithmetic attribution. By default this set to TRUE and so Brinson and Fachler 
 #' attribution is selected
 #' @param method Used to select the priority between allocation and selection 
 #' effects in arithmetic attribution. May be any of: \itemize{ \item none - 
@@ -189,10 +188,10 @@ function (Rp, wp, Rb, wb,
     # S        (T+1) x n xts, data frame or matrix with spot rates
     # Fp       (T+1) x n xts, data frame or matrix with forward rates for portfolio
     # Fb       (T+1) x n xts, data frame or matrix with forward rates for benchmark
-    # Rpl      xts, data frame or matrix of portfolio returns in local currency
-    # Rbl      xts, data frame or matrix of benchmark returns in local currency
+    # Rpl      xts, data frame or matrix of portfolio returns in local currency (only used when geometric is set to TRUE)
+    # Rbl      xts, data frame or matrix of benchmark returns in local currency (only used when geometric is set to TRUE)
     # Rbh      xts, data frame or matrix of benchmark returns hedged into the
-    #          base currency
+    #          base currency (only used when geometric is set to TRUE)
   
     # Outputs: 
     # This function returns the attribution effects with multi-period summary
