@@ -67,6 +67,36 @@ Semi-notional fund:
 \eqn{b} - total benchmark returns	 
 \eqn{n} - number of periods
 }
+\details{
+The multi-currency geometric attribution is handled following the Appendix B
+(Bacon, 2004).
+
+The individual selection effects are computed using:
+\deqn{w_{pi}\times\left(\frac{1+R_{pli}}{1+R_{bli}}-1\right)\times
+\left(\frac{1+R_{bli}}{1+R_{bsl}}\right)}
+
+The individual allocation effects are computed using:
+\deqn{(w_{pi}-w_{bi})\times\left(\frac{1+R_{bhi}}{1+R_{bl}}-1\right)}
+
+Where the total semi-notional returns hedged into the base currency were
+used:
+\deqn{R_{bsh} = \sum_{i}((w_{pi} - w_{bi})R_{bhi} + w_{bi}R_{bli})}
+Total semi-notional returns in the local currency:
+\deqn{R_{bsl} = \sum_{i}w_{pi}R_{bli}}
+\eqn{R_{pli}}{Rpli} - portfolio returns in the local currency
+\eqn{R_{bli}}{Rbli} - benchmark returns in the local currency
+\eqn{R_{bhi}}{Rbhi} - benchmark returns hedged into the base currency
+\eqn{R_{bl}}{Rbl} - total benchmark returns in the local currency
+\eqn{R_{pl}}{Rpl} - total portfolio returns in the local currency
+The total excess returns are decomposed into:
+\deqn{\frac{(1+R_{p})}{1+R_{b}}-1=\frac{1+R_{pl}}{1+R_{bsl}}\times\frac{1+
+R_{bsh}}{1+R_{bl}}\times\frac{1+R_{bsl}}{1+R_{bsh}}\times\frac{1+R_{p}}{1+R_{pl}}
+\times\frac{1+R_{bl}}{1+R_{b}}-1}
+
+where the first term corresponds to the selection, second to the allocation,
+third to the hedging cost transferred and the last two to the naive currency
+attribution
+}
 \examples{
 
 data(attrib)

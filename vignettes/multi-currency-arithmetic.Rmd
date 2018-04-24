@@ -133,7 +133,7 @@ simple_multi_curr_portf_2
 simple_multi_curr_portf_2_spot_forward_rates
 ```
 
-The weights returns for portfolio & benchmark categories, the weights for the portfolio & benchmark forward contracts and the spot & forward rates for the relevant curreny pairs are extracted from the sample data sets.
+The weights returns for portfolio & benchmark categories, the weights for the portfolio & benchmark forward contracts and the spot & forward rates for the relevant current pairs are extracted from the sample data sets.
 
 ```{r}
 wp = as.numeric(simple_multi_curr_portf_2[1,])
@@ -147,7 +147,7 @@ Fp = data.frame(simple_multi_curr_portf_2_spot_forward_rates[3:4,], row.names = 
 Fb = data.frame(simple_multi_curr_portf_2_spot_forward_rates[5:6,], row.names = c(Sys.Date(), Sys.Date()+1), check.names = FALSE)
 ```
 
-It is important to note that the spot and forward rates data inputs need to have one more period than that of the portfolio & benchmark return data set.
+It is important to note that the spot and forward rates data inputs need to have one more period than that of the portfolio & benchmark return data set. In addition, the first date of the data set should match up with that of the portfolio returns.
 
 ```{r}
 Rp;Rb
@@ -157,9 +157,31 @@ S;Fp;Fb
 
 #### Currency attribution
 
-The following command is executed to perform attribution analysis with currency effects on this data set using the Ankrim and Hensel methodology.
+The following command is executed to perform standard attribution analysis with currency effects on this data set using the Ankrim and Hensel methodology.
 
 ```{r}
 attribution_results = Attribution(Rp, wp, Rb, wb, wpf, wbf, S, Fp, Fb)
 ```
+
+The two currency effects reported are _Currency Management_ and _Forward Premium_ in addition to the usual attribution effects of allocation, selection and interaction
+
+```{r}
+names(attribution_results)
+attribution_results$`Currency management`
+attribution_results$`Forward Premium`
+```
+
+As expected the total arithmetic excess return can be decomposed into the sum of the three standard attribution effects and the two currency effects.
+
+```{r}
+attribution_results$`Excess returns`
+
+all.equal(as.numeric(attribution_results$Allocation[,"Total"] +
+                     attribution_results$Selection[,"Total"] +
+                     attribution_results$Interaction[,"Total"] + 
+                     attribution_results$`Currency management`[,"Total"] +
+                     attribution_results$`Forward Premium`[,"Total"]),
+          as.numeric(attribution_results$`Excess returns`))
+```
+
 ### <ins>References</ins>

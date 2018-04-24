@@ -290,10 +290,13 @@ function (Rp, wp, Rb, wb,
         Rpbf = Re / (1 + Rd)
         E = reclass(matrix(rep(rowSums(Re * coredata(wb)), ncol(Rb)), nrow(Rb),
                            ncol(Rb)), Rp)
+        E = as.xts(E)
         L = reclass(matrix(rep(rowSums(Rl * coredata(wb)), ncol(Rb)), nrow(Rb), 
                            ncol(Rb)), Rp)
+        L = as.xts(L)
         D = reclass(matrix(rep(rowSums(Rd * coredata(wb)), ncol(Rb)), nrow(Rb), 
                            ncol(Rb)), Rp)
+        D = as.xts(D)
         # Contribution to currency
         Cc = (wp - wb) * (Re - E) + (wpf - wbf) * (Rpbf - E) 
         # Forward premium

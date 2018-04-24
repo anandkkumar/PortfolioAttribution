@@ -46,7 +46,7 @@
 #' \eqn{R_{pl}}{Rpl} - total portfolio returns in the local currency
 #' The total excess returns are decomposed into:
 #' \deqn{\frac{(1+R_{p})}{1+R_{b}}-1=\frac{1+R_{pl}}{1+R_{bsl}}\times\frac{1+
-#' R_{bsh}}{1+R_{bl}}\times\frac{1+R_{bsl}}{1+R_{bsh}}}\times\frac{1+R_{p}}{1+R_{pl}}
+#' R_{bsh}}{1+R_{bl}}\times\frac{1+R_{bsl}}{1+R_{bsh}}\times\frac{1+R_{p}}{1+R_{pl}}
 #' \times\frac{1+R_{bl}}{1+R_{b}}-1}
 #' 
 #' where the first term corresponds to the selection, second to the allocation,
