@@ -23,3 +23,22 @@
 #'   \item{periodicBmkReturns}{xts object with total benchmark return for each period}
 #' }
 "multi_period_portf_1"
+
+#' Simple multi-currency portfolio & benchmark example, categorized into sectors, for use in vignettes
+#' 
+#' A simple portfolio & benchmark test data set, categorized into sectors, that contains portfolio & benchmark weights and 
+#' returns for each category in both local and base currency terms.
+"simple_multi_curr_portf_1"
+
+#' Simple multi-currency portfolio & benchmark example, categorized into regions, for use in vignettes
+#' 
+#' A simple portfolio & benchmark test data set, categorized into regions, that contains portfolio & benchmark weights and 
+#' returns for each category, portfolio & benchmark forward contract weights and spot ares and forward rates for the currencies 
+#' corresponding to each region.
+"simple_multi_curr_portf_2"
+
+#' Simple multi-currency spot and forward rates for each currency in each region in portfolio & benchmark example, for use in vignettes
+#' 
+#' Spot and forward rates for a simple portfolio & benchmark test data set, categorized into regions, for the currencies 
+#' corresponding to each region.
+"simple_multi_curr_portf_2_spot_forward_rates"

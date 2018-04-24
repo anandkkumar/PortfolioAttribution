@@ -3,6 +3,7 @@ title: "Single period arithmetic attribution with currency effects"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+bibliography: introduction.bib
 vignette: >
   %\VignetteIndexEntry{Single period arithmetic attribution with currency effects}
   %\VignetteEngine{knitr::rmarkdown}
@@ -15,15 +16,150 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+library(magrittr)
 library(PortfolioAttribution)
 ```
 
-This vignette shows how to perform a single period arithmetic attribution analysis on a multi-currency portfolio using the the `PortfolioAttribution` package with two different approaches. For more details please refer to the [introduction vignette](introduction.html) and the [multi-currency introduction vignette](introduction-multi-currency.html).
+This vignette shows how to perform a single period arithmetic attribution analysis on a multi-currency portfolio using the the `PortfolioAttribution` package with two different approaches. For more methodological details please refer to the [introduction vignette](introduction.html) and the [multi-currency introduction vignette](introduction-multi-currency.html).
 
 
-### <ins>Simple approach</ins>
+### <ins>Simple differences</ins>
 
-Some practitioners & attribution platforms simply consider the _currency effect_ to be the difference in effects between running the attribution analysis with returns in the local currency and again with returns in the base currency.
+Some practitioners & attribution platforms simply consider the _currency effect_ to be the difference in effects between running the attribution analysis with returns in the base currency and again with returns in the local currency.
 
 #### Define the data inputs
 
+Consider a portfolio & benchmark data categorized into sectors as shown below.
+
+```{r, echo=FALSE, results='asis'}
+data("sample_data", package = "PortfolioAttribution")
+knitr::kable(simple_multi_curr_portf_1)
+```
+
+This sample data from the package is available in the package as a data set to use.
+```{r}
+data("sample_data", package = "PortfolioAttribution")
+simple_multi_curr_portf_1
+```
+
+The weights, local and base currency returns for portfolio & benchmark are first extracted.
+
+```{r}
+wp = as.numeric(simple_multi_curr_portf_1[1,])
+Rpl = data.frame(simple_multi_curr_portf_1[2,], row.names = Sys.Date(), check.names = FALSE)
+Rp = data.frame(simple_multi_curr_portf_1[3,], row.names = Sys.Date(), check.names = FALSE)
+wb = as.numeric(simple_multi_curr_portf_1[4,])
+Rbl = data.frame(simple_multi_curr_portf_1[5,], row.names = Sys.Date(), check.names = FALSE)
+Rb = data.frame(simple_multi_curr_portf_1[6,], row.names = Sys.Date(), check.names = FALSE)
+```
+
+#### Brison and Fachler top-down attribution
+
+The following commands are executed to perform attribution analysis on this data using the Brinson and Fachler model and adopting a top-down approach (where the interaction effect is combined with the selection effect) successively using local currency returns and base currency returns.
+
+```{r}
+attribution_results_local = Attribution(Rpl, wp, Rbl, wb, method = "top.down")
+attribution_results = Attribution(Rp, wp, Rb, wb, method = "top.down")
+```
+
+As expected, for both local and base currencies the total arithmetic excess return equals the sum of the total attribution effects
+
+```{r}
+excess_returns_local = attribution_results_local$`Excess returns`
+excess_returns_local
+
+total_effects_local = attribution_results_local$Allocation[1,"Total"] + attribution_results_local$Selection[1,"Total"]
+total_effects_local
+
+excess_returns = attribution_results$`Excess returns`
+excess_returns
+
+total_effects = attribution_results$Allocation[1,"Total"] + attribution_results$Selection[1,"Total"]
+total_effects
+```
+
+The currency effects for each category & the total currency effect are computed as the difference between the total attribution effects using base currency returns and those using local currency returns.
+
+```{r}
+currency_effects = attribution_results$Allocation + attribution_results$Selection  - attribution_results_local$Allocation - attribution_results_local$Selection
+```
+
+Finally, the total arithmetic excess returns in the base currency is equal to the sum of the total allocation & selection effects for all categories using the local currency returns and the total currency effect.
+
+```{r}
+all.equal(as.numeric(attribution_results_local$Allocation[1,"Total"] + 
+                     attribution_results_local$Selection[1,"Total"] + 
+                     currency_effects[1,"Total"]), 
+          as.numeric(excess_returns))
+```
+
+
+Shown below is a summary of the all the effects including currency effects
+
+```{r echo=FALSE, results='asis'}
+results_summary = as.data.frame(rbind(attribution_results$Allocation, 
+                                      attribution_results$Selection, 
+                                      attribution_results_local$Allocation, 
+                                      attribution_results_local$Selection, 
+                                      currency_effects))
+rownames(results_summary) = c("Base Currency Allocation", "Base Currency Selection",
+                              "Local Currency Allocation", "Local Currency Selection", 
+                              "Curreny effect")
+results_summary %>% kableExtra::kable("html") %>% 
+  kableExtra::row_spec(3:5, background = "#F7F7F7") %>% 
+  kableExtra::column_spec(13, bold = TRUE)
+```
+
+
+### <ins>Ankrim and Hensel method</ins>
+
+The package also supports computing currency effects using the methodology described by _Ankrim and Hensel [-@ankrim1994multicurrency]_.
+
+#### Define the data inputs
+
+Consider a portfolio & benchmark data categorized into three regions as shown below.
+
+```{r, echo=FALSE, results='asis'}
+data("sample_data", package = "PortfolioAttribution")
+knitr::kable(simple_multi_curr_portf_2)
+knitr::kable(simple_multi_curr_portf_2_spot_forward_rates)
+```
+
+This sample data from the package is available in the package as a data set to use.
+```{r}
+data("sample_data", package = "PortfolioAttribution")
+simple_multi_curr_portf_2
+
+simple_multi_curr_portf_2_spot_forward_rates
+```
+
+The weights returns for portfolio & benchmark categories, the weights for the portfolio & benchmark forward contracts and the spot & forward rates for the relevant curreny pairs are extracted from the sample data sets.
+
+```{r}
+wp = as.numeric(simple_multi_curr_portf_2[1,])
+Rp = data.frame(simple_multi_curr_portf_2[2,], row.names = Sys.Date(), check.names = FALSE)
+wb = as.numeric(simple_multi_curr_portf_2[3,])
+Rb = data.frame(simple_multi_curr_portf_2[4,], row.names = Sys.Date(), check.names = FALSE)
+wpf = as.numeric(simple_multi_curr_portf_2[5,])
+wbf = as.numeric(simple_multi_curr_portf_2[6,])
+S = data.frame(simple_multi_curr_portf_2_spot_forward_rates[1:2,], row.names = c(Sys.Date(), Sys.Date()+1), check.names = FALSE)
+Fp = data.frame(simple_multi_curr_portf_2_spot_forward_rates[3:4,], row.names = c(Sys.Date(), Sys.Date()+1), check.names = FALSE)
+Fb = data.frame(simple_multi_curr_portf_2_spot_forward_rates[5:6,], row.names = c(Sys.Date(), Sys.Date()+1), check.names = FALSE)
+```
+
+It is important to note that the spot and forward rates data inputs need to have one more period than that of the portfolio & benchmark return data set.
+
+```{r}
+Rp;Rb
+
+S;Fp;Fb
+```
+
+#### Currency attribution
+
+The following command is executed to perform attribution analysis with currency effects on this data set using the Ankrim and Hensel methodology.
+
+```{r}
+attribution_results = Attribution(Rp, wp, Rb, wb, wpf, wbf, S, Fp, Fb)
+```
+### <ins>References</ins>
