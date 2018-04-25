@@ -108,6 +108,15 @@ The `PortfolioAttribution` package reports currency effects for arithmetic and g
 
 However, the package also implements two other approaches that are a little more involved, the approach outlined by _Ankrim and Hensel [-@ankrim1994multicurrency]_ for arithmetic attribution and the approach outlined by _Bacon [-@bacon2008practical]_. For the details on these approaches please refer to the [multi-currency introduction vignette](introduction-multi-currency.html).
 
+### <ins>Multi-period analysis</ins>
+
+#### Arithmetic attribution
+
+The `PortfolioAttribution` package implements five different approaches to smooth the periodic attribution effects so that they can explain the total arithmetic excess return over all periods. Please refer to the [multi-period arithmetic attribution vignette](multi-period-arithmetic.html) for examples and a summary of the characteristics & differences between the methods. The default method chosen by the package is _GRAP [-@grap1997]_.
+
+#### Geometric attribution
+
+Unlike in the case of arithmetic attribution, with geometric attribution analysis, there is no need to smooth periodic attribution effects so that they can explain the total geometric excess return over all periods. This is because the effects compound naturally by definition. This is a significant advantage, in terms of clarity, to adopting the geometric attribution analysis.
 
 ### <ins>Package basics</ins>
 
@@ -126,7 +135,7 @@ Some common aspects to the different functions are:
 * the package requires that the return data have row indexes defined as dates or periods compatible with the `xts` package
 * the portfolio & benchmark returns & weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio & benchmark data must match.
 * similarly, in a multi-period data set, if an asset or category drops out of the portfolio or benchmark, a return and weight of 0 must be specified. In other words the number of assets or categories for each period must be the same.
-* the package treats the weights provided as __end-of-peroid__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.
+* the package treats the weights provided as __end-of-period__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.
 * in addition to the attribution effects, the attribution methods also report the total excess returns for each period and annualizes it when appropriate
 * in the case of multi-currency arithmetic attribution, the weights & returns of forward contracts in the portfolio & benchmarks can also be provided
 * the type of object returned is a `list`

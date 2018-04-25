@@ -68,7 +68,7 @@ in arithmetic excess return attribution.}
 
 \item{adjusted}{TRUE/FALSE, whether to show original or smoothed attribution
 effects for each period. By default unadjusted attribution effects are 
-returned}
+returned (this is not used for  Davies and Laker's linking method as it is not applicable)}
 }
 \value{
 returns a list with the following components: excess returns with
@@ -126,7 +126,8 @@ attribution effects should be adjusted using linking methods. Adjusted
 arithmetic attribution effects can be summed up over time to provide the
 multi-period summary: 
 \deqn{R_{p}-R_{b}=\sum^{T}_{t=1}\left(A_{t}'+S_{t}'+I_{t}'\right)}
-where \eqn{T} is the number of periods and prime stands for the adjustment.
+where \eqn{T} is the number of periods and prime stands for the adjustment 
+(this is not applicable to Davies & Laker linking method).
 The geometric attribution effects do not suffer from the linking problem.
 Moreover we don't have the interaction term. For more details about the 
 geometric attribution see the documentation to 
