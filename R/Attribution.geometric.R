@@ -134,7 +134,7 @@ function(Rp, wp, Rb, wb,
       colnames(wp) = colnames(Rp)
     }
     else{
-      wp = WP
+      wp = checkData(WP)
     }
     if (is.vector(wb)){
       wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
@@ -142,7 +142,7 @@ function(Rp, wp, Rb, wb,
       colnames(wb) = colnames(Rb)
     }
     else{
-      wb = WB
+      wb = checkData(WB)
     }
     
     if (!is.na(wpf) & is.vector(wpf)){
@@ -151,7 +151,7 @@ function(Rp, wp, Rb, wb,
       colnames(wpf) = colnames(Rp)
     }
     else{
-      wpf = WPF
+      wpf = ifelse((is.na(WPF) || is.null(WPF)), WPF, checkData(WPF))
     }
     if (!is.na(wbf) & is.vector(wbf)){
       wbf = as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
@@ -159,7 +159,7 @@ function(Rp, wp, Rb, wb,
       colnames(wbf) = colnames(Rb)
     }
     else{
-      wbf = WBF
+      wbf = ifelse((is.na(WBF) || is.null(WBF)), WBF, checkData(WBF))
     }
     
     currency = !(is.null(dim(Rpl)) & is.null(dim(Rbl)) & is.null(dim(Rbh)))
@@ -224,18 +224,28 @@ function(Rp, wp, Rb, wb,
             rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpf)))
             rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rbf)))
           } else {
-            rp = Return.portfolio(cbind(Rp, Rpf), c(WP, WPF))
-            rb = Return.portfolio(cbind(Rb, Rbf), c(WB, WBF))
+            if(!is.null(WPF) & !is.null(WBF)) {
+              rp = Return.portfolio(cbind(Rp, Rpf), c(WP, WPF))
+              rb = Return.portfolio(cbind(Rb, Rbf), c(WB, WBF))
+            } else {
+              rp = Return.portfolio(Rp, WP)
+              rb = Return.portfolio(Rb, WB)
+            }
           }
         } else{
           # If we have just one observation we simply sum up the contributions
-          if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1 & 
-             NROW(Rpf) == 1 & NROW(WPF) == 1 & NROW(Rbf) == 1 & NROW(WBF) == 1) {
-            rp = as.matrix(sum(coredata(cbind(WP, WPF))*coredata(cbind(Rp, Rpf))))
-            rb = as.matrix(sum(coredata(cbind(WB, WBF))*coredata(cbind(Rb, Rbf))))
+          if(NROW(Rp) == 1 & NROW(wp) == 1 & NROW(Rb) == 1 & NROW(wb) == 1 & 
+             NROW(Rpf) == 1 & NROW(wpf) == 1 & NROW(Rbf) == 1 & NROW(wbf) == 1) {
+            rp = as.matrix(sum(coredata(cbind(wp, wpf))*coredata(cbind(Rp, Rpf))))
+            rb = as.matrix(sum(coredata(cbind(wb, wbf))*coredata(cbind(Rb, Rbf))))
           } else {
-            rp = Return.portfolio(cbind(Rp, Rpf), cbind(WP, WPF))
-            rb = Return.portfolio(cbind(Rb, Rbf), cbind(WB, WBF))
+            if(!is.null(wpf) & !is.null(wbf)) {
+              rp = Return.portfolio(cbind(Rp, Rpf), cbind(wp, wpf))
+              rb = Return.portfolio(cbind(Rb, Rbf), cbind(wb, wbf))
+            } else {
+              rp = Return.portfolio(Rp, wp)
+              rb = Return.portfolio(Rb, wb)
+            }
           }
         }
         names(rp) = rownames(rp) = "Total"                    

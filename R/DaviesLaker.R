@@ -68,7 +68,7 @@ function(Rp, wp, Rb, wb)
       colnames(wp) = colnames(Rp)
     }
     else{
-      wp = WP
+      wp = checkData(WP)
     }
     if (is.vector(wb)){
       wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
@@ -76,7 +76,7 @@ function(Rp, wp, Rb, wb)
       colnames(wb) = colnames(Rb)
     }
     else{
-      wb = WB
+      wb = checkData(WB)
     }
     
     rp = Return.portfolio(Rp, WP, geometric = FALSE)

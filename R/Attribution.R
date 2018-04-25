@@ -49,7 +49,8 @@
 #' arithmetic attribution effects can be summed up over time to provide the
 #' multi-period summary: 
 #' \deqn{R_{p}-R_{b}=\sum^{T}_{t=1}\left(A_{t}'+S_{t}'+I_{t}'\right)}
-#' where \eqn{T} is the number of periods and prime stands for the adjustment.
+#' where \eqn{T} is the number of periods and prime stands for the adjustment 
+#' (this is not applicable to Davies & Laker linking method).
 #' The geometric attribution effects do not suffer from the linking problem.
 #' Moreover we don't have the interaction term. For more details about the 
 #' geometric attribution see the documentation to 
@@ -136,7 +137,7 @@
 #' in arithmetic excess return attribution.
 #' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
 #' effects for each period. By default unadjusted attribution effects are 
-#' returned
+#' returned (this is not used for  Davies and Laker's linking method as it is not applicable)
 #' @return returns a list with the following components: excess returns with
 #' annualized excess returns over all periods, attribution effects (allocation, 
 #' selection and interaction)
@@ -212,7 +213,7 @@ function (Rp, wp, Rb, wb,
       colnames(wp) = colnames(Rp)
     }
     else{
-      wp = WP
+      wp = checkData(WP)
     }
     if (is.vector(wb)){
       wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
@@ -220,7 +221,7 @@ function (Rp, wp, Rb, wb,
       colnames(wb) = colnames(Rb)
     }
     else{
-      wb = WB
+      wb = checkData(WB)
     }
     
     if (!is.na(wpf) & is.vector(wpf)){
@@ -229,7 +230,7 @@ function (Rp, wp, Rb, wb,
       colnames(wpf) = colnames(Rp)
     }
     else{
-      wpf = WPF
+      wpf = ifelse((is.na(WPF) || is.null(WPF)), WPF, checkData(WPF))
     }
     if (!is.na(wbf) & is.vector(wbf)){
       wbf = as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
@@ -237,7 +238,7 @@ function (Rp, wp, Rb, wb,
       colnames(wbf) = colnames(Rb)
     }
     else{
-      wbf = WBF
+      wbf = ifelse((is.na(WBF) || is.null(WBF)), WBF, checkData(WBF))
     }
     
     if (nrow(wp) < nrow(Rp)){ # Rebalancing occurs next day
@@ -316,17 +317,27 @@ function (Rp, wp, Rb, wb,
           rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpbf)))
           rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))
         } else {
-          rp = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
-          rb = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+          if(!is.null(WPF) & !is.null(WBF)) {
+            rp = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
+            rb = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+          } else {
+            rp = Return.portfolio(Rp, WP, geometric = FALSE)
+            rb = Return.portfolio(Rb, WB, geometric = FALSE)
+          }
         }
       } else {
         # If we have just one observation we simply sum up the contributions
-        if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1) {
-          rp = as.matrix(sum(coredata(cbind(WP, WPF))*coredata(cbind(Rp, Rpbf))))
-          rb = as.matrix(sum(coredata(cbind(WB, WBF))*coredata(cbind(Rb, Rpbf))))
+        if(NROW(Rp) == 1 & NROW(wp) == 1 & NROW(Rb) == 1 & NROW(wb) == 1) {
+          rp = as.matrix(sum(coredata(cbind(wp, WPF))*coredata(cbind(Rp, Rpbf))))
+          rb = as.matrix(sum(coredata(cbind(wb, WBF))*coredata(cbind(Rb, Rpbf))))
         } else {
-          rp = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
-          rb = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+          if(!is.null(WPF) & !is.null(WBF)) {
+            rp = Return.portfolio(cbind(Rp, Rpbf), cbind(wp, WPF), geometric = FALSE)
+            rb = Return.portfolio(cbind(Rb, Rpbf), cbind(wb, WBF), geometric = FALSE)
+          } else {
+            rp = Return.portfolio(Rp, wp, geometric = FALSE)
+            rb = Return.portfolio(Rb, wb, geometric = FALSE)
+          }
         }
       }
       names(rp) = rownames(rp) = "Total"
@@ -344,7 +355,8 @@ function (Rp, wp, Rb, wb,
         warning("Benchmark weights unknown, all effects treated as interaction, returns wp*(Rp-Rb)")
       }
       else{
-        if (bf == TRUE){ # Brinson and Fachler (1985) allocation effect
+        if (bf == TRUE){ 
+          # Brinson and Fachler (1985) allocation effect
           allocation = coredata(wp - wb) * (Rb - coredata(Rc) - coredata(L) - 
             rep(rb, ncol(Rb)))
         }else{
