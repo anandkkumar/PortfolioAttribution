@@ -8,6 +8,14 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+<style type="text/css">
+body {
+  max-width: 100% !important;
+}
+table {
+  margin-left: 0 !important;
+}
+</style>
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
