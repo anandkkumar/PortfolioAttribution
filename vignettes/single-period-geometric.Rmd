@@ -28,7 +28,7 @@ This vignette shows how to perform a single period geometric attribution analysi
 data("sample_data", package = "PortfolioAttribution")
 ```
 
-Say we have a relatively large portfolio & benchmark data set at the security level. This example data set in the package has `r NCOL(multi_period_portf_1$Rp)` assets over `r NROW(multi_period_portf_1$Rp)` monthly periods. The column names are security identifiers and the row indexes are month-end dates. As outlined in the [introduction vignette](introduction.html), the attribution package requires the number of assets be the same for all periods and between the portfolio & benchmark.
+Say we have a relatively large portfolio & benchmark data set at the security level. This example data set in the package has `r NCOL(multi_period_portf_1$Rp)` assets over `r NROW(multi_period_portf_1$Rp)` monthly periods. The column names are security identifiers and the row indexes are month-end dates. As outlined in the [introduction vignette](introduction.html), the attribution package requires that the number of assets be the same for all periods and between the portfolio & benchmark.
 
 The first few periods & assets are shown below.
 
@@ -83,6 +83,7 @@ geometric_excess_return = as.numeric((1+multi_period_portf_1$periodicPortReturns
                                        (1+multi_period_portf_1$periodicBmkReturns[1,]) - 1)
 geometric_excess_return
 ```
+
 With geometric attribution, the total allocation & selection effects <ins>compound</ins> to give the total effect, which as expected equals the total geometric excess return.
 
 ```{r}
