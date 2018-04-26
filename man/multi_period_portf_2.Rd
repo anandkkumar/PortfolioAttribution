@@ -3,7 +3,7 @@
 \docType{data}
 \name{multi_period_portf_2}
 \alias{multi_period_portf_2}
-\title{Multi-period portfolio & benchmark example categorized into regions, for use in vignettes}
+\title{Second multi-period portfolio & benchmark example categorized into regions, for use in vignettes}
 \format{A list with 4 members:
 \describe{
   \item{Rp}{xts object with portfolio returns for each region and period}

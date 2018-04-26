@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library(PortfolioAttribution)
 ```
 
-This vignette gives and indication of the how long the computations take on a large data set of portfolio & benchmark weights and returns. The `system.time` command is employed.
+This vignette gives and indication of the how long the computations take on a large data set of portfolio & benchmark weights and returns using the built-in `system.time` command.
 
 ### <ins>Define the data inputs</ins>
 
@@ -27,28 +27,40 @@ This vignette gives and indication of the how long the computations take on a la
 data("sample_data", package = "PortfolioAttribution")
 ```
 
-Say we have a relatively large portfolio & benchmark data set at the security level. This example data set in the package has `r NCOL(multi_period_portf_1$Rp)` assets over `r NROW(multi_period_portf_1$Rp)` monthly periods. The column names are security identifiers and the row indexes are month-end dates.
+Say we have two relatively large portfolio & benchmark data sets at the security level. This first example in the data set in the package has `r NCOL(multi_period_portf_1$Rp)` assets over `r NROW(multi_period_portf_1$Rp)` monthly periods and the second example in the data set has `r NCOL(multi_period_portf_3$Rp)` assets over `r NROW(multi_period_portf_3$Rp)` monthly periods. The column names are security identifiers and the row indexes are month-end dates.
 
 The first few periods & assets are shown below.
 
 ```{r}
 data("sample_data", package = "PortfolioAttribution")
-# Portfolio weights
-multi_period_portf_1$wp[1:3,1:4]
+# Portfolio 1 weights
+multi_period_portf_1$wp[1:3,1:5]
 
-# Portfolio returns
-multi_period_portf_1$Rp[1:3,1:4]
+# Portfolio 1 returns
+multi_period_portf_1$Rp[1:3,1:5]
 
-# Benchmark weights
-multi_period_portf_1$wb[1:3,1:4]
+# Benchmark 1 weights
+multi_period_portf_1$wb[1:3,1:5]
 
-# Benchmark returns
-multi_period_portf_1$Rb[1:3,1:4]
+# Benchmark 1 returns
+multi_period_portf_1$Rb[1:3,1:5]
+
+# Portfolio 2 weights
+multi_period_portf_3$wp[1:3,1:5]
+
+# Portfolio 2 returns
+multi_period_portf_3$Rp[1:3,1:5]
+
+# Benchmark 2 weights
+multi_period_portf_3$wb[1:3,1:5]
+
+# Benchmark 2 returns
+multi_period_portf_3$Rb[1:3,1:5]
 ```
 
 ### <ins>Timing results</ins>
 
-The following command is executed to run & time a multi-period arithmetic attribution analysis using the default _Brinson and Fachler [-@brinson1985measuring]_ model and adopting a top-down approach with the default smoothing algorithm of _GRAP [-@grap1997]_.
+The following command is executed to run & time a multi-period arithmetic attribution analysis using the default _Brinson and Fachler [-@brinson1985measuring]_ model and adopting a top-down approach with the default smoothing algorithm of _GRAP [-@grap1997]_ on the first example data set (please refer to the [multi-period arithmetic attribution vignette](multi-period-arithmetic.html) for more details on smoothing).
 
 ```{r}
 system.time(Attribution(multi_period_portf_1$Rp, multi_period_portf_1$wp, 
@@ -64,5 +76,26 @@ system.time(Attribution(multi_period_portf_1$Rp, multi_period_portf_1$wp,
                         multi_period_portf_1$Rb, multi_period_portf_1$wb, 
                         geometric = TRUE))
 ```
+
+The following command is executed to run & time a multi-period arithmetic attribution analysis using the default _Brinson and Fachler [-@brinson1985measuring]_ model and adopting a top-down approach with the default smoothing algorithm of _GRAP [-@grap1997]_ on the second example data set.
+
+```{r}
+system.time(Attribution(multi_period_portf_3$Rp, multi_period_portf_3$wp, 
+                        multi_period_portf_3$Rb, multi_period_portf_3$wb, 
+                        method = "top.down"))
+```
+
+The following command is executed to run & time a multi-period geometric attribution analysis.
+
+```{r}
+system.time(Attribution(multi_period_portf_3$Rp, multi_period_portf_3$wp, 
+                        multi_period_portf_3$Rb, multi_period_portf_3$wb, 
+                        geometric = TRUE))
+```
+
+In general,
+
+* the arithmetic attribution analysis takes longer than the geometric attribution analysis largely due to the need for computing smoothed effects for _each_ period to arrive at the total effects for arithmetic attribution
+* the longer the analysis period, the longer it takes to do the attribution analysis
 
 ### <ins>References</ins>
