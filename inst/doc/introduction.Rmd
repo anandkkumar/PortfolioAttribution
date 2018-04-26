@@ -43,7 +43,7 @@ This method is based on the _Brinson et al. [-@brinson1986determinants]_ article
 
 \[
   \begin{aligned}
-    A_i & =(w_{pi}-w_{bi})\times R_{bi} \\
+    A_i & = (w_{pi}-w_{bi})\times R_{bi} \\
     S_i & = w_{bi}\times(R_{pi}-R_{bi}) \\
     I_i & = (w_{pi}-w_{bi})\times(R_{pi}-R_{bi})
   \end{aligned}

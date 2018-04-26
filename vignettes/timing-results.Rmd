@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library(PortfolioAttribution)
 ```
 
-This vignette gives and indication of the how long the computations take on a large data set of portfolio & benchmark weights and returns using the built-in `system.time` command.
+This vignette gives an indication of the how long the computations take on a large data set of portfolio & benchmark weights and returns using the built-in `system.time` command.
 
 ### <ins>Define the data inputs</ins>
 

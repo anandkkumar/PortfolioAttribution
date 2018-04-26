@@ -25,8 +25,8 @@ The currency surprise and forward premium in currency $i$ are given by
 
 \[
   \begin{aligned}
-    R_{ei} = \frac{S_i^{t+1} - F_i^{t+1}}{S_i^t} \\
-    R_{di} = \frac{F_i^{t+1}}{S_i^t} - 1
+    R_{ei} & = \frac{S_i^{t+1} - F_i^{t+1}}{S_i^t} \\
+    R_{di} & = \frac{F_i^{t+1}}{S_i^t} - 1
   \end{aligned}
 \]
 
@@ -42,8 +42,8 @@ Assuming the currency surprise and forward premiums are the same in the portfoli
 
 \[
   \begin{aligned}
-    R_p = \sum^n_{i=1}\left(w_{pi} \times(R_{pi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{pi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{pi} \times R_{di}\right) \\
-    R_b = \sum^n_{i=1}\left(w_{bi} \times(R_{bi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{bi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{bi} \times R_{di}\right)
+    R_p & = \sum^n_{i=1}\left(w_{pi} \times(R_{pi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{pi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{pi} \times R_{di}\right) \\
+    R_b & = \sum^n_{i=1}\left(w_{bi} \times(R_{bi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{bi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{bi} \times R_{di}\right)
   \end{aligned}
 \]
 
@@ -64,8 +64,8 @@ Assuming the currency forward contract returns are the same in the portfolio & b
 
 \[
   \begin{aligned}
-    R_p = \sum^n_{i=1}\left(w_{pi} \times(R_{pi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{pi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{pi} \times R_{di}\right) + \sum^n_{i=1}\left(w_{pfi} \times R_{fi}\right) \\
-    R_b = \sum^n_{i=1}\left(w_{bi} \times(R_{bi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{bi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{bi} \times R_{di}\right) + \sum^n_{i=1}\left(w_{bfi} \times R_{fi}\right)
+    R_p & = \sum^n_{i=1}\left(w_{pi} \times(R_{pi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{pi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{pi} \times R_{di}\right) + \sum^n_{i=1}\left(w_{pfi} \times R_{fi}\right) \\
+    R_b & = \sum^n_{i=1}\left(w_{bi} \times(R_{bi} - R_{ei} - R_{di})\right) + \sum^n_{i=1}\left(w_{bi} \times R_{ei}\right) + \sum^n_{i=1}\left(w_{bi} \times R_{di}\right) + \sum^n_{i=1}\left(w_{bfi} \times R_{fi}\right)
   \end{aligned}
 \]
 
@@ -188,15 +188,17 @@ H =  \frac{(1 + R_{bsl})}{(1 + R_{bsh})} - 1
 All of these effects now compound to the total geometric express return as show in the decomposition below
 
 \[
-E^G = \frac{(1 + R_p)}{(1 + R_b)} - 1 = (1 + A) \times (1 + S) \times (1 + C) \times (1 + H) - 1 \\
-E^G = \left(\frac{(1 + R_{bsh})}{(1 + R_{bl})} \right) \times \left(\frac{(1 + R_{pl})}{(1 + R_{bsl})} \right) \times \left(\frac{(1 + R_p)}{(1 + R_{pl})} \times \frac{(1 + R_{bl})}{(1 + R_b)} \right) \times \left(\frac{(1 + R_{bsl})}{(1 + R_{bsh})} \right) - 1
+  \begin{aligned}
+    E^G & = \frac{(1 + R_p)}{(1 + R_b)} - 1 = (1 + A) \times (1 + S) \times (1 + C) \times (1 + H) - 1 \\
+    E^G & = \left(\frac{(1 + R_{bsh})}{(1 + R_{bl})} \right) \times \left(\frac{(1 + R_{pl})}{(1 + R_{bsl})} \right) \times \left(\frac{(1 + R_p)}{(1 + R_{pl})} \times \frac{(1 + R_{bl})}{(1 + R_b)} \right) \times \left(\frac{(1 + R_{bsl})}{(1 + R_{bsh})} \right) - 1
+    \end{aligned}
 \]
 
 The `PortfolioAttribution` package also supports any forward contracts that may be held in the portfolio or benchmark, as in the arithmetic case. The total portfolio & benchmark returns then become
 \[
   \begin{aligned}
-    R_p = \sum^n_{i=1}\left(w_{pi} \times R_{pi} \right) + \sum^n_{i=1}\left(w_{pfi} \times R_{pfi}\right) \\
-    R_b = \sum^n_{i=1}\left(w_{bi} \times R_{bi} \right) + \sum^n_{i=1}\left(w_{bfi} \times R_{bfi}\right)
+    R_p & = \sum^n_{i=1}\left(w_{pi} \times R_{pi} \right) + \sum^n_{i=1}\left(w_{pfi} \times R_{pfi}\right) \\
+    R_b & = \sum^n_{i=1}\left(w_{bi} \times R_{bi} \right) + \sum^n_{i=1}\left(w_{bfi} \times R_{bfi}\right)
   \end{aligned}
 \]
 
