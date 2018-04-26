@@ -68,7 +68,7 @@ function(Rp, wp, Rb, wb)
       colnames(wp) = colnames(Rp)
     }
     else{
-      wp = WP
+      wp = checkData(WP)
     }
     if (is.vector(wb)){
       wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
@@ -76,16 +76,11 @@ function(Rp, wp, Rb, wb)
       colnames(wb) = colnames(Rb)
     }
     else{
-      wb = WB
+      wb = checkData(WB)
     }
     
-    if (is.vector(WP)  & is.vector(WB)){
-      rp = Return.portfolio(Rp, WP, geometric = FALSE)
-      rb = Return.portfolio(Rb, WB, geometric = FALSE)
-    } else{
-      rp = Return.rebalancing(Rp, WP, geometric = FALSE)
-      rb = Return.rebalancing(Rb, WB, geometric = FALSE)
-    }
+    rp = Return.portfolio(Rp, WP, geometric = FALSE)
+    rb = Return.portfolio(Rb, WB, geometric = FALSE)
     colnames(rp) = "Total"
     colnames(rb) = "Total"
     # Allocation notional fund returns

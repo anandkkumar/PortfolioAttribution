@@ -1,7 +1,7 @@
 library(PortfolioAttribution)
 library(testthat)
 
-context("Geometric Attribution Examples from Pratical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
+context("Geometric Attribution Examples from Practical Portfolio Performance Management and Attribution by Carl Bacon (2008)")
 epsilon = 1e-4
 
 cnames = c("UK equities", "Japanese equities", "US equities")
@@ -21,7 +21,7 @@ test_that("Multi-period geometric attribution example in Table 8.6" , {
   Wp = checkData(Wp)
   Wb = checkData(Wb)
   
-  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "none", geometric = TRUE)
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", geometric = TRUE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"Japanese equities"] - (-0.0098)) < epsilon)
   expect_true(abs(attribution_results$Allocation[1,"US equities"] - (-0.0015)) < epsilon)

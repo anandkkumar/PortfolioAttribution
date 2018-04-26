@@ -1,0 +1,92 @@
+---
+title: "Single period geometric attribution"
+author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Single period geometric attribution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(PortfolioAttribution)
+```
+
+This vignette shows how to perform a single period geometric attribution analysis using the `PortfolioAttribution` package and illustrates the point about the weight inputs being treated as __end-of-period__ weights. For a brief introduction to portfolio performance attribution, this model, the package and references, please refer to the [introduction vignette](introduction.html).
+
+
+
+### Define the data inputs
+
+```{r, echo=FALSE}
+data("sample_data", package = "PortfolioAttribution")
+```
+
+Say we have a relatively large portfolio & benchmark data set at the security level. This example data set in the package has `r NCOL(multi_period_portf_1$Rp)` assets over `r NROW(multi_period_portf_1$Rp)` monthly periods. The column names are security identifiers and the row indexes are month-end dates. As outlined in the [introduction vignette](introduction.html), the attribution package requires that the number of assets be the same for all periods and between the portfolio & benchmark.
+
+The first few periods & assets are shown below.
+
+```{r}
+data("sample_data", package = "PortfolioAttribution")
+# Portfolio weights
+multi_period_portf_1$wp[1:3,1:4]
+
+# Portfolio returns
+multi_period_portf_1$Rp[1:3,1:4]
+
+# Benchmark weights
+multi_period_portf_1$wb[1:3,1:4]
+
+# Benchmark returns
+multi_period_portf_1$Rb[1:3,1:4]
+```
+
+To perform a single period attribution analysis just the first observation for the portfolio & benchmark is extracted. Since the package uses an end-of-period weight convention, the index of the weight data is the month-end prior to that of the return data.
+
+```{r}
+wp = multi_period_portf_1$wp[1,]
+Rp = multi_period_portf_1$Rp[1,]
+index(wp)
+index(Rp)
+
+wb = multi_period_portf_1$wb[1,]
+Rb = multi_period_portf_1$Rb[1,]
+index(wb)
+index(Rb)
+```
+
+#### Geometric attribution
+
+To run geometric attribution analysis on this data the following command is used.
+
+```{r}
+attribution_results = Attribution(Rp, wp, Rb, wb, geometric = TRUE)
+```
+
+The total allocation & selection effects for all securities is available in the _Total_ column for the period. In this case, since we had no categories and all the data was at the security level, the selection effects are by construction all zero.
+
+```{r}
+attribution_results$Allocation[1, "Total"]
+attribution_results$Selection[1, "Total"]
+```
+
+The data set also reports the total portfolio & benchmark return for each period and so the geometric excess return can be computed from that
+
+```{r}
+geometric_excess_return = as.numeric((1+multi_period_portf_1$periodicPortReturns[1,])/
+                                       (1+multi_period_portf_1$periodicBmkReturns[1,]) - 1)
+geometric_excess_return
+```
+
+With geometric attribution, the total allocation & selection effects <ins>compound</ins> to give the total effect, which as expected equals the total geometric excess return.
+
+```{r}
+total_effect = (1+attribution_results$Allocation[1, "Total"])*(1+attribution_results$Selection[1, "Total"])-1
+all.equal(geometric_excess_return, total_effect)
+```
