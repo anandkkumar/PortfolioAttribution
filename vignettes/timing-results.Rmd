@@ -1,11 +1,11 @@
 ---
-title: "Attribution timing results"
+title: "Attribution execution speed sample results"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 bibliography: introduction.bib
 vignette: >
-  %\VignetteIndexEntry{Attribution timing results}
+  %\VignetteIndexEntry{Attribution execution speed results}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library(PortfolioAttribution)
 ```
 
-This vignette gives and indication of the how long the computations take on a large data set of portfolio & benchmark weights and returns. The `system.time` command is employed.
+This vignette gives and indication of the how long the computations take on a large data set of portfolio & benchmark weights and returns. It is intended to be illustrative and does not construe a rigorous benchmarking of the functions. The `system.time` command is employed.
 
 ### <ins>Define the data inputs</ins>
 
@@ -32,6 +32,7 @@ Say we have a relatively large portfolio & benchmark data set at the security le
 The first few periods & assets are shown below.
 
 ```{r}
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 # Portfolio weights
 multi_period_portf_1$wp[1:3,1:4]
