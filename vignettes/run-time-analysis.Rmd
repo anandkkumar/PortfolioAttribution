@@ -1,11 +1,11 @@
 ---
-title: "Attribution timing results"
+title: "Run-times for attribution analysis"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 bibliography: introduction.bib
 vignette: >
-  %\VignetteIndexEntry{Attribution timing results}
+  %\VignetteIndexEntry{Run-times for attribution analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library(PortfolioAttribution)
 ```
 
-This vignette gives an indication of the how long the computations take on a large data set of portfolio & benchmark weights and returns using the built-in `system.time` command.
+This vignette demonstrates how to measure the computation times on a large data set of portfolio & benchmark weights and returns. It is intended to be illustrative and does not represent a rigorous approach to benchmarking the performance of the functions. The `system.time` command is employed and the results will naturally vary based on your computing platform.
 
 ### <ins>Define the data inputs</ins>
 
@@ -32,6 +32,7 @@ Say we have two relatively large portfolio & benchmark data sets at the security
 The first few periods & assets are shown below.
 
 ```{r}
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 # Portfolio 1 weights
 multi_period_portf_1$wp[1:3,1:5]
@@ -58,7 +59,7 @@ multi_period_portf_3$wb[1:3,1:5]
 multi_period_portf_3$Rb[1:3,1:5]
 ```
 
-### <ins>Timing results</ins>
+### <ins>Run-time analysis</ins>
 
 The following command is executed to run & time a multi-period arithmetic attribution analysis using the default _Brinson and Fachler [-@brinson1985measuring]_ model and adopting a top-down approach with the default smoothing algorithm of _GRAP [-@grap1997]_ on the first example data set (please refer to the [multi-period arithmetic attribution vignette](multi-period-arithmetic.html) for more details on smoothing).
 

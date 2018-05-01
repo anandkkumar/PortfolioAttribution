@@ -48,6 +48,7 @@ knitr::kable(simple_portf_2)
 
 This sample data from the package is available in the package as a data set to use.
 ```{r}
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 simple_portf_2
 ```

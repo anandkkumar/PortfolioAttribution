@@ -126,17 +126,20 @@ The attribution functions in this package employ an interface in terms of weight
 
 The main functions of interest are `Attribution`, `Attribution.levels` and `AttributionFixedIncome`. You can use the `help` command or the `?` shortcut on any of these functions to peruse their documentation.
 
-Some common aspects to the different functions are:
+Key data input assumptions:
+
+* the package assumes you have already computed the relevant weights & returns at the appropriate levels using either a buy-hold approach or a transactional platform to compute the returns more accurately
+* the portfolio & benchmark returns & weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio & benchmark data must match.
+* similarly, in a multi-period data set, if an asset or category drops out of the portfolio or benchmark, a return and weight of 0 must be specified. In other words the number of assets or categories for each period must be the same.
+* the package treats the weights provided as __end-of-period__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.
+
+Other aspects common to the different functions are:
 
 * the returns and weights have to be specified as decimal numbers and not percentages
 * the returns have to be in the form of a $T \times n$ `xts`, `data.frame` or `matrix` of returns
 * the weights have to be in the form of a vector or $T \times n$ `xts`, `data.frame` or `matrix` of returns. When the weights are in the form a vector it is assumed that the weights are reset to the target prior to each period
 * the rows in the returns & weights data represent periods while the columns represent assets or categories
 * the package requires that the return data have row indexes defined as dates or periods compatible with the `xts` package
-* the portfolio & benchmark returns & weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio & benchmark data must match.
-* similarly, in a multi-period data set, if an asset or category drops out of the portfolio or benchmark, a return and weight of 0 must be specified. In other words the number of assets or categories for each period must be the same.
-* the package treats the weights provided as __end-of-period__ weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.
-* the package by default applies the Brinson and Fachler methodology for both arithmetic and geometric attribution analysis. For arithmetic attribution only, the package supports switching it to use the Brinson, Hood and Beebower method.
 * for arithmetic attribution the package supports combining the interaction effects into the selection or allocation effects, which is termed a _top-down_ and _bottom-up_ approach respectively. The default behavior is not combine them and report the interaction effects separately (please refer to the [top-down v/s bottom-up arithmetic attribution vignette](top-down-bottom-up.html) for more details). For geometric attribution, no interaction effects are reported.
 * the smoothing algorithms implemented by the package are listed below (please refer to the [multi-period arithmetic attribution vignette](multi-period-arithmetic.html) for more details on smoothing)
     + GRAP (__default__)
@@ -147,6 +150,13 @@ Some common aspects to the different functions are:
 * in addition to the attribution effects, the attribution methods also report the total excess returns for each period and annualizes it when appropriate
 * in the case of multi-currency arithmetic attribution, the weights & returns of forward contracts in the portfolio & benchmarks can also be provided
 * the type of object returned by all of the attribution computational methods is a `list`. The list members that represent the attribution effects are `xts` or `data.frame` objects, while the excess returns are `matrix` objects.
-* there are a number of unit tests included as part of the package that can be executed & examined to better understand the different functions and their expected behavior. These unit tests are available in the `tests` folder and employ the `testthat` framework. These use specific test data sets that included in the package and so can be run through through `RStudio` or the R console directly.
+
+### <ins>Unit tests</ins>
+
+There are a large number of unit tests included as part of the package that can be executed & examined to better understand the different functions and their expected behavior. These unit tests are available in the `tests` folder and employ the `testthat` framework. These use specific test data sets that included in the package and so can be run through through `RStudio` or the R console directly.
+
+### <ins>Run-times for attribution analysis</ins>
+
+Please refer to the [run-times for attribution analysis vignette](run-time-analysis.html) for an approach to measure the computation times for different methods on large data sets.
 
 ### <ins>References</ins>
