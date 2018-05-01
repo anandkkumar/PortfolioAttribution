@@ -9,8 +9,17 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+<style type="text/css">
+body {
+  max-width: 100% !important;
+}
+table {
+  margin-left: 0 !important;
+}
+</style>
 
 ```{r setup, include = FALSE}
+options(width = 100)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -177,8 +186,8 @@ As expected the total arithmetic excess return can be decomposed into the sum of
 ```{r}
 attribution_results$`Excess returns`
 
-all.equal(as.numeric(attribution_results$Allocation[,"Total"] +
-                     attribution_results$Selection[,"Total"] +
+all.equal(as.numeric(attribution_results$Allocation[,"Total"] + 
+                     attribution_results$Selection[,"Total"] + 
                      attribution_results$Interaction[,"Total"] + 
                      attribution_results$`Currency management`[,"Total"] +
                      attribution_results$`Forward Premium`[,"Total"]),

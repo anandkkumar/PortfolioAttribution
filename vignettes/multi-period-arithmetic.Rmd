@@ -9,6 +9,14 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+<style type="text/css">
+body {
+  max-width: 100% !important;
+}
+table {
+  margin-left: 0 !important;
+}
+</style>
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -28,10 +36,20 @@ Consider a multi-period portfolio & benchmark data categorized into three region
 
 ```{r, echo=FALSE, results='asis'}
 data("sample_data", package = "PortfolioAttribution")
-knitr::kable(multi_period_portf_2$wp, caption = "Portfolio Weights")
-knitr::kable(multi_period_portf_2$Rp, caption = "Portfolio Returns")
-knitr::kable(multi_period_portf_2$wb, caption = "Benchmark Weights")
-knitr::kable(multi_period_portf_2$Rb, caption = "Benchmark Returns")
+
+cbind(multi_period_portf_2$wp, multi_period_portf_2$Rp) %>% 
+  kableExtra::kable("html") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(multi_period_portf_2$Rp), by=2), background = "#F7F7F7") %>% 
+  kableExtra::add_header_above(c(" " = 1, "Portfolio Weights" = 3, "Portfolio Returns" = 3))
+
+cbind(multi_period_portf_2$wb, multi_period_portf_2$Rb) %>% 
+  kableExtra::kable("html") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(multi_period_portf_2$Rb), by=2), background = "#F7F7F7") %>% 
+  kableExtra::add_header_above(c(" " = 1, "Benchmark Weights" = 3, "Benchmark Returns" = 3))
 ```
 
 This sample data from the package is available in the package structured as a `list` object to use.
@@ -213,48 +231,59 @@ The attribution effects for the different algorithms effects are compared below.
 
 ```{r, echo=FALSE, results='asis'}
 cbind(attribution_results_grap$Allocation, 
-      attribution_results_carino$Allocation,
-      attribution_results_menchero$Allocation,
-      attribution_results_frongello$Allocation,
-      attribution_results_davies_laker$Allocation) %>% 
+      attribution_results_frongello$Allocation) %>% 
   kableExtra::kable("html", caption = "Allocation Effects") %>% 
   kableExtra::kable_styling("striped") %>% 
   kableExtra::column_spec(2:5, color = "blue") %>%
   kableExtra::column_spec(6:9, color = "orange") %>%
-  kableExtra::column_spec(10:13, color = "darkcyan") %>%
-  kableExtra::column_spec(14:17, color = "red") %>%
-  kableExtra::column_spec(18:21, color = "purple") %>%
   # The 'striped' styling directive above does not appear to work and so we stripe if manually
   kableExtra::row_spec(seq(2, NROW(attribution_results_grap$Allocation), by=2), background = "#F7F7F7") %>% 
-  kableExtra::row_spec(NROW(attribution_results_grap$Allocation), bold = TRUE) %>% 
-  kableExtra::add_header_above(c(" " = 1, "GRAP" = 4, "Carino" = 4, "Menchero" = 4, "Frongello" = 4, "Davies and Laker" = 4))
+  kableExtra::row_spec(NROW(attribution_results_grap$Allocation), color = "black", bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "GRAP" = 4, "Frongello" = 4))
+
+cbind(attribution_results_carino$Allocation,
+      attribution_results_menchero$Allocation) %>% 
+  kableExtra::kable("html", caption = "Allocation Effects") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:5, color = "darkcyan") %>%
+  kableExtra::column_spec(6:9, color = "red") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_carino$Allocation), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_carino$Allocation), bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Carino" = 4, "Menchero" = 4))
 
 cbind(attribution_results_grap$Selection, 
-      attribution_results_carino$Selection,
-      attribution_results_menchero$Selection,
-      attribution_results_frongello$Selection,
-      attribution_results_davies_laker$Selection) %>% 
+      attribution_results_frongello$Selection) %>% 
   kableExtra::kable("html", caption = "Selection Effects") %>% 
   kableExtra::kable_styling("striped") %>% 
   kableExtra::column_spec(2:5, color = "blue") %>%
   kableExtra::column_spec(6:9, color = "orange") %>%
-  kableExtra::column_spec(10:13, color = "darkcyan") %>%
-  kableExtra::column_spec(14:17, color = "red") %>%
-  kableExtra::column_spec(18:21, color = "purple") %>%
   # The 'striped' styling directive above does not appear to work and so we stripe if manually
   kableExtra::row_spec(seq(2, NROW(attribution_results_grap$Selection), by=2), background = "#F7F7F7") %>% 
-  kableExtra::row_spec(NROW(attribution_results_grap$Selection), bold = TRUE) %>% 
-  kableExtra::add_header_above(c(" " = 1, "GRAP" = 4, "Carino" = 4, "Menchero" = 4, "Frongello" = 4, "Davies and Laker" = 4))
+  kableExtra::row_spec(NROW(attribution_results_grap$Selection), color = "black", bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "GRAP" = 4, "Frongello" = 4))
 
-cbind(attribution_results_davies_laker$Interaction) %>% 
-  kableExtra::kable("html", caption = "Interaction Effects") %>% 
+cbind(attribution_results_carino$Selection,
+      attribution_results_menchero$Selection) %>% 
+  kableExtra::kable("html", caption = "Selection Effects") %>% 
   kableExtra::kable_styling("striped") %>% 
-  kableExtra::column_spec(2:5, color = "purple") %>%
+  kableExtra::column_spec(2:5, color = "darkcyan") %>%
+  kableExtra::column_spec(6:9, color = "red") %>%
   # The 'striped' styling directive above does not appear to work and so we stripe if manually
-  kableExtra::row_spec(seq(2, NROW(attribution_results_davies_laker$Interaction), by=2), background = "#F7F7F7") %>% 
-  kableExtra::row_spec(NROW(attribution_results_davies_laker$Interaction), bold = TRUE) %>% 
-  kableExtra::add_header_above(c(" " = 1, "Davies and Laker" = 4))
+  kableExtra::row_spec(seq(2, NROW(attribution_results_carino$Selection), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_carino$Selection), bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Carino" = 4, "Menchero" = 4))
 
+cbind(attribution_results_davies_laker$Allocation,
+      attribution_results_davies_laker$Selection,
+      attribution_results_davies_laker$Interaction) %>% 
+  kableExtra::kable("html", caption = "Davies and Laker") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:13, color = "purple") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_davies_laker$Allocation), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_davies_laker$Allocation), bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Allocation" = 4, "Selection" = 4, "Interaction" = 4))
 ```
 
 Summarized below are some key characteristics & differences between the methods:
