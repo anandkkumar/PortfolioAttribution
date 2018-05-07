@@ -137,9 +137,12 @@
 #' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
 #' effects for each period. By default unadjusted attribution effects are 
 #' returned (this is not used for  Davies and Laker's linking method as it is not applicable)
+#' @param contribution TRUE/FALSE, whether to also compute and return portfolio & benchmark contributions
+#' for each category and period. Defaults to FALSE.
 #' @return returns a list with the following components: excess returns with
 #' annualized excess returns over all periods, attribution effects (allocation, 
-#' selection and interaction)
+#' selection and interaction) and optionally, portfolio and benchmark contributions 
+#' for each category and period.
 #' @author Andrii Babii
 #' @seealso \code{\link{Attribution.levels}}, 
 #' \code{\link{Attribution.geometric}}
@@ -171,7 +174,7 @@ function (Rp, wp, Rb, wb,
           bf = TRUE,
           method = "none", 
           linking = "grap",
-          geometric = FALSE, adjusted = FALSE)
+          geometric = FALSE, contribution = FALSE, adjusted = FALSE)
 {   # @author Andrii Babii
 
     # DESCRIPTION:
@@ -316,27 +319,51 @@ function (Rp, wp, Rb, wb,
         if(NROW(Rp) == 1 & NROW(Rb) == 1) {
           rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpbf)))
           rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))
+          port_contr = as.matrix(c(WP, WPF)*cbind(Rp, Rpbf))
+          bmk_contr = as.matrix(c(WB, WBF)*cbind(Rb, Rpbf))
         } else {
           if(!is.null(WPF) & !is.null(WBF)) {
-            rp = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
-            rb = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), 
+                                                      geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), 
+                                                     geometric = FALSE, contribution = contribution)
           } else {
-            rp = Return.portfolio(Rp, WP, geometric = FALSE)
-            rb = Return.portfolio(Rb, WB, geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(Rp, WP, geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(Rb, WB, geometric = FALSE, contribution = contribution)
+          }
+          rp = port_returns_and_contr[,1]
+          rb = bmk_returns_and_contr[,1]
+          if(contribution) {
+            port_contr = port_returns_and_contr[,-1]
+            names(port_contr) = names(Rp)
+            bmk_contr = bmk_returns_and_contr[,-1]
+            names(bmk_contr) = names(Rb)
           }
         }
       } else {
         # If we have just one observation we simply sum up the contributions
         if(NROW(Rp) == 1 & NROW(wp) == 1 & NROW(Rb) == 1 & NROW(wb) == 1) {
           rp = as.matrix(sum(coredata(cbind(wp, WPF))*coredata(cbind(Rp, Rpbf))))
+          port_contr = as.matrix(coredata(cbind(wp, WPF))*coredata(cbind(Rp, Rpbf)))
           rb = as.matrix(sum(coredata(cbind(wb, WBF))*coredata(cbind(Rb, Rpbf))))
+          bmk_contr = as.matrix(coredata(cbind(wb, WBF))*coredata(cbind(Rb, Rpbf)))
         } else {
           if(!is.null(WPF) & !is.null(WBF)) {
-            rp = Return.portfolio(cbind(Rp, Rpbf), cbind(wp, WPF), geometric = FALSE)
-            rb = Return.portfolio(cbind(Rb, Rpbf), cbind(wb, WBF), geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(cbind(Rp, Rpbf), cbind(wp, WPF), 
+                                                      geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(cbind(Rb, Rpbf), cbind(wb, WBF), 
+                                                     geometric = FALSE, contribution = contribution)
           } else {
-            rp = Return.portfolio(Rp, wp, geometric = FALSE)
-            rb = Return.portfolio(Rb, wb, geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(Rp, wp, geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(Rb, wb, geometric = FALSE, contribution = contribution)
+          }
+          rp = port_returns_and_contr[,1]
+          rb = bmk_returns_and_contr[,1]
+          if(contribution) {
+            port_contr = port_returns_and_contr[,-1]
+            names(port_contr) = names(Rp)
+            bmk_contr = bmk_returns_and_contr[,-1]
+            names(bmk_contr) = names(Rb)
           }
         }
       }
@@ -433,7 +460,7 @@ function (Rp, wp, Rb, wb,
    } else{ # The function takes output of the corresponding function 
             # (Attribution.geometric or DaviesLaker)
       if (geometric == TRUE){
-        return(Attribution.geometric(Rp, WP, Rb, WB, WPF, WBF, S, Fp, Fb, Rpl, Rbl, Rbh))
+        return(Attribution.geometric(Rp, WP, Rb, WB, WPF, WBF, S, Fp, Fb, Rpl, Rbl, Rbh, contribution = contribution))
       }
       
       if (linking == "davies.laker"){
@@ -456,6 +483,13 @@ function (Rp, wp, Rb, wb,
       result[[length(result) + 1]] = Df
       names(result)[(length(result)-1):length(result)] = 
         c("Currency management", "Forward Premium")
+    }
+    
+    if(contribution) {
+      result[[length(result) + 1]] = port_contr
+      result[[length(result) + 1]] = bmk_contr
+      names(result)[(length(result)-1):length(result)] = 
+        c("Portfolio contribution to return", "Benchmark contribution to return")
     }
     return(result)
 }

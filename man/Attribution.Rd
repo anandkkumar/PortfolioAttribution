@@ -6,7 +6,8 @@
 \usage{
 Attribution(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA, Fp = NA,
   Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE, method = "none",
-  linking = "grap", geometric = FALSE, adjusted = FALSE)
+  linking = "grap", geometric = FALSE, contribution = FALSE,
+  adjusted = FALSE)
 }
 \arguments{
 \item{Rp}{T x n xts, data frame or matrix of portfolio returns}
@@ -66,6 +67,9 @@ if the data does not imply multi-period attribution.}
 returns for the attribution analysis. By default this is set to FALSE, which results
 in arithmetic excess return attribution.}
 
+\item{contribution}{TRUE/FALSE, whether to also compute and return portfolio & benchmark contributions
+for each category and period. Defaults to FALSE.}
+
 \item{adjusted}{TRUE/FALSE, whether to show original or smoothed attribution
 effects for each period. By default unadjusted attribution effects are 
 returned (this is not used for  Davies and Laker's linking method as it is not applicable)}
@@ -73,7 +77,8 @@ returned (this is not used for  Davies and Laker's linking method as it is not a
 \value{
 returns a list with the following components: excess returns with
 annualized excess returns over all periods, attribution effects (allocation, 
-selection and interaction)
+selection and interaction) and optionally, portfolio and benchmark contributions 
+for each category and period.
 }
 \description{
 Performs single-category attribution analysis. Portfolio 

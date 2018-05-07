@@ -5,7 +5,8 @@
 \title{performs category-based geometric attribution}
 \usage{
 Attribution.geometric(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA,
-  Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA)
+  Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
+  contribution = FALSE)
 }
 \arguments{
 \item{Rp}{xts of portfolio returns}
@@ -37,6 +38,9 @@ The first date should coincide with the first date of benchmark returns}
 
 \item{Rbh}{xts, data frame or matrix of benchmark returns hedged into the
 base currency}
+
+\item{contribution}{TRUE/FALSE, whether to also compute and return portfolio & benchmark contributions
+for each category and period. Defaults to FALSE.}
 }
 \value{
 This function returns the list with attribution effects (allocation

@@ -70,6 +70,8 @@
 #' @param Rbl xts, data frame or matrix of benchmark returns in local currency
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
 #' base currency
+#' @param contribution TRUE/FALSE, whether to also compute and return portfolio & benchmark contributions
+#' for each category and period. Defaults to FALSE.
 #' @return This function returns the list with attribution effects (allocation
 #' or selection effect) including total multi-period attribution effects
 #' @author Andrii Babii
@@ -88,7 +90,7 @@
 #' @export
 Attribution.geometric <-
 function(Rp, wp, Rb, wb, 
-         wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA)
+         wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, contribution = FALSE)
 {   # @author Andrii Babii
   
     # DESCRIPTION:
@@ -168,18 +170,42 @@ function(Rp, wp, Rb, wb,
       if(NROW(Rp) == 1 & NROW(Rb) == 1) {
         rp = as.matrix(sum(WP*Rp))
         rb = as.matrix(sum(WB*Rb))
+        port_contr = as.matrix(sum(WP*Rp))
+        bmk_contr = as.matrix(sum(WB*Rb))
       } else {
-        rp = Return.portfolio(Rp, WP)
-        rb = Return.portfolio(Rb, WB)
+        #rp = Return.portfolio(Rp, WP)
+        port_returns_and_contr = Return.portfolio(Rp, WP, contribution = contribution)
+        #rb = Return.portfolio(Rb, WB)
+        bmk_returns_and_contr = Return.portfolio(Rb, WB, contribution = contribution)
+        rp = port_returns_and_contr[,1]
+        rb = bmk_returns_and_contr[,1]
+        if(contribution) {
+          port_contr = port_returns_and_contr[,-1]
+          names(port_contr) = names(Rp)
+          bmk_contr = bmk_returns_and_contr[,-1]
+          names(bmk_contr) = names(Rb)
+        }
       }
     } else{
       # If we have just one observation we simply sum up the contributions
       if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1) {
         rp = as.matrix(sum(coredata(WP)*coredata(Rp)))
         rb = as.matrix(sum(coredata(WB)*coredata(Rb)))
+        port_contr = as.matrix(coredata(WP)*coredata(Rp))
+        bmk_contr = as.matrix(coredata(WB)*coredata(Rb))
       } else {
-        rp = Return.portfolio(Rp, WP)
-        rb = Return.portfolio(Rb, WB)
+        #rp = Return.portfolio(Rp, WP)
+        port_returns_and_contr = Return.portfolio(Rp, WP, contribution = contribution)
+        #rb = Return.portfolio(Rb, WB)
+        bmk_returns_and_contr = Return.portfolio(Rb, WB, contribution = contribution)
+        rp = port_returns_and_contr[,1]
+        rb = bmk_returns_and_contr[,1]
+        if(contribution) {
+          port_contr = port_returns_and_contr[,-1]
+          names(port_contr) = names(Rp)
+          bmk_contr = bmk_returns_and_contr[,-1]
+          names(bmk_contr) = names(Rb)
+        }
       }
     }
     names(rp) = rownames(rp) = "Total"                    
@@ -220,14 +246,28 @@ function(Rp, wp, Rb, wb,
           # If we have just one observation we simply sum up the contributions
           if(NROW(Rp) == 1 & NROW(Rb) == 1 & NROW(Rpf) == 1 & NROW(Rbf) == 1) {
             rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpf)))
+            port_contr = as.matrix(c(WP, WPF)*cbind(Rp, Rpf))
             rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rbf)))
+            bmk_contr = as.matrix(c(WB, WBF)*cbind(Rb, Rbf))
           } else {
             if(!is.null(WPF) & !is.null(WBF)) {
-              rp = Return.portfolio(cbind(Rp, Rpf), c(WP, WPF))
-              rb = Return.portfolio(cbind(Rb, Rbf), c(WB, WBF))
+              #rp = Return.portfolio(cbind(Rp, Rpf), c(WP, WPF))
+              port_returns_and_contr = Return.portfolio(cbind(Rp, Rpf), c(WP, WPF), contribution = contribution)
+              #rb = Return.portfolio(cbind(Rb, Rbf), c(WB, WBF))
+              bmk_returns_and_contr = Return.portfolio(cbind(Rb, Rbf), c(WB, WBF), contribution = contribution)
             } else {
-              rp = Return.portfolio(Rp, WP)
-              rb = Return.portfolio(Rb, WB)
+              #rp = Return.portfolio(Rp, WP)
+              port_returns_and_contr = Return.portfolio(Rp, WP, contribution = contribution)
+              #rb = Return.portfolio(Rb, WB)
+              bmk_returns_and_contr = Return.portfolio(Rb, WB, contribution = contribution)
+            }
+            rp = port_returns_and_contr[,1]
+            rb = bmk_returns_and_contr[,1]
+            if(contribution) {
+              port_contr = port_returns_and_contr[,-1]
+              names(port_contr) = names(Rp)
+              bmk_contr = bmk_returns_and_contr[,-1]
+              names(bmk_contr) = names(Rb)
             }
           }
         } else{
@@ -235,14 +275,28 @@ function(Rp, wp, Rb, wb,
           if(NROW(Rp) == 1 & NROW(wp) == 1 & NROW(Rb) == 1 & NROW(wb) == 1 & 
              NROW(Rpf) == 1 & NROW(wpf) == 1 & NROW(Rbf) == 1 & NROW(wbf) == 1) {
             rp = as.matrix(sum(coredata(cbind(wp, wpf))*coredata(cbind(Rp, Rpf))))
+            port_contr = as.matrix(coredata(cbind(wp, wpf))*coredata(cbind(Rp, Rpf)))
             rb = as.matrix(sum(coredata(cbind(wb, wbf))*coredata(cbind(Rb, Rbf))))
+            bmk_contr = as.matrix(coredata(cbind(wb, wbf))*coredata(cbind(Rb, Rbf)))
           } else {
             if(!is.null(wpf) & !is.null(wbf)) {
-              rp = Return.portfolio(cbind(Rp, Rpf), cbind(wp, wpf))
-              rb = Return.portfolio(cbind(Rb, Rbf), cbind(wb, wbf))
+              #rp = Return.portfolio(cbind(Rp, Rpf), cbind(wp, wpf))
+              port_returns_and_contr = Return.portfolio(cbind(Rp, Rpf), cbind(wp, wpf), contribution = contribution)
+              #rb = Return.portfolio(cbind(Rb, Rbf), cbind(wb, wbf))
+              bmk_returns_and_contr = Return.portfolio(cbind(Rb, Rbf), cbind(wb, wbf), contribution = contribution)
             } else {
-              rp = Return.portfolio(Rp, wp)
-              rb = Return.portfolio(Rb, wb)
+              #rp = Return.portfolio(Rp, wp)
+              port_returns_and_contr = Return.portfolio(Rp, wp, contribution = contribution)
+              #rb = Return.portfolio(Rb, wb)
+              bmk_returns_and_contr = Return.portfolio(Rb, wb, contribution = contribution)
+            }
+            rp = port_returns_and_contr[,1]
+            rb = bmk_returns_and_contr[,1]
+            if(contribution) {
+              port_contr = port_returns_and_contr[,-1]
+              names(port_contr) = names(Rp)
+              bmk_contr = bmk_returns_and_contr[,-1]
+              names(bmk_contr) = names(Rb)
             }
           }
         }
@@ -301,5 +355,11 @@ function(Rp, wp, Rb, wb,
                         "Currency management")
     }
     
+    if(contribution) {
+      result[[length(result) + 1]] = port_contr
+      result[[length(result) + 1]] = bmk_contr
+      names(result)[(length(result)-1):length(result)] = 
+        c("Portfolio contribution to return", "Benchmark contribution to return")
+    }
     return(result)
 }
