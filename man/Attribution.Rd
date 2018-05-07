@@ -41,14 +41,9 @@ The first date should coincide with the first date of benchmark returns}
 base currency}
 
 \item{bf}{TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
-<<<<<<< HEAD
-Beebower arithmetic attribution. By default Brinson and Fachler
+Beebower arithmetic attribution. By default this set to TRUE and so Brinson and Fachler 
 attribution is selected. This is only used for Arithmetic attribution while Geometric
 attribution only supports Brinson Fachler.}
-=======
-Beebower arithmetic attribution. By default this set to TRUE and so Brinson and Fachler 
-attribution is selected}
->>>>>>> master
 
 \item{method}{Used to select the priority between allocation and selection 
 effects in arithmetic attribution. May be any of: \itemize{ \item none - 
@@ -78,11 +73,8 @@ for each category and period. Defaults to FALSE.}
 
 \item{adjusted}{TRUE/FALSE, whether to show original or smoothed attribution
 effects for each period. By default unadjusted attribution effects are 
-<<<<<<< HEAD
-returned (only used for arithmetic attribution i.e. when geometric = FALSE)}
-=======
-returned (this is not used for  Davies and Laker's linking method as it is not applicable)}
->>>>>>> master
+returned (this is not used for Davies and Laker's linking method for arithmetic attribution 
+or for geometric attribution as it is not applicable in either case)}
 }
 \value{
 returns a list with the following components: excess returns with
