@@ -120,19 +120,11 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
       print("Please use benchmark xts that has columns with benchmarks for each
             asset or one common benchmark for all assets")
     }
-    if (is.vector(WP)  & is.vector(WB) & is.vector(WBF)){
-      rp = Return.portfolio(Rp, WP, geometric = geometric)
-      rb = Return.portfolio(Rb, WB, geometric = geometric)
-      rf = Return.portfolio(Rf, WP, geometric = geometric)
-      dp = Return.portfolio(Dp, WP, geometric = geometric) # portfolio duration
-      db = Return.portfolio(Db, WB, geometric = geometric) # benchmark duration
-    } else{
-      rp = Return.rebalancing(Rp, WP, geometric = geometric)
-      rb = Return.rebalancing(Rb, WB, geometric = geometric)
-      rf = Return.rebalancing(Rf, WP, geometric = geometric)
-      dp = Return.rebalancing(Dp, WP, geometric = geometric)
-      db = Return.rebalancing(Db, WB, geometric = geometric)
-    }
+    rp = Return.portfolio(Rp, WP, geometric = geometric)
+    rb = Return.portfolio(Rb, WB, geometric = geometric)
+    rf = Return.portfolio(Rf, WP, geometric = geometric)
+    dp = Return.portfolio(Dp, WP, geometric = geometric) # portfolio duration
+    db = Return.portfolio(Db, WB, geometric = geometric) # benchmark duration
     names(rp) = "Total"
     names(rb) = "Total"
     Dbeta = dp / coredata(db)

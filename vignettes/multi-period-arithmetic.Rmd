@@ -1,0 +1,296 @@
+---
+title: "Multi-period arithmetic attribution"
+author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: introduction.bib
+vignette: >
+  %\VignetteIndexEntry{Multi-period arithmetic attribution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+<style type="text/css">
+body {
+  max-width: 100% !important;
+}
+table {
+  margin-left: 0 !important;
+}
+</style>
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(magrittr)
+library(PortfolioAttribution)
+```
+
+This vignette shows how to perform a multi-period arithmetic attribution analysis on a portfolio using the the `PortfolioAttribution` package using different approaches to linking attribution effects. The default method chosen by the package is `GRAP`.
+
+### <ins>Define the data inputs</ins>
+
+Consider a multi-period portfolio & benchmark data categorized into three regions as shown below. Since the packages uses an end-of-period convention for the weights, the dates associated with the weights are a period behind those of the returns.
+
+```{r, echo=FALSE, results='asis'}
+data("sample_data", package = "PortfolioAttribution")
+
+cbind(multi_period_portf_2$wp, multi_period_portf_2$Rp) %>% 
+  kableExtra::kable("html") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(multi_period_portf_2$Rp), by=2), background = "#F7F7F7") %>% 
+  kableExtra::add_header_above(c(" " = 1, "Portfolio Weights" = 3, "Portfolio Returns" = 3))
+
+cbind(multi_period_portf_2$wb, multi_period_portf_2$Rb) %>% 
+  kableExtra::kable("html") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(multi_period_portf_2$Rb), by=2), background = "#F7F7F7") %>% 
+  kableExtra::add_header_above(c(" " = 1, "Benchmark Weights" = 3, "Benchmark Returns" = 3))
+```
+
+This sample data from the package is available in the package structured as a `list` object to use.
+```{r}
+library(PortfolioAttribution)
+data("sample_data", package = "PortfolioAttribution")
+names(multi_period_portf_2)
+```
+
+### <ins>Multi-period attribution</ins>
+
+For the first four methods below, we will perform a multi-period arithmetic attribution analysis on this data using the Brinson and Fachler model and adopting a top-down approach (where the interaction effect is combined with the selection effect) using different smoothing or linking algorithms. The algorithms vary in how the smoothing is achieved.
+
+The fifth method, Davies and Laker, does not support a top-down or bottom attribution analysis and so the interaction effect is reported separately. In addition, you can only get total smoothed attribution effects and not those for each period.
+
+#### GRAP smoothing
+
+The following command is executed to perform a multi-period attribution analysis with the smoothing method as described by the Paris-based working group of performance experts, _GRAP [-@grap1997]_.
+
+```{r}
+# the adjusted parameter defaults to FALSE
+attribution_results_grap_unadjusted = Attribution(multi_period_portf_2$Rp, 
+                                                  multi_period_portf_2$wp, 
+                                                  multi_period_portf_2$Rb, 
+                                                  multi_period_portf_2$wb, 
+                                                  method = "top.down", 
+                                                  linking = "grap", adjusted = FALSE) 
+```
+
+The different attribution effects by category as well as their totals can be inspected.
+
+```{r}
+attribution_results_grap_unadjusted$Allocation
+attribution_results_grap_unadjusted$Selection
+```
+
+The expected total arithmetic excess return over all periods, can be computed with the following commands. Here, we use the methods defined in `PerformanceAnalytics` package, which is an installed dependency of the `PortfolioAttribution` package.
+
+```{r}
+total_portfolio_return = prod(1 + PerformanceAnalytics::Return.portfolio(multi_period_portf_2$Rp, 
+                                                                         multi_period_portf_2$wp)) - 1
+total_portfolio_return
+
+total_benchmark_return = prod(1 + PerformanceAnalytics::Return.portfolio(multi_period_portf_2$Rb, 
+                                                                         multi_period_portf_2$wb)) - 1
+total_benchmark_return
+
+total_excess_return = total_portfolio_return - total_benchmark_return
+total_excess_return
+```
+
+The goal of the smoothing algorithms is to have the total attribution effects for each period sum up to the total arithmetic excess return over all periods. This holds true as shown below.
+
+```{r}
+all.equal(attribution_results_grap_unadjusted$Allocation["Total", "Total"] + 
+          attribution_results_grap_unadjusted$Selection["Total", "Total"],
+          total_excess_return)
+```
+
+The parameter `adjusted` that is passed in above to the `Attribution` function is used to control if the results contain the original un-smoothed individual periodic attribution effects or the smoothed values. Note, in either case the values in the `Total` row, which is the accumulation over all periods, is the same. The default is `FALSE`. So to retrieve the smoothed periodic effects, the following command is executed.
+
+```{r}
+attribution_results_grap = Attribution(multi_period_portf_2$Rp, 
+                                       multi_period_portf_2$wp, 
+                                       multi_period_portf_2$Rb, 
+                                       multi_period_portf_2$wb, 
+                                       method = "top.down", linking = "grap", adjusted = TRUE)
+```
+
+The table below shows a comparison of the smoothed versus un-smoothed periodic effects. As described earlier, the values in the _Total_ row are the same in both cases.
+
+```{r, echo=FALSE, results='asis'}
+cbind(attribution_results_grap_unadjusted$Allocation, attribution_results_grap$Allocation) %>% 
+  kableExtra::kable("html", caption = "Allocation Effects") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:5, color = "blue") %>%
+  kableExtra::column_spec(6:9, color = "orange") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_grap_unadjusted$Allocation), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_grap_unadjusted$Allocation),  color="black", bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Original effects" = 4, "Smoothed effects" = 4))
+
+cbind(attribution_results_grap_unadjusted$Selection, attribution_results_grap$Selection) %>% 
+  kableExtra::kable("html", caption = "Selection Effects") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:5, color = "blue") %>%
+  kableExtra::column_spec(6:9, color = "orange") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_grap_unadjusted$Selection), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_grap_unadjusted$Selection),  color="black", bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Original effects" = 4, "Smoothed effects" = 4))
+
+```
+
+#### Carino smoothing
+
+The following command is executed to perform a multi-period attribution analysis with the smoothing method as described by _Carino [-@carino1999combining]_.
+
+```{r}
+attribution_results_carino = Attribution(multi_period_portf_2$Rp, 
+                                         multi_period_portf_2$wp, 
+                                         multi_period_portf_2$Rb, 
+                                         multi_period_portf_2$wb, 
+                                         method = "top.down", linking = "carino", adjusted = TRUE)
+```
+
+As before, the total attribution effects for each period sum up to the total arithmetic excess return over all periods.
+
+```{r}
+all.equal(attribution_results_carino$Allocation["Total", "Total"] + 
+            attribution_results_carino$Selection["Total", "Total"],
+          total_excess_return)
+```
+
+#### Menchero smoothing
+
+The following command is executed to perform a multi-period attribution analysis with the smoothing method as described by _Menchero [-@menchero2000optimized]_.
+
+```{r}
+attribution_results_menchero = Attribution(multi_period_portf_2$Rp, 
+                                           multi_period_portf_2$wp, 
+                                           multi_period_portf_2$Rb, 
+                                           multi_period_portf_2$wb, 
+                                           method = "top.down", linking = "menchero", adjusted = TRUE)
+```
+
+As before, the total attribution effects for each period sum up to the total arithmetic excess return over all periods.
+
+```{r}
+all.equal(attribution_results_menchero$Allocation["Total", "Total"] + 
+            attribution_results_menchero$Selection["Total", "Total"],
+          total_excess_return)
+```
+
+#### Frongello smoothing
+
+The following command is executed to perform a multi-period attribution analysis with the smoothing method as described by _Frongello [-@frongello2002linking]_.
+
+```{r}
+attribution_results_frongello = Attribution(multi_period_portf_2$Rp, 
+                                            multi_period_portf_2$wp, 
+                                            multi_period_portf_2$Rb, 
+                                            multi_period_portf_2$wb, 
+                                            method = "top.down", linking = "frongello", adjusted = TRUE)
+```
+
+As before, the total attribution effects for each period sum up to the total arithmetic excess return over all periods.
+
+```{r}
+all.equal(attribution_results_frongello$Allocation["Total", "Total"] + 
+            attribution_results_frongello$Selection["Total", "Total"],
+          total_excess_return)
+```
+
+#### Davies and Laker smoothing
+
+The command below is executed to perform a multi-period attribution analysis with the smoothing method as described by _Davies and Laker [-@davies2001multiple]_. This method always returns all three attribution effects of allocation, selection and interaction.  In addition, you can only get __total__ smoothed attribution effects and __not that of each period__. Consequently, the `adjusted` parameter does not apply.
+
+```{r}
+attribution_results_davies_laker = Attribution(multi_period_portf_2$Rp, 
+                                               multi_period_portf_2$wp, 
+                                               multi_period_portf_2$Rb, 
+                                               multi_period_portf_2$wb, 
+                                               linking = "davies.laker")
+```
+
+As before, the total attribution effects for each period sum up to the total arithmetic excess return over all periods.
+
+```{r}
+all.equal(attribution_results_davies_laker$Allocation["Total", "Total"] + 
+            attribution_results_davies_laker$Selection["Total", "Total"] + 
+            attribution_results_davies_laker$Interaction["Total", "Total"],
+          total_excess_return)
+```
+
+### <ins>Comparison of smoothing methods</ins>
+
+The attribution effects for the different algorithms effects are compared below. As is evident, even though the total arithmetic excess return is completely explained by the sum of the total effects in each method, the methods disagree on the values of adjusted effects for each period and category.
+
+```{r, echo=FALSE, results='asis'}
+cbind(attribution_results_grap$Allocation, 
+      attribution_results_frongello$Allocation) %>% 
+  kableExtra::kable("html", caption = "Allocation Effects") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:5, color = "blue") %>%
+  kableExtra::column_spec(6:9, color = "orange") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_grap$Allocation), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_grap$Allocation), color = "black", bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "GRAP" = 4, "Frongello" = 4))
+
+cbind(attribution_results_carino$Allocation,
+      attribution_results_menchero$Allocation) %>% 
+  kableExtra::kable("html", caption = "Allocation Effects") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:5, color = "darkcyan") %>%
+  kableExtra::column_spec(6:9, color = "red") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_carino$Allocation), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_carino$Allocation), bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Carino" = 4, "Menchero" = 4))
+
+cbind(attribution_results_grap$Selection, 
+      attribution_results_frongello$Selection) %>% 
+  kableExtra::kable("html", caption = "Selection Effects") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:5, color = "blue") %>%
+  kableExtra::column_spec(6:9, color = "orange") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_grap$Selection), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_grap$Selection), color = "black", bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "GRAP" = 4, "Frongello" = 4))
+
+cbind(attribution_results_carino$Selection,
+      attribution_results_menchero$Selection) %>% 
+  kableExtra::kable("html", caption = "Selection Effects") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:5, color = "darkcyan") %>%
+  kableExtra::column_spec(6:9, color = "red") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_carino$Selection), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_carino$Selection), bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Carino" = 4, "Menchero" = 4))
+
+cbind(attribution_results_davies_laker$Allocation,
+      attribution_results_davies_laker$Selection,
+      attribution_results_davies_laker$Interaction) %>% 
+  kableExtra::kable("html", caption = "Davies and Laker") %>% 
+  kableExtra::kable_styling("striped") %>% 
+  kableExtra::column_spec(2:13, color = "purple") %>%
+  # The 'striped' styling directive above does not appear to work and so we stripe if manually
+  kableExtra::row_spec(seq(2, NROW(attribution_results_davies_laker$Allocation), by=2), background = "#F7F7F7") %>% 
+  kableExtra::row_spec(NROW(attribution_results_davies_laker$Allocation), bold = TRUE) %>% 
+  kableExtra::add_header_above(c(" " = 1, "Allocation" = 4, "Selection" = 4, "Interaction" = 4))
+```
+
+Summarized below are some key characteristics & differences between the methods:
+
+* The `GRAP` and `Frongello` methods are __order dependent__ and the smoothed results will be different if the periods are rearranged
+* The `GRAP` and `Frongello` methods produce the same total effects across all periods for each category
+* Counter-intuitively, the `Carino` and `Menchero` methods are sensitive to the total number of periods used to smooth the effects. In other words, if you lengthen the period of analysis, you will have to recompute the effects for __all periods__ and not just the additional ones added. Consequently, avoid using these methods unless you understand their implications.
+* The `GRAP` and `Frongello` methods do not suffer from this disadvantage as you lengthen your period of analysis and so are computationally less cumbersome
+
+### <ins>References</ins>
