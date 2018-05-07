@@ -100,7 +100,7 @@ R_e = \sum^n_{i=1}\left(w_{bi} \times R_{ei} \right)
 The second, _forward premium_ effect is given by
 
 \[
-C_i = (w_{pi} - w_{bi}) \times (R_{di} - R_d) \\
+D_i = (w_{pi} - w_{bi}) \times (R_{di} - R_d) \\
 \]
 
 where $R_d$ is given by

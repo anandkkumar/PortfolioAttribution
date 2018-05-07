@@ -1,15 +1,15 @@
-#' performs single-level attribution
+#' performs single-category attribution
 #' 
-#' Performs single-level attribution analysis. Portfolio 
+#' Performs single-category attribution analysis. Portfolio 
 #' performance measured relative to a benchmark gives an indication of the 
 #' value-added by the portfolio. Equipped with weights and returns of portfolio
 #' segments, we can dissect the value-added into useful components. This 
 #' function is based on the group-based approach to the attribution. The 
 #' workhorse is the Brinson model that explains the arithmetic difference 
 #' between portfolio and benchmark returns. That is it breaks down the 
-#' arithmetic excess returns at one level. If returns and weights are available
-#' at the lowest level (e.g. for individual instruments), the aggregation up to
-#' the chosen level from the hierarchy can be done using 
+#' arithmetic excess returns at one category level. If returns and weights are available
+#' at the lowest category level (e.g. for individual instruments), the aggregation up to
+#' the chosen category from the hierarchy can be done using 
 #' \code{\link{Return.level}} function. The attribution effects can be computed
 #' for several periods. The multi-period summary is obtained using one of 
 #' linking methods: Carino, Menchero, GRAP, Frongello or Davies Laker. It also
@@ -19,25 +19,25 @@
 #' 
 #' The arithmetic excess returns are decomposed into the sum of allocation, 
 #' selection and interaction effects across \eqn{n} groups:
-#' \deqn{R_{p}-R_{b}=\sum^{n}_{i=1}\left(A_{i}+S_{i}+I_{i}\right)}
+#' \deqn{R_{p}-R_{b}=\sum^{n}_{i=1}\left(A_{i}+S_{i}+I_{i}\right)}{R_p - R_b = \sum {i=1 to n} (A_i + S_i + I_i)}
 #' The arithmetic attribution effects for the category i are computed
 #' as suggested in the Brinson, Hood and Beebower (1986):
 #' Allocation effect
-#' \deqn{A_{i}=(w_{pi}-w_{bi})\times R_{bi}}{Ai = (wpi - wbi) * Rbi}
+#' \deqn{A_{i}=(w_{pi}-w_{bi})\times R_{bi}}{A_i = (w_pi - w_bi) * R_bi}
 #' Selection effect
-#' \deqn{S_{i}=w_{bi}\times(R_{pi}-R_{bi})}{Si = wbi * (Rpi - Rbi)}
+#' \deqn{S_{i}=w_{bi}\times(R_{pi}-R_{bi})}{S_i = w_bi * (R_pi - R_bi)}
 #' Interaction effect
 #' \deqn{I_{i}=(w_{pi}-w_{bi})
-#' \times(R_{pi}-R_{bi})}{Ii = (wpi - wbi) * Rpi - Rbi}
-#' \eqn{R_{p}}{Rp} - total portfolio returns,
-#' \eqn{R_{b}}{Rb} - total benchmark returns, 
-#' \eqn{w_{pi}}{wpi} - weights of the category \eqn{i} in the portfolio, 
-#' \eqn{w_{bi}}{wbi} - weights of the category \eqn{i} in the benchmark, 
-#' \eqn{R_{pi}}{Rpi} - returns of the portfolio category \eqn{i}, 
-#' \eqn{R_{bi}}{Rbi} - returns of the  benchmark category \eqn{i}.
+#' \times(R_{pi}-R_{bi})}{I_i = (w_pi - w_bi) * (R_pi - R_bi)}
+#' \eqn{R_{p}}{R_p} - total portfolio returns,
+#' \eqn{R_{b}}{R_b} - total benchmark returns, 
+#' \eqn{w_{pi}}{w_pi} - weights of the category \eqn{i} in the portfolio, 
+#' \eqn{w_{bi}}{w_bi} - weights of the category \eqn{i} in the benchmark, 
+#' \eqn{R_{pi}}{R_pi} - returns of the portfolio category \eqn{i}, 
+#' \eqn{R_{bi}}{R_bi} - returns of the  benchmark category \eqn{i}.
 #' If Brinson and Fachler (1985) is selected the allocation effect differs:
 #' \deqn{A_{i}=(w_{pi}-w_{bi})
-#' \times (R_{bi} - R_{b})}{Ai = (wpi - wbi) * (Rbi - Rb)}
+#' \times (R_{bi} - R_{b})}{A_i = (w_pi - w_bi) * (R_bi - R_b)}
 #' Depending on goals we can give priority to the allocation or to 
 #' the selection effects. If the priority is given to the group allocation
 #' the interaction term will be combined with the security selection effect
@@ -48,7 +48,7 @@
 #' attribution effects should be adjusted using linking methods. Adjusted
 #' arithmetic attribution effects can be summed up over time to provide the
 #' multi-period summary: 
-#' \deqn{R_{p}-R_{b}=\sum^{T}_{t=1}\left(A_{t}'+S_{t}'+I_{t}'\right)}
+#' \deqn{R_{p}-R_{b}=\sum^{T}_{t=1}\left(A_{t}'+S_{t}'+I_{t}'\right)}{R_p - R_b = \sum {t=1 to T} (A_t'+S_t'+I_t')}
 #' where \eqn{T} is the number of periods and prime stands for the adjustment 
 #' (this is not applicable to Davies & Laker linking method).
 #' The geometric attribution effects do not suffer from the linking problem.
@@ -57,37 +57,36 @@
 #' \code{\link{Attribution.geometric}}. Finally, arithmetic annualized excess 
 #' returns are computed as the arithmetic difference between annualised 
 #' portfolio and benchmark returns:
-#' \deqn{AAER=r_{a}-b_{a}}{AAER = ra - ba} the geometric annualized excess
+#' \deqn{E^A_ann = R_{pa}-R_{ba}}{E^A_ann = R_pa - R_ba} and the geometric annualized excess
 #' returns are computed as the geometric difference between annualized 
 #' portfolio and benchmark returns: 
-#' \deqn{GAER=\frac{1+r_{a}}{1+b_{a}}-1}{GAER = (1 + ra) / (1 + ba) - 1}
-#' In the case of multi-currency portfolio, the currency return, currency
+#' \deqn{E^G_ann =\frac{1+R_{pa}}{1+R_{ba}}-1}{E^G_ann = (1 + R_pa) / (1 + R_ba) - 1}
+#' In the case of \strong{arithmetic attribution} of a multi-currency portfolio, the currency return, currency
 #' surprise and forward premium should be specified. The multi-currency
 #' arithmetic attribution is handled following Ankrim and Hensel (1992).
 #' Currency returns are decomposed into the sum of the currency surprise and
-#' the forward premium: \deqn{R_{ci} = R_{ei} + R_{di}}{Rci = Rcei + Rfpi}
+#' the forward premium: \deqn{R_{ci} = R_{ei} + R_{di}}{R_ci = R_ei + R_di}
 #' where 
-#' \deqn{R_{ei} = \frac{S_{i}^{t+1} - F_{i}^{t+1}}{S_{i}^{t}}}
-#' \deqn{R_{di} = \frac{F_{i}^{t+1}}{S_{i}^{t}} - 1}
-#' \eqn{S_{i}^{t}}{Sit} - spot rate for asset \eqn{i} at time \eqn{t}
-#' \eqn{F_{i}^{t}}{Fit} - forward rate for asset \eqn{i} at time \eqn{t}. 
+#' \deqn{R_{ei} = \frac{S_{i}^{t+1} - F_{i}^{t+1}}{S_{i}^{t}}}{R_ei = (S_i^(t+1) - F_i^(t+1)) / S_i^t}
+#' \deqn{R_{di} = \frac{F_{i}^{t+1}}{S_{i}^{t}} - 1}{R_di = (F_i^(t+1) / S_i^t) - 1}
+#' \eqn{S_i^t}{S_i^t} - spot rate for asset \eqn{i} at time \eqn{t},
+#' \eqn{S_i^{t+1}}{S_i^(t+1)} - spot rate for asset \eqn{i} at time \eqn{t+1} and
+#' \eqn{F_i^{t+1}}{F_i^(t+1)} - forward rate for asset \eqn{i} at time \eqn{t} for converstion at time \eqn{t+1}. 
 #' Excess returns are decomposed into the sum of allocation, selection and 
 #' interaction effects as in the standard Brinson model: 
-#' \deqn{R_{p}-R_{b}=\sum^{n}_{i=1}\left(A_{i}+S_{i}+I_{i}\right)}
+#' \deqn{R_{p}-R_{b}=\sum^{n}_{i=1}\left(A_{i}+S_{i}+I_{i}\right)}{R_p - R_ b = \sum {i=1 to n} (A_i + S_ i + I_i)}
 #' However the allocation effect is computed taking into account currency
 #' effects:
-#' \deqn{A_{i}=(w_{pi}-w_{bi})\times (R_{bi} - R_{ci} - R_{l})}{Ai = 
-#' (wpi - wbi) * (Rbi - Rci - Rl)}
+#' \deqn{A_{i}=(w_{pi}-w_{bi})\times (R_{bi} - R_{ci} - R_{l})}{A_i = (w_pi - w_bi) * (R_bi - R_ci - R_l)}
 #' Benchmark returns adjusted to the currency:
-#' \deqn{R_{l} = \sum^{n}_{i=1}w_{bi}\times(R_{bi}-R_{ci})}
+#' \deqn{R_{l} = \sum^{n}_{i=1}w_{bi}\times(R_{bi}-R_{ci})}{R_l = \sum {i=1 to n} (w_bi * (R_bi - R_ci))}
 #' The contribution from the currency is analogous to asset allocation:
-#' \deqn{C_{i} = (w_{pi} - w_{bi}) \times (R_{ei} - R_e) + (w_{pfi} - w_{bfi}) 
-#' \times (R_{fi} - R_e)}
-#' where \deqn{R_e = \sum^{n}_{i=1}w_{bi}\times R_{ei}}
+#' \deqn{C_{i} = (w_{pi} - w_{bi}) \times (R_{ei} - R_e) + (w_{pfi} - w_{bfi}) \times (R_{fi} - R_e)}{C_i = (w_pi - w_bi) * (R_ei - R_e) + (w_pfi - w_bfi) * (R_fi - R_e)}
+#' where \deqn{R_e = \sum^{n}_{i=1}w_{bi}\times R_{ei}}{R_e = \sum {i=1 to n} (w_bi * R_ei)}
 #' The final term, forward premium, is also analogous to the asset allocation:
-#' \deqn{D_{i} = (w_{pi} - w_{bi}) \times (R_{di} - R_d)}
-#' where \deqn{R_d = \sum^{n}_{i=1}w_{bi}\times R_{di}}
-#' and \eqn{R_{di}} is the forward premium.
+#' \deqn{D_{i} = (w_{pi} - w_{bi}) \times (R_{di} - R_d)}{D_i = (w_pi - w_bi) * (R_di - R_d)}
+#' where \deqn{R_d = \sum^{n}_{i=1}w_{bi}\times R_{di}}{R_d = \sum {i=1 to n} (w_bi * R_di)}
+#' and \eqn{R_{di}}{R_di} is the forward premium.
 #' In general if the intent is to estimate statistical parameters, the 
 #' arithmetic excess return is preferred. However, due to the linking 
 #' challenges, it may be preferable to use geometric excess return if the 
@@ -138,9 +137,12 @@
 #' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
 #' effects for each period. By default unadjusted attribution effects are 
 #' returned (this is not used for  Davies and Laker's linking method as it is not applicable)
+#' @param contribution TRUE/FALSE, whether to also compute and return portfolio & benchmark contributions
+#' for each category and period. Defaults to FALSE.
 #' @return returns a list with the following components: excess returns with
 #' annualized excess returns over all periods, attribution effects (allocation, 
-#' selection and interaction)
+#' selection and interaction) and optionally, portfolio and benchmark contributions 
+#' for each category and period.
 #' @author Andrii Babii
 #' @seealso \code{\link{Attribution.levels}}, 
 #' \code{\link{Attribution.geometric}}
@@ -160,9 +162,10 @@
 #' @keywords attribution
 #' @examples
 #' 
-#' data(attrib)
-#' Attribution(Rp = attrib.returns[, 1:10], wp = attrib.weights[1, ], Rb = attrib.returns[, 11:20], 
-#' wb = attrib.weights[2, ], method = "top.down", linking = "carino")
+#' data(sample_data)
+#' Attribution(Rp = multi_period_portf_2$Rp, wp = multi_period_portf_2$wp, 
+#'             Rb = multi_period_portf_2$Rb, wb = multi_period_portf_2$wb, 
+#'             method = "top.down", linking = "grap")
 #' 
 #' @export
 Attribution <- 
@@ -171,7 +174,7 @@ function (Rp, wp, Rb, wb,
           bf = TRUE,
           method = "none", 
           linking = "grap",
-          geometric = FALSE, adjusted = FALSE)
+          geometric = FALSE, contribution = FALSE, adjusted = FALSE)
 {   # @author Andrii Babii
 
     # DESCRIPTION:
@@ -316,27 +319,51 @@ function (Rp, wp, Rb, wb,
         if(NROW(Rp) == 1 & NROW(Rb) == 1) {
           rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpbf)))
           rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))
+          port_contr = as.matrix(c(WP, WPF)*cbind(Rp, Rpbf))
+          bmk_contr = as.matrix(c(WB, WBF)*cbind(Rb, Rpbf))
         } else {
           if(!is.null(WPF) & !is.null(WBF)) {
-            rp = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), geometric = FALSE)
-            rb = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), 
+                                                      geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(cbind(Rb, Rpbf), c(WB, WBF), 
+                                                     geometric = FALSE, contribution = contribution)
           } else {
-            rp = Return.portfolio(Rp, WP, geometric = FALSE)
-            rb = Return.portfolio(Rb, WB, geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(Rp, WP, geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(Rb, WB, geometric = FALSE, contribution = contribution)
+          }
+          rp = port_returns_and_contr[,1]
+          rb = bmk_returns_and_contr[,1]
+          if(contribution) {
+            port_contr = port_returns_and_contr[,-1]
+            names(port_contr) = names(Rp)
+            bmk_contr = bmk_returns_and_contr[,-1]
+            names(bmk_contr) = names(Rb)
           }
         }
       } else {
         # If we have just one observation we simply sum up the contributions
         if(NROW(Rp) == 1 & NROW(wp) == 1 & NROW(Rb) == 1 & NROW(wb) == 1) {
           rp = as.matrix(sum(coredata(cbind(wp, WPF))*coredata(cbind(Rp, Rpbf))))
+          port_contr = as.matrix(coredata(cbind(wp, WPF))*coredata(cbind(Rp, Rpbf)))
           rb = as.matrix(sum(coredata(cbind(wb, WBF))*coredata(cbind(Rb, Rpbf))))
+          bmk_contr = as.matrix(coredata(cbind(wb, WBF))*coredata(cbind(Rb, Rpbf)))
         } else {
           if(!is.null(WPF) & !is.null(WBF)) {
-            rp = Return.portfolio(cbind(Rp, Rpbf), cbind(wp, WPF), geometric = FALSE)
-            rb = Return.portfolio(cbind(Rb, Rpbf), cbind(wb, WBF), geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(cbind(Rp, Rpbf), cbind(wp, WPF), 
+                                                      geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(cbind(Rb, Rpbf), cbind(wb, WBF), 
+                                                     geometric = FALSE, contribution = contribution)
           } else {
-            rp = Return.portfolio(Rp, wp, geometric = FALSE)
-            rb = Return.portfolio(Rb, wb, geometric = FALSE)
+            port_returns_and_contr = Return.portfolio(Rp, wp, geometric = FALSE, contribution = contribution)
+            bmk_returns_and_contr = Return.portfolio(Rb, wb, geometric = FALSE, contribution = contribution)
+          }
+          rp = port_returns_and_contr[,1]
+          rb = bmk_returns_and_contr[,1]
+          if(contribution) {
+            port_contr = port_returns_and_contr[,-1]
+            names(port_contr) = names(Rp)
+            bmk_contr = bmk_returns_and_contr[,-1]
+            names(bmk_contr) = names(Rb)
           }
         }
       }
@@ -433,7 +460,7 @@ function (Rp, wp, Rb, wb,
    } else{ # The function takes output of the corresponding function 
             # (Attribution.geometric or DaviesLaker)
       if (geometric == TRUE){
-        return(Attribution.geometric(Rp, WP, Rb, WB, WPF, WBF, S, Fp, Fb, Rpl, Rbl, Rbh))
+        return(Attribution.geometric(Rp, WP, Rb, WB, WPF, WBF, S, Fp, Fb, Rpl, Rbl, Rbh, contribution = contribution))
       }
       
       if (linking == "davies.laker"){
@@ -456,6 +483,13 @@ function (Rp, wp, Rb, wb,
       result[[length(result) + 1]] = Df
       names(result)[(length(result)-1):length(result)] = 
         c("Currency management", "Forward Premium")
+    }
+    
+    if(contribution) {
+      result[[length(result) + 1]] = port_contr
+      result[[length(result) + 1]] = bmk_contr
+      names(result)[(length(result)-1):length(result)] = 
+        c("Portfolio contribution to return", "Benchmark contribution to return")
     }
     return(result)
 }
