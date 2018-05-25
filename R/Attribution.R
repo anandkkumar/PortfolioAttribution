@@ -229,7 +229,7 @@ function (Rp, wp, Rb, wb,
       wb = checkData(WB)
     }
     
-    if (!is.na(wpf) & is.vector(wpf)){
+    if (!is.na(wpf) && is.vector(wpf)){
       wpf = as.xts(matrix(rep(wpf, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                   index(Rp))
       colnames(wpf) = colnames(Rp)
@@ -237,7 +237,7 @@ function (Rp, wp, Rb, wb,
     else{
       wpf = ifelse((is.na(WPF) || is.null(WPF)), WPF, checkData(WPF))
     }
-    if (!is.na(wbf) & is.vector(wbf)){
+    if (!is.na(wbf) && is.vector(wbf)){
       wbf = as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
                   index(Rb))
       colnames(wbf) = colnames(Rb)
@@ -289,8 +289,8 @@ function (Rp, wp, Rb, wb,
         S = checkData(S)
         Fp = checkData(Fp)
         Fb = checkData(Fb)
-        Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
-        Rd = lag(Fb, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rc = stats::lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rd = stats::lag(Fb, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
         Re = Rc - coredata(Rd)
         Rl = Rb - coredata(Rc)
         Rpbf = Re / (1 + Rd)
