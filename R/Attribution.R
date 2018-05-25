@@ -488,6 +488,18 @@ function (Rp, wp, Rb, wb,
     }
     
     if(contribution) {
+      # Compute the multi-period contributions
+      if(nrow(port_contr) > 1) {
+        total_port_contr = PerformanceAnalytics::to.period.contributions(port_contr, period = "all")[,1:NCOL(port_contr)]
+        port_contr = rbind(as.data.frame(port_contr), coredata(total_port_contr))
+      }
+      if(nrow(bmk_contr) > 1) {
+        total_bmk_contr = PerformanceAnalytics::to.period.contributions(bmk_contr, period = "all")[,1:NCOL(bmk_contr)]
+        bmk_contr = rbind(as.data.frame(bmk_contr), coredata(total_bmk_contr))
+      }
+      rownames(port_contr)[NROW(port_contr)] = "Total"
+      rownames(bmk_contr)[NROW(bmk_contr)] = "Total"
+      
       result[[length(result) + 1]] = port_contr
       result[[length(result) + 1]] = bmk_contr
       names(result)[(length(result)-1):length(result)] = 
