@@ -4,8 +4,8 @@
 \alias{Attribution.levels}
 \title{provides multi-level sector-based geometric attribution}
 \usage{
-Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA, h,
-  h_levels, geometric = FALSE, anchored = TRUE)
+Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA,
+  method = "top.down", h, h_levels, geometric = FALSE, anchored = TRUE)
 }
 \arguments{
 \item{Rp}{xts, data frame or matrix of portfolio returns}
@@ -22,6 +22,15 @@ Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA, h,
 
 \item{Rbh}{xts, data frame or matrix of benchmark returns hedged into the
 base currency}
+
+\item{method}{Used to select the priority between allocation and selection 
+effects in arithmetic attribution. May be any of: \itemize{ \item none - 
+present allocation, selection and interaction effects independently, 
+\item top.down - the priority is given to the group allocation. Interaction
+term is combined with the security selection effect, \item bottom.up - the 
+priority is given to the security selection. Interaction term is combined 
+with the group allocation effect} 
+By default "top.down" is selected.}
 
 \item{h}{data.frame with the hierarchy obtained from the buildHierarchy 
 function or defined manually in the same style as buildHierarchy's
@@ -64,6 +73,8 @@ is: \deqn{\frac{1+^{d}bs}{1+^{d-1}bs}-1}
 The final step, stock selection, is measured by:
 \deqn{^{d}w_{pi}\times\left(\frac{1+R_{pi}}{1+^{d}R_{bi}}-1\right)
 \times\frac{1+^{d}R_{bi}}{1+^{d}bs}}
+The allocation is as defined by the Brinson & Fachler method and the alternative formulation as defined
+by Brinson, Hood & Beebower is not supported by this method.
 }
 \examples{
 

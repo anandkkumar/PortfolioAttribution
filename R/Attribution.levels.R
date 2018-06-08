@@ -19,6 +19,8 @@
 #' The final step, stock selection, is measured by:
 #' \deqn{^{d}w_{pi}\times\left(\frac{1+R_{pi}}{1+^{d}R_{bi}}-1\right)
 #' \times\frac{1+^{d}R_{bi}}{1+^{d}bs}}
+#' The allocation is as defined by the Brinson & Fachler method and the alternative formulation as defined
+#' by Brinson, Hood & Beebower is not supported by this method.
 #' 
 #' @aliases Attribution.levels
 #' @param Rp xts, data frame or matrix of portfolio returns
@@ -29,6 +31,14 @@
 #' @param Rbl xts, data frame or matrix of benchmark returns in local currency
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the
 #' base currency
+#' @param method Used to select the priority between allocation and selection 
+#' effects in arithmetic attribution. May be any of: \itemize{ \item none - 
+#' present allocation, selection and interaction effects independently, 
+#' \item top.down - the priority is given to the group allocation. Interaction
+#' term is combined with the security selection effect, \item bottom.up - the 
+#' priority is given to the security selection. Interaction term is combined 
+#' with the group allocation effect} 
+#' By default "top.down" is selected.
 #' @param h data.frame with the hierarchy obtained from the buildHierarchy 
 #' function or defined manually in the same style as buildHierarchy's
 #' output
@@ -60,7 +70,9 @@
 #' 
 #' @export
 Attribution.levels <-
-function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric = FALSE, anchored = TRUE)
+function(Rp, wp, Rb, wb, 
+         Rpl = NA, Rbl = NA, Rbh = NA, 
+         method = "top.down", h, h_levels, geometric = FALSE, anchored = TRUE)
 {   # @author Andrii Babii
     
     # DESCRIPTION:
@@ -113,6 +125,12 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
       stop("Please use benchmark xts that has columns with benchmarks for each
            asset or one common benchmark for all assets")
     }
+    
+    method = switch(method,
+                    "none" = "none",
+                    "top.down" = "top.down", 
+                    "bottom.up" = "bottom.up",
+                    stop("Valid methods are 'none', 'top.down' and 'bottom.up'"))
     
     levels <- unlist(list(h_levels))
     if (!is.null(levels)) stopifnot(is.character(levels))
@@ -233,6 +251,7 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     returns.b = list()
     weights.b = list()
     bs = list()
+    rs = list()
     for(i in 1:length(levels)){
       if(!currency){
         weights.p[[i]] = Weight.level(WP, Rp, h, level = levels[i])
@@ -241,6 +260,7 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
         returns.b[[i]] = Return.level(Rb, WB, h, level = levels[i], weights.b[[i]])
         # semi-notional funds returns
         bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rp)  
+        rs[[i]] = reclass(rowSums(returns.p[[i]] * weights.b[[i]]), rp)
       } else{
         weights.p[[i]] = Weight.level(WP, Rpl, h, level = levels[i])
         weights.b[[i]] = Weight.level(WB, Rbl, h, level = levels[i])
@@ -248,6 +268,7 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
         returns.b[[i]] = Return.level(Rbl, WB, h, level = levels[i], weights.b[[i]])
         # semi-notional funds returns
         bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rpl)  
+        rs[[i]] = reclass(rowSums(returns.p[[i]] * weights.b[[i]]), rpl)
       }
     }
     names(returns.p) = levels
@@ -259,6 +280,9 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
       # Total attribution effects
       allocation = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
                           length(levels))
+      interaction = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
+                           length(levels))
+      
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
         if(length(levels) > 1){
@@ -274,12 +298,28 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
             allocation[, i] = bs[[i]] - bs[[i-1]]
           }
         }
-        selection = rp - last(bs)[[1]]
+        interaction[, 1] = coredata(rp) - rs[[1]] - bs[[1]] + coredata(rb) # Interaction 1
+        if(length(levels) > 1){
+          for (i in 2:length(levels)){
+            interaction[, i] = rs[[i-1]] - rs[[i]] - bs[[i]] + bs[[i-1]]
+          }
+        }
+        
+        selection = last(rs)[[1]] - rb
+        if (method == "top.down") {
+          selection = selection + rowSums(interaction)
+        }
+        else if (method == "bottom.up") {
+          allocation = allocation + interaction
+        }
       }
     } else{
       # Total attribution effects
       allocation = matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
                           length(levels))
+      interaction = matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
+                           length(levels))
+      
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rbl) - 1 # Allocation 1
         if(length(levels) > 1){
@@ -295,7 +335,20 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
             allocation[, i] = bs[[i]] - bs[[i-1]]
           }
         }
-        selection = rpl - last(bs)[[1]]
+        interaction[, 1] = coredata(rpl) - rs[[1]] - bs[[1]] + coredata(rbl) # Interaction 1
+        if(length(levels) > 1){
+          for (i in 2:length(levels)){
+            interaction[, i] = rs[[i-1]] - rs[[i]] - bs[[i]] + bs[[i-1]]
+          }
+        }
+        
+        selection = last(rs)[[1]] - rbl
+        if (method == "top.down") {
+          selection = selection + rowSums(interaction)
+        }
+        else if (method == "bottom.up") {
+          allocation = allocation + interaction
+        }
       }
     }
     
@@ -376,12 +429,19 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     }
     
     # Attribution at each level
-    level = list()
+    level = list() # represents allocation effects at each level
+    interaction_level = list() # interaction effects at each level
     if(geometric) {
       level[[1]] = (weights.p[[1]] - weights.b[[1]]) * ((1 + returns.b[[1]]) 
                                                         / (1 + b) - 1)
     } else{
+      # Brinson and Fachler (1985) allocation effect
       level[[1]] = (weights.p[[1]] - weights.b[[1]]) * (returns.b[[1]] - b)
+      
+      interaction_level[[1]] = (weights.p[[1]] - weights.b[[1]]) * (returns.p[[1]] - returns.b[[1]])
+      if (method == "bottom.up") {
+        level[[1]] = level[[1]] + interaction_level[[1]]
+      }
     }
     if(length(levels) > 1){
       for (i in 2:length(levels)){ 
@@ -397,15 +457,27 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
           }
         } else{
           if(anchored){
+            # Brinson and Fachler (1985) allocation effect
             level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
               (returns.b[[i]] - returns.b2[[i-1]])
+            
+            interaction_level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+              (returns.p[[i]] - returns.b[[i]])
           } else{
+            # Brinson and Fachler (1985) allocation effect
             level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
               (returns.b[[i]] - returns.b2[[i-1]])
-          }        
+            
+            interaction_level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+              (returns.p[[i]] - returns.b[[i]])
+          }
+          if (method == "bottom.up") {
+            level[[i]] = level[[i]] + interaction_level[[i]]
+          }
         }
       }
     }
+    
     if(!currency){
       if(geometric){
         # Security/Asset selection
@@ -414,8 +486,17 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
           ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
       } else{
         # Security/Asset selection
-        select = reclass(weights.p[[length(weights.p)]], rp) * 
-          (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+        if(anchored) {
+          select = reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rb) * 
+            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+          
+        } else {
+          select = reclass(weights.b[[length(weights.b)]], rb) * 
+            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+        }
+        if(method == "top.down") {
+          select = select + last(interaction_level)[[1]]
+        }
       }
     } else{
       if(geometric){
@@ -425,17 +506,36 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
           ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
       } else{
         # Security/Asset selection
-        select = reclass(weights.p[[length(weights.p)]], rpl) * 
-          (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+        if(anchored) {
+          select = reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rbl) *
+            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+        } else {
+          select = reclass(weights.b[[length(weights.b)]], rbl) *
+            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+        }
+        if(method == "top.down") {
+          select = select + last(interaction_level)[[1]]
+        }
       }
     }
     # Get the multi-period summary
-    general = cbind(allocation, selection)
+    if(geometric == FALSE & method == "none") {
+      general = cbind(allocation, interaction, selection)
+    } else {
+      general = cbind(allocation, selection)
+    }
     general = rbind(as.data.frame(general), (apply(1 + general, 2, prod) - 1))
+    
     for (i in 1:length(level)){
       level[[i]] = rbind(as.data.frame(level[[i]]), 
                          (apply(1 + level[[i]], 2, prod) - 1))
       rownames(level[[i]])[nrow(level[[i]])] = "Total"
+
+      if(geometric == FALSE) {
+        interaction_level[[i]] = rbind(as.data.frame(interaction_level[[i]]), 
+                                       (apply(1 + interaction_level[[i]], 2, prod) - 1))
+        rownames(interaction_level[[i]])[nrow(interaction_level[[i]])] = "Total"
+      }
     }
     select = rbind(as.data.frame(select), (apply(1 + select, 2, prod) - 1))
     rownames(general)[nrow(general)] = "Total"
@@ -445,21 +545,45 @@ function(Rp, wp, Rb, wb,  Rpl = NA, Rbl = NA, Rbh = NA, h, h_levels, geometric =
     result = list()
     labels = paste(rep("Level", length(levels)), 1:length(levels))
     names(level) = labels
-    colnames(general) = c(paste(labels, (rep("Allocation", 
-                                             length(levels)))), "Selection")
+    if(geometric == FALSE & method == "none") {
+      colnames(general) = c(paste(labels, (rep("Allocation", 
+                                               length(levels)))), 
+                            paste(labels, (rep("Interaction", 
+                                               length(levels)))), "Selection")
+    } else {
+      colnames(general) = c(paste(labels, (rep("Allocation", 
+                                               length(levels)))), "Selection")
+    }
     
     result[[1]] = excess.returns
     result[[2]] = general
     result[[3]] = level
-    result[[4]] = select
     if (!currency){
-    names(result) = c("Excess returns", "Multi-level attribution", 
-                      "Attribution at each level", "Security selection")
+      if(geometric == FALSE & method == "none") {
+        result[[4]] = interaction_level
+        result[[5]] = select
+        names(result) = c("Excess returns", "Multi-level attribution", 
+                          "Allocation at each level", "Interaction at each level", "Security selection")
+      } else {
+        result[[4]] = select
+        names(result) = c("Excess returns", "Multi-level attribution", 
+                          "Allocation at each level", "Security selection")
+      }
     } else{
-      result[[5]] = curr
-      names(result) = c("Excess returns", "Multi-level attribution", 
-                        "Attribution at each level", "Security selection", 
-                        "Currency management")
+      if(geometric == FALSE & method == "none") {
+        result[[4]] = interaction_level
+        result[[5]] = select
+        result[[6]] = curr
+        names(result) = c("Excess returns", "Multi-level attribution", 
+                          "Allocation at each level", "Interaction at each level", "Security selection", 
+                          "Currency management")
+      } else {
+        result[[4]] = select
+        result[[5]] = curr
+        names(result) = c("Excess returns", "Multi-level attribution", 
+                          "Allocation at each level", "Security selection", 
+                          "Currency management")
+      }
     }
     return(result)
 }
