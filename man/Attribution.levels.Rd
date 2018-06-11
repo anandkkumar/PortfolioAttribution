@@ -4,8 +4,8 @@
 \alias{Attribution.levels}
 \title{provides multi-level sector-based geometric attribution}
 \usage{
-Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA,
-  method = "top.down", h, h_levels, geometric = FALSE, anchored = TRUE)
+Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA, h,
+  h_levels, method = "top.down", geometric = FALSE, anchored = TRUE)
 }
 \arguments{
 \item{Rp}{xts, data frame or matrix of portfolio returns}
@@ -23,6 +23,13 @@ Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA,
 \item{Rbh}{xts, data frame or matrix of benchmark returns hedged into the
 base currency}
 
+\item{h}{data.frame with the hierarchy obtained from the buildHierarchy 
+function or defined manually in the same style as buildHierarchy's
+output}
+
+\item{h_levels}{The remaining passthrough parameters represent the levels in the
+hierarchy to aggregate by}
+
 \item{method}{Used to select the priority between allocation and selection 
 effects in arithmetic attribution. May be any of: \itemize{ \item none - 
 present allocation, selection and interaction effects independently, 
@@ -31,13 +38,6 @@ term is combined with the security selection effect, \item bottom.up - the
 priority is given to the security selection. Interaction term is combined 
 with the group allocation effect} 
 By default "top.down" is selected.}
-
-\item{h}{data.frame with the hierarchy obtained from the buildHierarchy 
-function or defined manually in the same style as buildHierarchy's
-output}
-
-\item{h_levels}{The remaining passthrough parameters represent the levels in the
-hierarchy to aggregate by}
 
 \item{geometric}{TRUE/FALSE,  whether to use geometric or arithmetic excess
 returns for the attribution analysis. By default this is set to FALSE, which results

@@ -72,7 +72,7 @@
 Attribution.levels <-
 function(Rp, wp, Rb, wb, 
          Rpl = NA, Rbl = NA, Rbh = NA, 
-         method = "top.down", h, h_levels, geometric = FALSE, anchored = TRUE)
+         h, h_levels, method = "top.down", geometric = FALSE, anchored = TRUE)
 {   # @author Andrii Babii
     
     # DESCRIPTION:
@@ -204,8 +204,8 @@ function(Rp, wp, Rb, wb,
       names(rbl) = "Total"
       
       # Compute currency effect
-      bsl = reclass(rowSums(Rbl * wp), Rpl)
-      bsh = reclass(rowSums(((wp - wb) * Rbh + wb * Rbl)), Rpl)
+      bsl = reclass(rowSums(Rbl * coredata(wp)), Rpl)
+      bsh = reclass(rowSums((coredata(wp - wb) * Rbh + coredata(wb) * Rbl)), Rpl)
       if(geometric){
         hedge = (1 + bsl) / (1 + bsh) - 1
         currency.attr = (1 + rp) * (1 + rbl) / (1 + rpl) / (1 + rb) - 1
@@ -259,16 +259,16 @@ function(Rp, wp, Rb, wb,
         returns.p[[i]] = Return.level(Rp, WP, h, level = levels[i], weights.p[[i]])
         returns.b[[i]] = Return.level(Rb, WB, h, level = levels[i], weights.b[[i]])
         # semi-notional funds returns
-        bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rp)  
-        rs[[i]] = reclass(rowSums(returns.p[[i]] * weights.b[[i]]), rp)
+        bs[[i]] = reclass(rowSums(returns.b[[i]] * coredata(weights.p[[i]])), rp)  
+        rs[[i]] = reclass(rowSums(returns.p[[i]] * coredata(weights.b[[i]])), rp)
       } else{
         weights.p[[i]] = Weight.level(WP, Rpl, h, level = levels[i])
         weights.b[[i]] = Weight.level(WB, Rbl, h, level = levels[i])
         returns.p[[i]] = Return.level(Rpl, WP, h, level = levels[i], weights.p[[i]])
         returns.b[[i]] = Return.level(Rbl, WB, h, level = levels[i], weights.b[[i]])
         # semi-notional funds returns
-        bs[[i]] = reclass(rowSums(returns.b[[i]] * weights.p[[i]]), rpl)  
-        rs[[i]] = reclass(rowSums(returns.p[[i]] * weights.b[[i]]), rpl)
+        bs[[i]] = reclass(rowSums(returns.b[[i]] * coredata(weights.p[[i]])), rpl)  
+        rs[[i]] = reclass(rowSums(returns.p[[i]] * coredata(weights.b[[i]])), rpl)
       }
     }
     names(returns.p) = levels
@@ -432,13 +432,13 @@ function(Rp, wp, Rb, wb,
     level = list() # represents allocation effects at each level
     interaction_level = list() # interaction effects at each level
     if(geometric) {
-      level[[1]] = (weights.p[[1]] - weights.b[[1]]) * ((1 + returns.b[[1]]) 
+      level[[1]] = coredata(weights.p[[1]] - weights.b[[1]]) * ((1 + returns.b[[1]]) 
                                                         / (1 + b) - 1)
     } else{
       # Brinson and Fachler (1985) allocation effect
-      level[[1]] = (weights.p[[1]] - weights.b[[1]]) * (returns.b[[1]] - b)
+      level[[1]] = coredata(weights.p[[1]] - weights.b[[1]]) * (returns.b[[1]] - b)
       
-      interaction_level[[1]] = (weights.p[[1]] - weights.b[[1]]) * (returns.p[[1]] - returns.b[[1]])
+      interaction_level[[1]] = coredata(weights.p[[1]] - weights.b[[1]]) * (returns.p[[1]] - returns.b[[1]])
       if (method == "bottom.up") {
         level[[1]] = level[[1]] + interaction_level[[1]]
       }
@@ -447,28 +447,35 @@ function(Rp, wp, Rb, wb,
       for (i in 2:length(levels)){ 
         if(geometric){
           if(anchored){
-            level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+            level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
               ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
               ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
+            
+            # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+            level[[i]] = tidyr::replace_na(level[[i]], 0)
           } else{
-            level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+            level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]) * 
               ((1 + returns.b[[i]]) / (1 + returns.b2[[i-1]]) - 1) * 
               ((1 + returns.b2[[i-1]]) / (1 + bs[[i-1]]))
           }
         } else{
           if(anchored){
             # Brinson and Fachler (1985) allocation effect
-            level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+            level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
               (returns.b[[i]] - returns.b2[[i-1]])
             
-            interaction_level[[i]] = (weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
+            interaction_level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
               (returns.p[[i]] - returns.b[[i]])
+            
+            # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+            level[[i]] = tidyr::replace_na(level[[i]], 0)
+            interaction_level[[i]] = tidyr::replace_na(interaction_level[[i]], 0)
           } else{
             # Brinson and Fachler (1985) allocation effect
-            level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+            level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]) * 
               (returns.b[[i]] - returns.b2[[i-1]])
             
-            interaction_level[[i]] = (weights.p[[i]] - weights.b[[i]]) * 
+            interaction_level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]) * 
               (returns.p[[i]] - returns.b[[i]])
           }
           if (method == "bottom.up") {
@@ -481,17 +488,20 @@ function(Rp, wp, Rb, wb,
     if(!currency){
       if(geometric){
         # Security/Asset selection
-        select = reclass(weights.p[[length(weights.p)]], rp) * 
+        select = coredata(reclass(weights.p[[length(weights.p)]], rp)) * 
           ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
           ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
       } else{
         # Security/Asset selection
         if(anchored) {
-          select = reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rb) * 
+          select = coredata(reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rb)) * 
             (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+
+          # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+          select = tidyr::replace_na(select, 0)
           
         } else {
-          select = reclass(weights.b[[length(weights.b)]], rb) * 
+          select = coredata(reclass(weights.b[[length(weights.b)]], rb)) * 
             (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
         }
         if(method == "top.down") {
@@ -501,16 +511,19 @@ function(Rp, wp, Rb, wb,
     } else{
       if(geometric){
         # Security/Asset selection
-        select = reclass(weights.p[[length(weights.p)]], rpl) * 
+        select = coredata(reclass(weights.p[[length(weights.p)]], rpl)) * 
           ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
           ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
       } else{
         # Security/Asset selection
         if(anchored) {
-          select = reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rbl) *
+          select = coredata(reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rbl)) *
             (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+          
+          # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+          select = tidyr::replace_na(select, 0)
         } else {
-          select = reclass(weights.b[[length(weights.b)]], rbl) *
+          select = coredata(reclass(weights.b[[length(weights.b)]], rbl)) *
             (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
         }
         if(method == "top.down") {
