@@ -21,6 +21,7 @@ Suggests:
     plyr,
     rmarkdown
 License: GPL
+LazyData: true
 URL: https://github.com/braverock/PortfolioAttribution
 Contributors: Brian Peterson, Peter Carl, Andrii Babii, Anand Krishnakumar
 Copyright: (c) 2004-2018
