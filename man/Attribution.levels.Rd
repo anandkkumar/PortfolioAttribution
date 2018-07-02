@@ -5,7 +5,7 @@
 \title{provides multi-level sector-based geometric attribution}
 \usage{
 Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA, h,
-  h_levels, geometric = FALSE, anchored = TRUE)
+  h_levels, method = "top.down", geometric = FALSE, anchored = TRUE)
 }
 \arguments{
 \item{Rp}{xts, data frame or matrix of portfolio returns}
@@ -29,6 +29,15 @@ output}
 
 \item{h_levels}{The remaining passthrough parameters represent the levels in the
 hierarchy to aggregate by}
+
+\item{method}{Used to select the priority between allocation and selection 
+effects in arithmetic attribution. May be any of: \itemize{ \item none - 
+present allocation, selection and interaction effects independently, 
+\item top.down - the priority is given to the group allocation. Interaction
+term is combined with the security selection effect, \item bottom.up - the 
+priority is given to the security selection. Interaction term is combined 
+with the group allocation effect} 
+By default "top.down" is selected.}
 
 \item{geometric}{TRUE/FALSE,  whether to use geometric or arithmetic excess
 returns for the attribution analysis. By default this is set to FALSE, which results
@@ -64,6 +73,8 @@ is: \deqn{\frac{1+^{d}bs}{1+^{d-1}bs}-1}
 The final step, stock selection, is measured by:
 \deqn{^{d}w_{pi}\times\left(\frac{1+R_{pi}}{1+^{d}R_{bi}}-1\right)
 \times\frac{1+^{d}R_{bi}}{1+^{d}bs}}
+The allocation is as defined by the Brinson & Fachler method and the alternative formulation as defined
+by Brinson, Hood & Beebower is not supported by this method.
 }
 \examples{
 

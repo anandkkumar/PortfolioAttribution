@@ -135,7 +135,7 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     # Implied total benchmark yield changes
     deltayb = rep(rb - coredata(rp), ncol(Dp)) / coredata(Dp) 
     # Currency returns
-    Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1 
+    Rc = stats::lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1 
     rc = reclass(rowSums((wb + wbf) * (Rc + coredata(Rf))), Rc)
     if (!geometric){
       allocation = (Dp * wp - rep(Dbeta, ncol(Dp)) * coredata(Db) * wb) * 
