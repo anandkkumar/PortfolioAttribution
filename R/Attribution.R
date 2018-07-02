@@ -113,7 +113,8 @@
 #' base currency
 #' @param bf TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
 #' Beebower arithmetic attribution. By default this set to TRUE and so Brinson and Fachler 
-#' attribution is selected
+#' attribution is selected. This is only used for Arithmetic attribution while Geometric
+#' attribution only supports Brinson Fachler.
 #' @param method Used to select the priority between allocation and selection 
 #' effects in arithmetic attribution. May be any of: \itemize{ \item none - 
 #' present allocation, selection and interaction effects independently, 
@@ -136,7 +137,8 @@
 #' in arithmetic excess return attribution.
 #' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
 #' effects for each period. By default unadjusted attribution effects are 
-#' returned (this is not used for  Davies and Laker's linking method as it is not applicable)
+#' returned (this is not used for Davies and Laker's linking method for arithmetic attribution 
+#' or for geometric attribution as it is not applicable in either case)
 #' @param contribution TRUE/FALSE, whether to also compute and return portfolio & benchmark contributions
 #' for each category and period. Defaults to FALSE.
 #' @return returns a list with the following components: excess returns with
@@ -227,7 +229,7 @@ function (Rp, wp, Rb, wb,
       wb = checkData(WB)
     }
     
-    if (!is.na(wpf) & is.vector(wpf)){
+    if (!is.na(wpf) && is.vector(wpf)){
       wpf = as.xts(matrix(rep(wpf, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                   index(Rp))
       colnames(wpf) = colnames(Rp)
@@ -235,7 +237,7 @@ function (Rp, wp, Rb, wb,
     else{
       wpf = ifelse((is.na(WPF) || is.null(WPF)), WPF, checkData(WPF))
     }
-    if (!is.na(wbf) & is.vector(wbf)){
+    if (!is.na(wbf) && is.vector(wbf)){
       wbf = as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
                   index(Rb))
       colnames(wbf) = colnames(Rb)
@@ -287,8 +289,8 @@ function (Rp, wp, Rb, wb,
         S = checkData(S)
         Fp = checkData(Fp)
         Fb = checkData(Fb)
-        Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
-        Rd = lag(Fb, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rc = stats::lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rd = stats::lag(Fb, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
         Re = Rc - coredata(Rd)
         Rl = Rb - coredata(Rc)
         Rpbf = Re / (1 + Rd)
@@ -486,6 +488,18 @@ function (Rp, wp, Rb, wb,
     }
     
     if(contribution) {
+      # Compute the multi-period contributions
+      if(nrow(port_contr) > 1) {
+        total_port_contr = PerformanceAnalytics::to.period.contributions(port_contr, period = "all")[,1:NCOL(port_contr)]
+        port_contr = rbind(as.data.frame(port_contr), coredata(total_port_contr))
+      }
+      if(nrow(bmk_contr) > 1) {
+        total_bmk_contr = PerformanceAnalytics::to.period.contributions(bmk_contr, period = "all")[,1:NCOL(bmk_contr)]
+        bmk_contr = rbind(as.data.frame(bmk_contr), coredata(total_bmk_contr))
+      }
+      rownames(port_contr)[NROW(port_contr)] = "Total"
+      rownames(bmk_contr)[NROW(bmk_contr)] = "Total"
+      
       result[[length(result) + 1]] = port_contr
       result[[length(result) + 1]] = bmk_contr
       names(result)[(length(result)-1):length(result)] = 

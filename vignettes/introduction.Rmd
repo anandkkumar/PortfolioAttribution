@@ -58,10 +58,14 @@ E^A = R_p - R_b = \sum ^n_{i=1} A_i + \sum ^n_{i=1} S_i + \sum ^n_{i=1} I_i
 
 #### Brinson and Fachler
 
-This method is based on the _Brinson and Fachler [-@brinson1985measuring]_ article and defines interaction and selection effects the same as in the Brinson, Hood and Beebower approach but the allocation effect is defined as
+This method is based on the _Brinson and Fachler [-@brinson1985measuring]_ article and defines interaction and selection effects the same as in the Brinson, Hood and Beebower approach but the allocation effect is as defined below.
 
 \[
-  A_i = (w_{pi} - w_{bi})\times (R_{bi} - R_b)
+  \begin{aligned}
+    A_i & = (w_{pi} - w_{bi})\times (R_{bi} - R_b) \\
+    S_i & = w_{bi}\times(R_{pi}-R_{bi}) \\
+    I_i & = (w_{pi}-w_{bi})\times(R_{pi}-R_{bi})
+  \end{aligned}
 \]
 
 As before, the relationship between these attribution effects and the total arithmetic excess return for the portfolio over the benchmark is given by

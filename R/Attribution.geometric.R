@@ -145,7 +145,7 @@ function(Rp, wp, Rb, wb,
       wb = checkData(WB)
     }
     
-    if (!is.na(wpf) & is.vector(wpf)){
+    if (!is.na(wpf) && is.vector(wpf)){
       wpf = as.xts(matrix(rep(wpf, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                    index(Rp))
       colnames(wpf) = colnames(Rp)
@@ -153,7 +153,7 @@ function(Rp, wp, Rb, wb,
     else{
       wpf = ifelse((is.na(WPF) || is.null(WPF)), WPF, checkData(WPF))
     }
-    if (!is.na(wbf) & is.vector(wbf)){
+    if (!is.na(wbf) && is.vector(wbf)){
       wbf = as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
                    index(Rb))
       colnames(wbf) = colnames(Rb)
@@ -230,9 +230,9 @@ function(Rp, wp, Rb, wb,
         Fp = checkData(Fp)
         Fb = checkData(Fb)
         
-        Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
-        Rpd = lag(Fp, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
-        Rbd = lag(Fb, -1)[1:nrow(Rb), ] / S[1:nrow(Rb), ] - 1
+        Rc = stats::lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rpd = stats::lag(Fp, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1
+        Rbd = stats::lag(Fb, -1)[1:nrow(Rb), ] / S[1:nrow(Rb), ] - 1
         
         Rpe = Rc - coredata(Rpd)
         Rbe = Rc - coredata(Rbd)
@@ -356,6 +356,18 @@ function(Rp, wp, Rb, wb,
     }
     
     if(contribution) {
+      # Compute the multi-period contributions
+      if(nrow(port_contr) > 1) {
+        total_port_contr = PerformanceAnalytics::to.period.contributions(port_contr, period = "all")[,1:NCOL(port_contr)]
+        port_contr = rbind(as.data.frame(port_contr), coredata(total_port_contr))
+      }
+      if(nrow(bmk_contr) > 1) {
+        total_bmk_contr = PerformanceAnalytics::to.period.contributions(bmk_contr, period = "all")[,1:NCOL(bmk_contr)]
+        bmk_contr = rbind(as.data.frame(bmk_contr), coredata(total_bmk_contr))
+      }
+      rownames(port_contr)[NROW(port_contr)] = "Total"
+      rownames(bmk_contr)[NROW(bmk_contr)] = "Total"
+      
       result[[length(result) + 1]] = port_contr
       result[[length(result) + 1]] = bmk_contr
       names(result)[(length(result)-1):length(result)] = 

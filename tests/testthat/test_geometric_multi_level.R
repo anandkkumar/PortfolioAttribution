@@ -35,18 +35,18 @@ test_that("Multi-level Geometric example using data in Tables 9.4" , {
   
   expect_equal(attribution_results$`Multi-level attribution`[2, "Selection"], 0.00284263, tolerance = epsilon)
   
-  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Bonds"], 0.001305504, tolerance = epsilon)
-  expect_equal(attribution_results$`Attribution at each level`$`Level 1`[2, "Equities"], 0.00106814, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 1`[2, "Bonds"], 0.001305504, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 1`[2, "Equities"], 0.00106814, tolerance = epsilon)
   
-  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Equities-US"], -0.0005472731, tolerance = epsilon)
-  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Equities-Europe"], -2.594829e-05, tolerance = epsilon)
-  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Bonds-Govt"], -0.000183997, tolerance = epsilon)
-  expect_equal(attribution_results$`Attribution at each level`$`Level 2`[2, "Bonds-Corp"], -0.0001245518, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 2`[2, "Equities-US"], -0.0005472731, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 2`[2, "Equities-Europe"], -2.594829e-05, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 2`[2, "Bonds-Govt"], -0.000183997, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 2`[2, "Bonds-Corp"], -0.0001245518, tolerance = epsilon)
   
-  expect_equal(attribution_results$`Attribution at each level`$`Level 3`[2, "Equities-US-Financial"], 0.0009916887, tolerance = epsilon)
-  expect_equal(attribution_results$`Attribution at each level`$`Level 3`[2, "Equities-US-Software"], 9.916887e-05, tolerance = epsilon)
-  expect_equal(attribution_results$`Attribution at each level`$`Level 3`[2, "Equities-Europe-Autos"], -0.00144031, tolerance = epsilon)
-  expect_equal(attribution_results$`Attribution at each level`$`Level 3`[2, "Equities-Europe-Chemicals"], -0.001921043, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 3`[2, "Equities-US-Financial"], 0.0009916887, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 3`[2, "Equities-US-Software"], 9.916887e-05, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 3`[2, "Equities-Europe-Autos"], -0.00144031, tolerance = epsilon)
+  expect_equal(attribution_results$`Allocation at each level`$`Level 3`[2, "Equities-Europe-Chemicals"], -0.001921043, tolerance = epsilon)
 
   expect_equal(attribution_results$`Security selection`[2, "Equities-US-Financial"], -0.001154866, tolerance = epsilon)
   expect_equal(attribution_results$`Security selection`[2, "Equities-US-Software"], -0.003791178, tolerance = epsilon)
