@@ -43,6 +43,8 @@ The Opturo attribution methodologies require the following inputs for each asset
 
 * transactions-based actual portfolio returns $R\_trans_{pi}$
 
+The segment level weights and returns $w_{bs}$, $R_{bs}$, etc. can be aggregated up from the security level data.
+
 The arithmetic excess return for the portfolio over the benchmark is computed using the average weights and transactions-based returns of the assets in the portfolio.
 
 
@@ -50,34 +52,57 @@ The arithmetic excess return for the portfolio over the benchmark is computed us
 E^A = R_p - R_b = \sum ^n_{i=1} (w\_avg_{pi} \times R\_trans_{pi}) - \sum ^n_{i=1} (w_{bi} \times R_{bi})
 \]
 
+where $Rp$ and $Rb$ is total portfolio & benchmark returns for that period.
 
-### Top-down Brinson and Fachler - Selection Plus
+### Data substitutions
 
-In a _top-down_ approach, which is equivalent to Opturo's _Selection Plus_ method, the allocation and selection effects are as defined below.
+In addition to portfolios being more concentrated then a benchmark, it is also possible for a benchmark to not hold a particular security that is in the portfolio. In these cases, in addition to the weights for those assets being appropriately set to zero, for the attribution effects to be computed accurately, it's appropriate to impute the returns as well. When the weight of an asset $i$ in a portfolio is zero, it's holding-based $R\_h_{pi}$ and transactions-based returns $R\_trans_{pi}$ are both set to that of benchmark asset, $R_{bi}$. Similarly, if the weight an asset $i$ in the benchmark is zero, it's return $R_{bi}$ is set to the holding-based return of the corresponding asset in the portfolio, $R\_h_{pi}$. For the rest of this vignette, it's assumed these substitutions have been made.
+
+
+###  Selection Plus
+
+With Opturo's _Selection Plus_ method, the allocation and selection effects at the segment level are as defined below. In this method, the Interaction effect is combined into the Selection effects.
 
 \[
   \begin{aligned}
-    A_i &= (w_{pi} - w_{bi})\times (R_{bi} - R_b) \\
-    S_i &= w_{pi}\times(R\_h_{pi}-R_{bi}) \\
+    A_s &= (w_{ps} - w_{bs})\times (R_{bs} - R_b) \\
+    S_s &= w_{ps}\times(R\_h_{ps} - R_{bs}) \\
+  \end{aligned}
+\]
+
+The allocation and selection effects at the security level are as defined below
+
+\[
+  \begin{aligned}
+    A_i &= 0 \\
+    S_i &= (w_{pi} - w_{bi})\times (R_{bi} - R_b) \\
   \end{aligned}
 \]
 
 
-### Bottom-up Brinson and Fachler - Allocation Plus
+### Allocation Plus
 
-In a _bottom-up_ approach, which is equivalent to Opturo's _Allocation Plus_ method, the allocation and selection effects are as defined below.
+With Opturo's _Allocation Plus_ method, the allocation and selection effects at the segment level are as defined below. In this method, the Interaction effect is combined into the Allocation effects.
 
 \[
   \begin{aligned}
-    A_i &= (w_{pi} - w_{bi})\times (R\_h_{pi} - R_b) \\
-    S_i &= w_{bi}\times(R\_h_{pi}-R_{bi}) \\
+    A_s &= (w_{ps} - w_{bs})\times (R\_h_{ps} - R_b) \\
+    S_s &= w_{bs}\times(R\_h_{ps}-R_{bs}) \\
   \end{aligned}
 \]
 
+The allocation and selection effects at the security level are as defined below
+
+\[
+  \begin{aligned}
+    A_i &= 0 \\
+    S_i &= (w_{pi} - w_{bi})\times (R\_h_{pi} - R_b) \\
+  \end{aligned}
+\]
 
 ### Invest Effect
 
-The _Invest effect_ is a proprietary effect defined by Opturo which is meant to capture excess portfolio returns that are attributable to compounding effects rather than an active decision. At the segment-level it is the sum of the invest effects for all securities in that segment. The invest effect at the security level defined as follows:
+The _Invest effect_ is a *proprietary* effect defined by Opturo which is meant to capture excess portfolio returns that are attributable to compounding effects rather than an active decision. At the segment-level it is the sum of the invest effects for all securities in that segment. The invest effect at the security level defined as follows:
 
 \[
   \begin{aligned}
@@ -88,10 +113,13 @@ The _Invest effect_ is a proprietary effect defined by Opturo which is meant to 
 
 ### Trade Effect
 
-The _Trade effect_ is another proprietary effect defined by Opturo which is meant to capture the effect of trading and is the difference between if one were to just buy and hold the securities rather than considering trades throughout the day. The trade effect is defined as:
+The _Trade effect_ is another *proprietary* effect defined by Opturo which is meant to capture the effect of trading and is the difference between if one were to just buy and hold the securities rather than considering trades throughout the day. The trade effect at the segment and security levels are defined as:
 
 \[
-  Trade_i = (w\_avg_{pi} \times R\_trans_{pi}) - (w_{pi} \times R\_h_{pi})
+  \begin{aligned}
+    Trade_s &= (w\_avg_{ps} \times R\_trans_{ps}) - (w_{ps} \times R\_h_{ps}) \\
+    Trade_i &= (w\_avg_{pi} \times R\_trans_{pi}) - (w_{pi} \times R\_h_{pi}) \\
+  \end{aligned}
 \]
 
 
@@ -133,14 +161,17 @@ At the segment-level the currency effect is the sum of the currency effects for 
 
 The allocation, selection, invest and trade effects are as defined earlier and are computed using the local currency returns. The following sections summarize all the effects in both approaches. 
 
-### Top-down Brinson and Fachler - Selection Plus
+### Selection Plus
 
 \[
   \begin{aligned}
-    A_i &= (w_{pi} - w_{bi})\times (R\_local_{bi} - R\_local_b) \\
-    S_i &= w_{pi}\times(R\_h\_local_{pi}-R\_local_{bi}) \\
+    A_s &= (w_{ps} - w_{bs})\times (R\_local_{bs} - R\_local_b) \\
+    A_i &= 0 \\
+    S_s &= w_{ps}\times(R\_h\_local_{ps}-R\_local_{bs}) \\
+    S_i &= (w_{pi} - w_{bi})\times (R\_local_{bi} - R\_local_b) \\
     Inv_i &= w_{bi}\times(R\_h\_local_{pi}-R\_local_{bi}) \\
     Inv_s &= \sum ^n_{i=1} Inv_i \\
+    Trade_s &= (w\_avg_{ps} \times R\_trans\_local_{ps}) - (w_{ps} \times R\_h\_local_{ps}) \\
     Trade_i &= (w\_avg_{pi} \times R\_trans\_local_{pi}) - (w_{pi} \times R\_h\_local_{pi}) \\
     Curr_i & = 
     \begin{cases}
@@ -152,14 +183,17 @@ The allocation, selection, invest and trade effects are as defined earlier and a
 \]
 
 
-### Bottom-up Brinson and Fachler - Allocation Plus
+### Allocation Plus
 
 \[
   \begin{aligned}
-    A_i &= (w_{pi} - w_{bi})\times (R\_local_{bi} - R\_local_b) \\
-    S_i &= w_{pi}\times(R\_h\_local_{pi}-R\_local_{bi}) \\
+    A_s &= (w_{ps} - w_{bs})\times (R\_h\_local_{ps} - R\_local_b) \\
+    A_i &= 0 \\
+    S_s &= w_{bs}\times(R\_h\_local_{ps}-R\_local_{bs}) \\
+    S_i &= (w_{pi} - w_{bi})\times (R\_h\_local_{pi} - R\_local_b) \\
     Inv_i &= w_{bi}\times(R\_h\_local_{pi}-R\_local_{bi}) \\
     Inv_s &= \sum ^n_{i=1} Inv_i \\
+    Trade_s &= (w\_avg_{ps} \times R\_trans\_local_{ps}) - (w_{ps} \times R\_h\_local_{ps}) \\
     Trade_i &= (w\_avg_{pi} \times R\_trans\_local_{pi}) - (w_{pi} \times R\_h\_local_{pi}) \\
     Curr_i & = 
     \begin{cases}
@@ -186,7 +220,7 @@ For invest effects given an asset's raw invest effects $Inv_i$ in period $t-1$, 
 
 \[
   \begin{aligned}
-    Inv\_adj_i^t &= Inv_i^{t-1} + (w_{bi}^t \times R\_h_{pi}) \times (1 + R_p^{t-1}) - (w_{bi}^t \times R_{bi}) \times (1 + R_b^{t-1}) \\
+    Inv\_adj_i^t &= Inv_i^{t-1} + (w_{bi}^t \times R\_h_{pi}^t) \times (1 + R_p^{t-1}) - (w_{bi}^t \times R_{bi}^t) \times (1 + R_b^{t-1}) \\
     Inv\_adj_s &= \sum ^n_{i=1} Inv_i \\
   \end{aligned}
 \]
@@ -194,9 +228,12 @@ For invest effects given an asset's raw invest effects $Inv_i$ in period $t-1$, 
 
 ## <ins>Comparison of Opturo's methods to standard methods</ins>
 
-The _Trade_ and _Invest_ effects, being proprietary, have no equivalent in the standard methods implemented in the _PortfolioAttribution_ package. For the purposes of comparison, it would be most appropriate to combine the _Trade_ and _Invest_ effects into the _Selection_ effects prior to comparison with standard methods.
 
-The multi-period linking algorithms employed by Opturo is similar to the the smoothing method as described by _GRAP [-@grap1997]_ which is implemented by the package. With the _GRAP_ smoothing algorithm, given an asset's raw allocation or selection effect $A_i$, $S_i$ and asset's portfolio return $R_{pi}$ and benchmark return $R_{bi}$ in period $t$ ranging from 1 to $T$, the corresponding adjusted effect in period $t$ is given by:
+* The _top-down_ method implemented in the package is equivalent to Opturo's _Selection Plus_ approach with the allocation & selection effects as defined earlier. The package has no special treatment for security-level effects.
+* The _bottom-up_ method implemented in the package is equivalent to Opturo's _Allocation Plus_ approach with the allocation & selection effects as defined earlier. The package has no special treatment for security-level effects.
+* The _Trade_ and _Invest_ effects, being proprietary, have no equivalent in the standard methods implemented in the _PortfolioAttribution_ package. For the purposes of comparison, it would be most appropriate to combine the _Trade_ and _Invest_ effects into the _Selection_ effects prior to comparison with standard methods.
+* The currency effect in the package is equivalent to the difference between running the attribution with local currency and base currency and the net values are consistent with Opturo.
+* The multi-period linking algorithms employed by Opturo has no exact equivalent. The package implements a similar standard smoothing method as described by _GRAP [-@grap1997]_ which is implemented by the package. With the _GRAP_ smoothing algorithm, given an asset's raw allocation or selection effect $A_i$, $S_i$ and asset's portfolio return $R_{pi}$ and benchmark return $R_{bi}$ in period $t$ ranging from 1 to $T$, the corresponding adjusted effect in period $t$ is given by:
 
 \[
   \begin{aligned}
