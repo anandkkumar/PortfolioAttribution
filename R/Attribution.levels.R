@@ -280,8 +280,6 @@ function(Rp, wp, Rb, wb,
       # Total attribution effects
       allocation = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
                           length(levels))
-      interaction = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
-                           length(levels))
       
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
@@ -298,27 +296,20 @@ function(Rp, wp, Rb, wb,
             allocation[, i] = bs[[i]] - bs[[i-1]]
           }
         }
-        interaction[, 1] = coredata(rp) - rs[[1]] - bs[[1]] + coredata(rb) # Interaction 1
-        if(length(levels) > 1){
-          for (i in 2:length(levels)){
-            interaction[, i] = rs[[i-1]] - rs[[i]] - bs[[i]] + bs[[i-1]]
-          }
-        }
         
         selection = last(rs)[[1]] - rb
+        interaction = rp - last(rs)[[1]] - last(bs)[[1]] + rb
         if (method == "top.down") {
-          selection = selection + rowSums(interaction)
+          selection = selection + interaction
         }
         else if (method == "bottom.up") {
-          allocation = allocation + interaction
+          allocation[, length(levels)] = allocation[, length(levels)] + interaction
         }
       }
     } else{
       # Total attribution effects
       allocation = matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
                           length(levels))
-      interaction = matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
-                           length(levels))
       
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rbl) - 1 # Allocation 1
@@ -335,19 +326,14 @@ function(Rp, wp, Rb, wb,
             allocation[, i] = bs[[i]] - bs[[i-1]]
           }
         }
-        interaction[, 1] = coredata(rpl) - rs[[1]] - bs[[1]] + coredata(rbl) # Interaction 1
-        if(length(levels) > 1){
-          for (i in 2:length(levels)){
-            interaction[, i] = rs[[i-1]] - rs[[i]] - bs[[i]] + bs[[i-1]]
-          }
-        }
         
         selection = last(rs)[[1]] - rbl
+        interaction = rpl - last(rs)[[1]] - last(bs)[[1]] + rbl
         if (method == "top.down") {
-          selection = selection + rowSums(interaction)
+          selection = selection + interaction
         }
         else if (method == "bottom.up") {
-          allocation = allocation + interaction
+          allocation[, length(levels)] = allocation[, length(levels)] + interaction
         }
       }
     }
@@ -430,18 +416,12 @@ function(Rp, wp, Rb, wb,
     
     # Attribution at each level
     level = list() # represents allocation effects at each level
-    interaction_level = list() # interaction effects at each level
     if(geometric) {
       level[[1]] = coredata(weights.p[[1]] - weights.b[[1]]) * ((1 + returns.b[[1]]) 
                                                         / (1 + b) - 1)
     } else{
       # Brinson and Fachler (1985) allocation effect
       level[[1]] = coredata(weights.p[[1]] - weights.b[[1]]) * (returns.b[[1]] - b)
-      
-      interaction_level[[1]] = coredata(weights.p[[1]] - weights.b[[1]]) * (returns.p[[1]] - returns.b[[1]])
-      if (method == "bottom.up") {
-        level[[1]] = level[[1]] + interaction_level[[1]]
-      }
     }
     if(length(levels) > 1){
       for (i in 2:length(levels)){ 
@@ -462,75 +442,192 @@ function(Rp, wp, Rb, wb,
           if(anchored){
             # Brinson and Fachler (1985) allocation effect
             level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
-              (returns.b[[i]] - returns.b2[[i-1]])
-            
-            interaction_level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]]) * 
-              (returns.p[[i]] - returns.b[[i]])
-            
+            (returns.b[[i]] - returns.b2[[i-1]])
+
             # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
             level[[i]] = tidyr::replace_na(level[[i]], 0)
-            interaction_level[[i]] = tidyr::replace_na(interaction_level[[i]], 0)
           } else{
             # Brinson and Fachler (1985) allocation effect
-            level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]) * 
-              (returns.b[[i]] - returns.b2[[i-1]])
-            
-            interaction_level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]) * 
-              (returns.p[[i]] - returns.b[[i]])
-          }
-          if (method == "bottom.up") {
-            level[[i]] = level[[i]] + interaction_level[[i]]
+            level[[i]] = coredata(weights.p[[i]] - weights.b[[i]]) * (returns.b[[i]] - returns.b2[[i-1]])
           }
         }
       }
     }
     
+    select_level = list()
+    interaction_level = list()
     if(!currency){
       if(geometric){
-        # Security/Asset selection
-        select = coredata(reclass(weights.p[[length(weights.p)]], rp)) * 
-          ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
-          ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+        for(i in length(levels):1) {
+          # Seed the structure based on the allocation effects computed earlier
+          select_level[[i]] = level[[i]]
+          select_level[[i]][,] = NA
+          if (i == length(levels)) {
+            # Selection at lowest level
+            select_level[[i]] = coredata(reclass(weights.p[[i]], rp)) * 
+              ((1 + returns.p[[i]]) / (1 + returns.b[[i]]) - 1) *
+              ((1 + returns.b[[i]]) / (1 + bs[[i]]))
+          } else {
+            # At higher levels it's the sum of the effects at the lower level
+            columnNames = colnames(select_level[[i]])
+            for(j in columnNames) {
+              select_level[[i]][,j] = rowSums(select_level[[i+1]][,grepl(j, names(select_level[[i+1]]))])
+            }
+          }
+        }
       } else{
         # Security/Asset selection
         if(anchored) {
-          select = coredata(reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rb)) * 
-            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
-
-          # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
-          select = tidyr::replace_na(select, 0)
-          
+          for(i in length(levels):1) {
+            # Seed the structure based on the allocation effects computed earlier
+            select_level[[i]] = interaction_level[[i]] = level[[i]]
+            select_level[[i]][,] = interaction_level[[i]][,] = NA
+            if (i == length(levels)) {
+              
+              if(method == "top.down") {
+                # Selection at lowest level
+                select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) *
+                  (returns.p[[i]] - returns.b[[i]])
+                
+                # Interaction at lowest level
+                interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) * 
+                  (returns.p[[i]] - returns.b[[i]])
+              } else {
+                # Selection at lowest level
+                select_level[[i]] = coredata(reclass(weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+                
+                # Interaction at lowest level
+                interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+              }
+              
+              # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+              select_level[[i]] = tidyr::replace_na(select_level[[i]], 0)
+              
+              # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+              interaction_level[[i]] = tidyr::replace_na(interaction_level[[i]], 0)
+            } else {
+              # At higher levels it's the sum of the effects at the lower level
+              columnNames = colnames(select_level[[i]])
+              for(j in columnNames) {
+                select_level[[i]][,j] = rowSums(select_level[[i+1]][,grepl(j, names(select_level[[i+1]]))])
+                interaction_level[[i]][,j] = rowSums(interaction_level[[i+1]][,grepl(j, names(interaction_level[[i+1]]))])
+              }
+            }
+          }
         } else {
-          select = coredata(reclass(weights.b[[length(weights.b)]], rb)) * 
-            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+          for(i in length(levels):1) {
+            # Seed the structure based on the allocation effects computed earlier
+            select_level[[i]] = interaction_level[[i]] = level[[i]]
+            select_level[[i]][,] = interaction_level[[i]][,] = NA
+            if (i == length(levels)) {
+              # Selection at lowest level
+              select_level[[i]] = coredata(reclass(weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+              
+              # Interaction at lowest level
+              interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+            } else {
+              # At higher levels it's the sum of the effects at the lower level
+              columnNames = colnames(select_level[[i]])
+              for(j in columnNames) {
+                select_level[[i]][,j] = rowSums(select_level[[i+1]][,grepl(j, names(select_level[[i+1]]))])
+                interaction_level[[i]][,j] = rowSums(interaction_level[[i+1]][,grepl(j, names(interaction_level[[i+1]]))])
+              }
+            }
+          }
         }
+        
         if(method == "top.down") {
-          select = select + last(interaction_level)[[1]]
+          for(i in 1:length(levels)) {
+            select_level[[i]] = select_level[[i]] + interaction_level[[i]]
+          }
+        }
+        else if (method == "bottom.up") {
+          level[[length(levels)]] = level[[length(levels)]] + interaction_level[[length(levels)]] 
         }
       }
     } else{
       if(geometric){
-        # Security/Asset selection
-        select = coredata(reclass(weights.p[[length(weights.p)]], rpl)) * 
-          ((1 + returns.p[[length(returns.p)]]) / (1 + returns.b[[length(returns.b)]]) - 1) * 
-          ((1 + returns.b[[length(returns.b)]]) / (1 + bs[[length(bs)]]))
+        for(i in length(levels):1) {
+          # Seed the structure based on the allocation effects computed earlier
+          select_level[[i]] = level[[i]]
+          select_level[[i]][,] = NA
+          if (i == length(levels)) {
+            # Selection at lowest level
+            select_level[[i]] = coredata(reclass(weights.p[[i]], rpl)) * 
+              ((1 + returns.p[[i]]) / (1 + returns.b[[i]]) - 1) *
+              ((1 + returns.b[[i]]) / (1 + bs[[i]]))
+          } else {
+            # At higher levels it's the sum of the effects at the lower level
+            columnNames = colnames(select_level[[i]])
+            for(j in columnNames) {
+              select_level[[i]][,j] = rowSums(select_level[[i+1]][,grepl(j, names(select_level[[i+1]]))])
+            }
+          }
+        }
       } else{
         # Security/Asset selection
         if(anchored) {
-          select = coredata(reclass(weights.b[[length(weights.b)]]*weights.p2[[length(weights.b)-1]]/weights.b2[[length(weights.b)-1]], rbl)) *
-            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
-          
-          # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
-          select = tidyr::replace_na(select, 0)
+          for(i in length(levels):1) {
+            # Seed the structure based on the allocation effects computed earlier
+            select_level[[i]] = interaction_level[[i]] = level[[i]]
+            select_level[[i]][,] = interaction_level[[i]][,] = NA
+            if (i == length(levels)) {
+              # Selection at lowest level
+              select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) *
+                (returns.p[[i]] - returns.b[[i]])
+              
+              # Interaction at the lowest level
+              interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) * 
+                (returns.p[[i]] - returns.b[[i]])
+
+              # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+              select_level[[i]] = tidyr::replace_na(select_level[[i]], 0)
+              
+              # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
+              interaction_level[[i]] = tidyr::replace_na(interaction_level[[i]], 0)
+            } else {
+              # At higher levels it's the sum of the effects at the lower level
+              columnNames = colnames(select_level[[i]])
+              for(j in columnNames) {
+                select_level[[i]][,j] = rowSums(select_level[[i+1]][,grepl(j, names(select_level[[i+1]]))])
+                interaction_level[[i]][,j] = rowSums(interaction_level[[i+1]][,grepl(j, names(interaction_level[[i+1]]))])
+              }
+            }
+          }
         } else {
-          select = coredata(reclass(weights.b[[length(weights.b)]], rbl)) *
-            (returns.p[[length(returns.p)]] - returns.b[[length(returns.b)]])
+          for(i in length(levels):1) {
+            # Seed the structure based on the allocation effects computed earlier
+            select_level[[i]] = interaction_level[[i]] = level[[i]]
+            select_level[[i]][,] = interaction_level[[i]][,] = NA
+            if (i == length(levels)) {
+              # Selection at the lowest level
+              select_level[[i]] = coredata(reclass(weights.b[[i]], rbl)) * (returns.p[[i]] - returns.b[[i]])
+              
+              # Interaction at the lowest level
+              interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]], rbl)) * 
+                (returns.p[[i]] - returns.b[[i]])
+            } else {
+              # At higher levels it's the sum of the effects at the lower level
+              columnNames = colnames(select_level[[i]])
+              for(j in columnNames) {
+                select_level[[i]][,j] = rowSums(select_level[[i+1]][,grepl(j, names(select_level[[i+1]]))])
+                interaction_level[[i]][,j] = rowSums(interaction_level[[i+1]][,grepl(j, names(interaction_level[[i+1]]))])
+              }
+            }
+          }
         }
+        
         if(method == "top.down") {
-          select = select + last(interaction_level)[[1]]
+          for(i in 1:length(levels)) {
+            select_level[[i]] = select_level[[i]] + interaction_level[[i]]
+          }
+        }
+        else if (method == "bottom.up") {
+          level[[length(levels)]] = level[[length(levels)]] + interaction_level[[length(levels)]] 
         }
       }
     }
+    
     # Get the multi-period summary
     if(geometric == FALSE & method == "none") {
       general = cbind(allocation, interaction, selection)
@@ -538,31 +635,33 @@ function(Rp, wp, Rb, wb,
       general = cbind(allocation, selection)
     }
     general = rbind(as.data.frame(general), (apply(1 + general, 2, prod) - 1))
+    rownames(general)[nrow(general)] = "Total"
     
     for (i in 1:length(level)){
       level[[i]] = rbind(as.data.frame(level[[i]]), 
                          (apply(1 + level[[i]], 2, prod) - 1))
       rownames(level[[i]])[nrow(level[[i]])] = "Total"
-
+      
+      select_level[[i]] = rbind(as.data.frame(select_level[[i]]), 
+                                (apply(1 + select_level[[i]], 2, prod) - 1))
+      rownames(select_level[[i]])[nrow(select_level[[i]])] = "Total"
+      
       if(geometric == FALSE) {
         interaction_level[[i]] = rbind(as.data.frame(interaction_level[[i]]), 
-                                       (apply(1 + interaction_level[[i]], 2, prod) - 1))
+                                  (apply(1 + interaction_level[[i]], 2, prod) - 1))
         rownames(interaction_level[[i]])[nrow(interaction_level[[i]])] = "Total"
       }
     }
-    select = rbind(as.data.frame(select), (apply(1 + select, 2, prod) - 1))
-    rownames(general)[nrow(general)] = "Total"
-    rownames(select)[nrow(select)] = "Total"
     
     # Label the output
     result = list()
     labels = paste(rep("Level", length(levels)), 1:length(levels))
-    names(level) = labels
+    names(level) = names(select_level) = labels 
+    
     if(geometric == FALSE & method == "none") {
+      names(interaction_level) = labels
       colnames(general) = c(paste(labels, (rep("Allocation", 
-                                               length(levels)))), 
-                            paste(labels, (rep("Interaction", 
-                                               length(levels)))), "Selection")
+                                               length(levels)))), "Interaction", "Selection")
     } else {
       colnames(general) = c(paste(labels, (rep("Allocation", 
                                                length(levels)))), "Selection")
@@ -574,27 +673,27 @@ function(Rp, wp, Rb, wb,
     if (!currency){
       if(geometric == FALSE & method == "none") {
         result[[4]] = interaction_level
-        result[[5]] = select
+        result[[5]] = select_level
         names(result) = c("Excess returns", "Multi-level attribution", 
-                          "Allocation at each level", "Interaction at each level", "Security selection")
+                          "Allocation at each level", "Interaction at each level", "Selection at each level")
       } else {
-        result[[4]] = select
+        result[[4]] = select_level
         names(result) = c("Excess returns", "Multi-level attribution", 
-                          "Allocation at each level", "Security selection")
+                          "Allocation at each level", "Selection at each level")
       }
     } else{
       if(geometric == FALSE & method == "none") {
         result[[4]] = interaction_level
-        result[[5]] = select
+        result[[5]] = select_level
         result[[6]] = curr
         names(result) = c("Excess returns", "Multi-level attribution", 
-                          "Allocation at each level", "Interaction at each level", "Security selection", 
+                          "Allocation at each level", "Interaction at each level", "Selection at each level", 
                           "Currency management")
       } else {
-        result[[4]] = select
+        result[[4]] = select_level
         result[[5]] = curr
         names(result) = c("Excess returns", "Multi-level attribution", 
-                          "Allocation at each level", "Security selection", 
+                          "Allocation at each level", "Selection at each level", 
                           "Currency management")
       }
     }

@@ -4,7 +4,7 @@ library(testthat)
 context("Examples from Morningstar methodology documentation")
 # Reference: https://corporate.morningstar.com/us/documents/MethodologyDocuments/MethodologyPapers/EquityPerformanceAttributionMeth.pdf
 
-epsilon = 8e-5
+epsilon = 9e-5
 
 cnames = c("Large Cap Asia Cyclical", "Small Cap Asia Cyclical", "Large Cap Asia Defensive", "Small Cap Asia Defensive", "Large Cap Europe Cyclical", "Small Cap Europe Cyclical", "Large Cap Europe Defensive", "Small Cap Europe Defensive")
 Wp = c(0.15, 0.1, 0.05, 0.23, 0, 0.12, 0.18, 0.17)
@@ -141,14 +141,22 @@ test_that("Multi-level Geometric example from Morningstar methodology paper" , {
   expect_equal(attribution_results$`Allocation at each level`$`Level 3`[2, "Europe-Defensive-Large Cap Europe Defensive"], 0.0173, tolerance = epsilon)
   expect_equal(attribution_results$`Allocation at each level`$`Level 3`[2, "Europe-Defensive-Small Cap Europe Defensive"], 0, tolerance = epsilon)
   
-  expect_equal(attribution_results$`Security selection`[2, "Asia-Cyclical-Large Cap Asia Cyclical"], 0.0267, tolerance = epsilon)
-  expect_equal(attribution_results$`Security selection`[2, "Asia-Cyclical-Small Cap Asia Cyclical"], 0.0119, tolerance = epsilon)
-  expect_equal(attribution_results$`Security selection`[2, "Asia-Defensive-Large Cap Asia Defensive"], -0.0054, tolerance = epsilon)
-  expect_equal(attribution_results$`Security selection`[2, "Asia-Defensive-Small Cap Asia Defensive"], 0.0326, tolerance = epsilon)
-  expect_equal(attribution_results$`Security selection`[2, "Europe-Cyclical-Large Cap Europe Cyclical"], 0, tolerance = epsilon)
-  expect_equal(attribution_results$`Security selection`[2, "Europe-Cyclical-Small Cap Europe Cyclical"], 0.0014, tolerance = epsilon)
-  expect_equal(attribution_results$`Security selection`[2, "Europe-Defensive-Large Cap Europe Defensive"], 0, tolerance = epsilon)
-  expect_equal(attribution_results$`Security selection`[2, "Europe-Defensive-Small Cap Europe Defensive"], -0.0084, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 1`[2, "Asia"], 0.0658, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 1`[2, "Europe"], -0.007, tolerance = epsilon)
+  
+  expect_equal(attribution_results$`Selection at each level`$`Level 2`[2, "Asia-Cyclical"], 0.0386, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 2`[2, "Asia-Defensive"], 0.0272, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 2`[2, "Europe-Cyclical"], 0.0014, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 2`[2, "Europe-Defensive"], -0.0084, tolerance = epsilon)
+  
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Asia-Cyclical-Large Cap Asia Cyclical"], 0.0267, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Asia-Cyclical-Small Cap Asia Cyclical"], 0.0119, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Asia-Defensive-Large Cap Asia Defensive"], -0.0054, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Asia-Defensive-Small Cap Asia Defensive"], 0.0326, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Europe-Cyclical-Large Cap Europe Cyclical"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Europe-Cyclical-Small Cap Europe Cyclical"], 0.0014, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Europe-Defensive-Large Cap Europe Defensive"], 0, tolerance = epsilon)
+  expect_equal(attribution_results$`Selection at each level`$`Level 3`[2, "Europe-Defensive-Small Cap Europe Defensive"], -0.0084, tolerance = epsilon)
   
   expect_equal(attribution_results$`Excess returns`[2,"Geometric"], 0.01576598, tolerance = epsilon)
 }
