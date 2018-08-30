@@ -483,8 +483,7 @@ function(Rp, wp, Rb, wb,
             select_level[[i]] = interaction_level[[i]] = level[[i]]
             select_level[[i]][,] = interaction_level[[i]][,] = NA
             if (i == length(levels)) {
-              
-              if(method == "top.down") {
+              if(method == "top.down" & length(levels) > 1) {
                 # Selection at lowest level
                 select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) *
                   (returns.p[[i]] - returns.b[[i]])
@@ -572,14 +571,22 @@ function(Rp, wp, Rb, wb,
             select_level[[i]] = interaction_level[[i]] = level[[i]]
             select_level[[i]][,] = interaction_level[[i]][,] = NA
             if (i == length(levels)) {
-              # Selection at lowest level
-              select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) *
-                (returns.p[[i]] - returns.b[[i]])
-              
-              # Interaction at the lowest level
-              interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) * 
-                (returns.p[[i]] - returns.b[[i]])
-
+              if(length(levels) > 1){
+                # Selection at lowest level
+                select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) *
+                  (returns.p[[i]] - returns.b[[i]])
+                
+                # Interaction at the lowest level
+                interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) * 
+                  (returns.p[[i]] - returns.b[[i]])
+              } else {
+                # Selection at lowest level
+                select_level[[i]] = coredata(reclass(weights.b[[i]], rbl)) * (returns.p[[i]] - returns.b[[i]])
+                
+                # Interaction at the lowest level
+                interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]], rbl)) * 
+                  (returns.p[[i]] - returns.b[[i]])
+              }
               # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
               select_level[[i]] = tidyr::replace_na(select_level[[i]], 0)
               
