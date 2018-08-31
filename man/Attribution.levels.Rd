@@ -5,7 +5,8 @@
 \title{provides multi-level sector-based geometric attribution}
 \usage{
 Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA, h,
-  h_levels, method = "top.down", geometric = FALSE, anchored = TRUE)
+  h_levels, method = "top.down", linking = "grap", geometric = FALSE,
+  adjusted = FALSE, anchored = TRUE)
 }
 \arguments{
 \item{Rp}{xts, data frame or matrix of portfolio returns}
@@ -39,9 +40,24 @@ priority is given to the security selection. Interaction term is combined
 with the group allocation effect} 
 By default "top.down" is selected.}
 
+\item{linking}{Used to select the linking method to present the multi-period
+summary of arithmetic attribution effects. May be any of: 
+\itemize{\item carino - logarithmic linking coefficient method
+\item menchero - Menchero's smoothing algorithm
+\item grap - linking approach developed by GRAP
+\item frongello - Frongello's linking method
+\item davies.laker - Davies and Laker's linking method}
+By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
+if the data does not imply multi-period attribution.}
+
 \item{geometric}{TRUE/FALSE,  whether to use geometric or arithmetic excess
 returns for the attribution analysis. By default this is set to FALSE, which results
 in arithmetic excess return attribution.}
+
+\item{adjusted}{TRUE/FALSE, whether to show original or smoothed attribution
+effects for each period. By default unadjusted attribution effects are 
+returned (this is not used for Davies and Laker's linking method for arithmetic attribution 
+or for geometric attribution as it is not applicable in either case)}
 
 \item{anchored}{TRUE/FALSE, to indicate if the weights at each level should be
 anchored based on prior level's decision, as outlined in the Morningstar
