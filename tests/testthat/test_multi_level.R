@@ -230,7 +230,7 @@ test_that("Multi-period top-down geometric attribution at the segment level give
   expect_equal(as.numeric(geometric_segment_excess_return), total_geometric_segment_effects, tolerance = epsilon)
 })
 
-test_that("Multi-period top-down geometric attribution at the segment level using hierarchical API gives expected results" , {
+test_that("Multi-period geometric attribution at the segment level using hierarchical API gives expected results" , {
   # Validate segment level results with hierarchical API
   hierarchical_geometric_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
                                                                     multi_period_portf_1$wp, 
