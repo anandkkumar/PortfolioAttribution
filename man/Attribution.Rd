@@ -5,9 +5,9 @@
 \title{performs single-category attribution}
 \usage{
 Attribution(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA, Fp = NA,
-  Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE, method = "none",
-  linking = "grap", geometric = FALSE, contribution = FALSE,
-  adjusted = FALSE)
+  Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE,
+  method = "none", linking = "grap", geometric = FALSE,
+  contribution = FALSE, adjusted = FALSE)
 }
 \arguments{
 \item{Rp}{T x n xts, data frame or matrix of portfolio returns}

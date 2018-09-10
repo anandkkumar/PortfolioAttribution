@@ -4,7 +4,8 @@
 \alias{AttributionFixedIncome}
 \title{fixed income attribution}
 \usage{
-AttributionFixedIncome(Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
+AttributionFixedIncome(Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf,
+  geometric = FALSE)
 }
 \arguments{
 \item{Rp}{T x n xts, data frame or matrix of portfolio returns}

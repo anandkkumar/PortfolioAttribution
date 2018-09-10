@@ -39,6 +39,14 @@
 #' priority is given to the security selection. Interaction term is combined 
 #' with the group allocation effect} 
 #' By default "top.down" is selected.
+#' @param linking Used to select the linking method to present the multi-period
+#' summary of arithmetic attribution effects. May be any of: 
+#' \itemize{\item carino - logarithmic linking coefficient method
+#' \item menchero - Menchero's smoothing algorithm
+#' \item grap - linking approach developed by GRAP
+#' \item frongello - Frongello's linking method}
+#' By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
+#' if the data does not imply multi-period attribution.
 #' @param h data.frame with the hierarchy obtained from the buildHierarchy 
 #' function or defined manually in the same style as buildHierarchy's
 #' output
@@ -47,6 +55,10 @@
 #' @param geometric TRUE/FALSE,  whether to use geometric or arithmetic excess
 #' returns for the attribution analysis. By default this is set to FALSE, which results
 #' in arithmetic excess return attribution.
+#' @param adjusted TRUE/FALSE, whether to show original or smoothed attribution
+#' effects for each period. By default unadjusted attribution effects are 
+#' returned (this is not used for Davies and Laker's linking method for arithmetic attribution 
+#' or for geometric attribution as it is not applicable in either case)
 #' @param anchored TRUE/FALSE, to indicate if the weights at each level should be
 #' anchored based on prior level's decision, as outlined in the Morningstar
 #' methodology documented referenced below
@@ -72,7 +84,9 @@
 Attribution.levels <-
 function(Rp, wp, Rb, wb, 
          Rpl = NA, Rbl = NA, Rbh = NA, 
-         h, h_levels, method = "top.down", geometric = FALSE, anchored = TRUE)
+         h, h_levels, 
+         method = "top.down", linking = "grap",
+         geometric = FALSE, adjusted = FALSE, anchored = TRUE)
 {   # @author Andrii Babii
     
     # DESCRIPTION:
@@ -131,6 +145,12 @@ function(Rp, wp, Rb, wb,
                     "top.down" = "top.down", 
                     "bottom.up" = "bottom.up",
                     stop("Valid methods are 'none', 'top.down' and 'bottom.up'"))
+    linking = switch(linking,
+                     "carino" = "carino", 
+                     "menchero" = "menchero", 
+                     "grap" = "grap", 
+                     "frongello" = "frongello", 
+                     stop("Valid linking options are 'carino', 'menchero', 'grap', 'frongello'"))
     
     levels <- unlist(list(h_levels))
     if (!is.null(levels)) stopifnot(is.character(levels))
@@ -278,8 +298,8 @@ function(Rp, wp, Rb, wb,
     
     if(!currency){
       # Total attribution effects
-      allocation = matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
-                          length(levels))
+      allocation = as.xts(matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
+                          length(levels)), index(Rp))
       
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rb) - 1 # Allocation 1
@@ -308,8 +328,8 @@ function(Rp, wp, Rb, wb,
       }
     } else{
       # Total attribution effects
-      allocation = matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
-                          length(levels))
+      allocation = as.xts(matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
+                          length(levels)), index(Rpl))
       
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / coredata(1 + rbl) - 1 # Allocation 1
@@ -350,8 +370,8 @@ function(Rp, wp, Rb, wb,
       } else{
         b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
                           ncol(returns.b[[1]])), index(rb))
-        r = as.xts(matrix(rep(rp, ncol(last(returns.p)[[1]])), nrow(rp),
-                          ncol(last(returns.p)[[1]])), index(rp))
+        r = as.xts(matrix(rep(rp, ncol(returns.p[[1]])), nrow(rp),
+                          ncol(returns.p[[1]])), index(rp))
       }
     } else{
       if(NROW(Rpl) == 1)
@@ -363,8 +383,8 @@ function(Rp, wp, Rb, wb,
       } else{
         b = as.xts(matrix(rep(rbl, ncol(returns.b[[1]])), nrow(rbl), 
                           ncol(returns.b[[1]])), index(rbl))
-        r = as.xts(matrix(rep(rpl, ncol(last(returns.p)[[1]])), nrow(rpl),
-                          ncol(last(returns.p)[[1]])), index(rpl))
+        r = as.xts(matrix(rep(rpl, ncol(returns.p[[1]])), nrow(rpl),
+                          ncol(returns.p[[1]])), index(rpl))
       }
     }
     
@@ -483,8 +503,7 @@ function(Rp, wp, Rb, wb,
             select_level[[i]] = interaction_level[[i]] = level[[i]]
             select_level[[i]][,] = interaction_level[[i]][,] = NA
             if (i == length(levels)) {
-              
-              if(method == "top.down") {
+              if(method == "top.down" & length(levels) > 1) {
                 # Selection at lowest level
                 select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) *
                   (returns.p[[i]] - returns.b[[i]])
@@ -572,14 +591,22 @@ function(Rp, wp, Rb, wb,
             select_level[[i]] = interaction_level[[i]] = level[[i]]
             select_level[[i]][,] = interaction_level[[i]][,] = NA
             if (i == length(levels)) {
-              # Selection at lowest level
-              select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) *
-                (returns.p[[i]] - returns.b[[i]])
-              
-              # Interaction at the lowest level
-              interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) * 
-                (returns.p[[i]] - returns.b[[i]])
-
+              if(length(levels) > 1){
+                # Selection at lowest level
+                select_level[[i]] = coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) *
+                  (returns.p[[i]] - returns.b[[i]])
+                
+                # Interaction at the lowest level
+                interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) * 
+                  (returns.p[[i]] - returns.b[[i]])
+              } else {
+                # Selection at lowest level
+                select_level[[i]] = coredata(reclass(weights.b[[i]], rbl)) * (returns.p[[i]] - returns.b[[i]])
+                
+                # Interaction at the lowest level
+                interaction_level[[i]] = coredata(reclass(weights.p[[i]] - weights.b[[i]], rbl)) * 
+                  (returns.p[[i]] - returns.b[[i]])
+              }
               # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
               select_level[[i]] = tidyr::replace_na(select_level[[i]], 0)
               
@@ -629,27 +656,86 @@ function(Rp, wp, Rb, wb,
     }
     
     # Get the multi-period summary
-    if(geometric == FALSE & method == "none") {
-      general = cbind(allocation, interaction, selection)
-    } else {
-      general = cbind(allocation, selection)
-    }
-    general = rbind(as.data.frame(general), (apply(1 + general, 2, prod) - 1))
-    rownames(general)[nrow(general)] = "Total"
-    
-    for (i in 1:length(level)){
-      level[[i]] = rbind(as.data.frame(level[[i]]), 
-                         (apply(1 + level[[i]], 2, prod) - 1))
-      rownames(level[[i]])[nrow(level[[i]])] = "Total"
-      
-      select_level[[i]] = rbind(as.data.frame(select_level[[i]]), 
-                                (apply(1 + select_level[[i]], 2, prod) - 1))
-      rownames(select_level[[i]])[nrow(select_level[[i]])] = "Total"
-      
+    if(nrow(allocation) > 1) {
       if(geometric == FALSE) {
-        interaction_level[[i]] = rbind(as.data.frame(interaction_level[[i]]), 
-                                  (apply(1 + interaction_level[[i]], 2, prod) - 1))
-        rownames(interaction_level[[i]])[nrow(interaction_level[[i]])] = "Total"
+        if (linking == "carino"){
+          allocation = Carino(rp, rb, allocation, adjusted)
+          selection = Carino(rp, rb, selection, adjusted)
+          if(method == "none") {
+            interaction = Carino(rp, rb, interaction, adjusted)
+          }
+          for (i in 1:length(level)) {
+            level[[i]] = Carino(rp, rb, level[[i]], adjusted)
+            select_level[[i]] = Carino(rp, rb, select_level[[i]], adjusted)
+            if(method == "none") {
+              interaction_level[[i]] = Carino(rp, rb, interaction_level[[i]], adjusted)
+            }
+          }
+        } else if (linking == "menchero"){
+          allocation = Menchero(rp, rb, allocation, adjusted)
+          selection = Menchero(rp, rb, selection, adjusted)
+          if(method == "none") {
+            interaction = Menchero(rp, rb, interaction, adjusted)
+          }
+          for (i in 1:length(level)) {
+            level[[i]] = Menchero(rp, rb, level[[i]], adjusted)
+            select_level[[i]] = Menchero(rp, rb, select_level[[i]], adjusted)
+            if(method == "none") {
+              interaction_level[[i]] = Menchero(rp, rb, interaction_level[[i]], adjusted)
+            }
+          }
+        } else if (linking == "grap"){
+          allocation = Grap(rp, rb, allocation, adjusted)
+          selection = Grap(rp, rb, selection, adjusted)
+          if(method == "none") {
+            interaction = Grap(rp, rb, interaction, adjusted)
+          }
+          for (i in 1:length(level)) {
+            level[[i]] = Grap(rp, rb, level[[i]], adjusted)
+            select_level[[i]] = Grap(rp, rb, select_level[[i]], adjusted)
+            if(method == "none") {
+              interaction_level[[i]] = Grap(rp, rb, interaction_level[[i]], adjusted)
+            }
+          }
+        } else if (linking == "frongello"){
+          allocation = Frongello(rp, rb, allocation, adjusted)
+          selection = Frongello(rp, rb, selection, adjusted)
+          if(method == "none") {
+            interaction = Frongello(rp, rb, interaction, adjusted)
+          }
+          for (i in 1:length(level)) {
+            level[[i]] = Frongello(rp, rb, level[[i]], adjusted)
+            select_level[[i]] = Frongello(rp, rb, select_level[[i]], adjusted)
+            if(method == "none") {
+              interaction_level[[i]] = Frongello(rp, rb, interaction_level[[i]], adjusted)
+            }
+          }
+        }
+        if(method == "none") {
+          general = cbind(allocation, interaction, selection)
+        } else {
+          general = cbind(allocation, selection)
+        }
+      } else {
+        general = cbind(allocation, selection)
+        general = rbind(as.data.frame(general), (apply(1 + general, 2, prod) - 1))
+        
+        for (i in 1:length(level)) {
+          level[[i]] = rbind(as.data.frame(level[[i]]), 
+                             (apply(1 + level[[i]], 2, prod) - 1))
+          rownames(level[[i]])[nrow(level[[i]])] = "Total"
+          
+          select_level[[i]] = rbind(as.data.frame(select_level[[i]]), 
+                                    (apply(1 + select_level[[i]], 2, prod) - 1))
+          rownames(select_level[[i]])[nrow(select_level[[i]])] = "Total"
+        }
+      }
+      rownames(general)[nrow(general)] = "Total"
+    } else {
+      if(geometric == FALSE & method == "none") {
+        general = cbind(allocation, interaction, selection)
+      } else {
+        general = cbind(allocation, selection)
       }
     }
     

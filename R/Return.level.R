@@ -63,11 +63,14 @@ function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
     h = split(h$primary_id, h[level])
     returns = as.xts(matrix(NA, ncol = length(h), nrow = nrow(Rp)), index(Rp))
     for(i in 1:length(h)){
-      if(all(relativeWeights[, i] != 0)){
-        returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE] * coredata(wp[, h[[i]], drop = FALSE])/
-                               coredata(matrix(rep(relativeWeights[, i], length(h[[i]])), ncol = length(h[[i]]))))
-      } else{
+      # Check to see if the relativeWeights are all the same as the given weights
+      if(all(dim(wp[,h[[i]]]) == dim(relativeWeights[, i])) && all(wp[,h[[i]]] == relativeWeights[, i])) {
         returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE])
+      } else {
+        returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE] * coredata(wp[, h[[i]], drop = FALSE])/
+                                 coredata(matrix(rep(relativeWeights[, i], length(h[[i]])), ncol = length(h[[i]]))))
+        # Replace the NAs with zeroes for cases where the relative weights are 0
+        returns[, i] = tidyr::replace_na(returns[, i], 0)
       }
     }
     colnames(returns) = names(h)
