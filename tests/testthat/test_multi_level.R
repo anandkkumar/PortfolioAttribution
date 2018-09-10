@@ -2,7 +2,7 @@ library(PortfolioAttribution)
 library(testthat)
 
 context("Multi-level Attribution validation")
-epsilon = 1e-15
+epsilon = 2e-15
 
 data("sample_data")
 
@@ -11,9 +11,17 @@ rb = PerformanceAnalytics::Return.portfolio(multi_period_portf_1$Rb, multi_perio
 excess_return = PerformanceAnalytics::Return.cumulative(rp) - PerformanceAnalytics::Return.cumulative(rb)
 geometric_excess_return = excess_return/(1 + PerformanceAnalytics::Return.cumulative(rb))
 
-# Validate segment level results
+
+# Define a hierarchy for test purposes
+segment_names = paste0("Segment", c(1:6))
+segment_list = sort(rep(segment_names, 493))
+industries = sort(c(rep(paste0("Industry", c(1:7)), 70), rep("Industry8", 3)))
+industry_list = unlist(lapply(segment_names, function(x) {paste0(x, ".", industries)}))
+
 hierarchy = data.frame("primary_id" = names(multi_period_portf_1$Rb),
-                       "Segment" = paste("Segment", c(1:6)))
+                       "Segment" = segment_list,
+                       "Industry" = industry_list,
+                       stringsAsFactors = FALSE)
 
 # Compute segment weights and returns
 wp_segment = Weight.level(multi_period_portf_1$wp, multi_period_portf_1$Rp, hierarchy, level = "Segment")
@@ -60,7 +68,7 @@ test_that("Multi-period top-down arithmetic attribution at the segment level giv
                                       Rb_segment, 
                                       wb_segment, 
                                       method = 'top.down', linking = 'grap', 
-                                      contribution = TRUE, adjusted = TRUE)
+                                      contribution = TRUE, adjusted = FALSE)
   
   total_segment_allocation_effects = sum(segment_level_results$Allocation["Total",-NCOL(segment_level_results$Allocation)])
   total_segment_selection_effects = sum(segment_level_results$Selection["Total",-NCOL(segment_level_results$Selection)])
@@ -71,7 +79,6 @@ test_that("Multi-period top-down arithmetic attribution at the segment level giv
 })
 
 test_that("Multi-period top-down arithmetic attribution at the segment level using hierarchical API gives expected results" , {
-  # Validate segment level results with hierarchical API
   hierarchical_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
                                                           multi_period_portf_1$wp, 
                                                           multi_period_portf_1$Rb, 
@@ -108,7 +115,6 @@ test_that("Multi-period top-down arithmetic attribution at the segment level usi
 })
 
 test_that("Multi-period bottom-up arithmetic attribution at the segment level using hierarchical API gives expected results" , {
-  # Validate segment level results with hierarchical API
   hierarchical_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
                                                           multi_period_portf_1$wp, 
                                                           multi_period_portf_1$Rb, 
@@ -145,7 +151,6 @@ test_that("Multi-period bottom-up arithmetic attribution at the segment level us
 })
 
 test_that("Multi-period three-factor arithmetic attribution at the segment level using hierarchical API gives expected results" , {
-  # Validate segment level results with hierarchical API
   hierarchical_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
                                                           multi_period_portf_1$wp, 
                                                           multi_period_portf_1$Rb, 
@@ -194,6 +199,141 @@ test_that("Multi-period three-factor arithmetic attribution at the segment level
   expect_equal(total_hierarchical_segment_interaction_effects, total_hierarchical_aggregated_segment_interaction_effects, tolerance = epsilon)
 })
 
+test_that("Multi-period three-factor arithmetic attribution at multiple segment level using hierarchical API gives expected results" , {
+  hierarchical_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
+                                                          multi_period_portf_1$wp, 
+                                                          multi_period_portf_1$Rb, 
+                                                          multi_period_portf_1$wb,
+                                                          h = hierarchy,
+                                                          h_levels = c("Segment", "Industry"),
+                                                          method = "none")
+  
+  total_hierarchical_sector_allocation_effects = hierarchical_segment_level_results$`Multi-level attribution`["Total", "Level 1 Allocation"]
+  total_hierarchical_industry_allocation_effects = hierarchical_segment_level_results$`Multi-level attribution`["Total", "Level 2 Allocation"]
+  total_hierarchical_selection_effects = hierarchical_segment_level_results$`Multi-level attribution`["Total", "Selection"]
+  total_hierarchical_interaction_effects = hierarchical_segment_level_results$`Multi-level attribution`["Total", "Interaction"]
+  total_hierarchical_effects = total_hierarchical_sector_allocation_effects + total_hierarchical_industry_allocation_effects + 
+    total_hierarchical_selection_effects + total_hierarchical_interaction_effects
+  
+  total_hierarchical_aggregated_sector_allocation_effects = 
+    sum(hierarchical_segment_level_results$`Allocation at each level`$`Level 1`["Total",])
+  total_hierarchical_aggregated_sector_selection_effects = 
+    sum(hierarchical_segment_level_results$`Selection at each level`$`Level 1`["Total",])
+  total_hierarchical_aggregated_sector_ineraction_effects = 
+    sum(hierarchical_segment_level_results$`Interaction at each level`$`Level 1`["Total",])
+  
+  total_hierarchical_aggregated_ind_allocation_effects = 
+    sum(hierarchical_segment_level_results$`Allocation at each level`$`Level 2`["Total",])
+  total_hierarchical_aggregated_ind_selection_effects = 
+    sum(hierarchical_segment_level_results$`Selection at each level`$`Level 2`["Total",])
+  total_hierarchical_aggregated_ind_interaction_effects = 
+    sum(hierarchical_segment_level_results$`Interaction at each level`$`Level 2`["Total",])
+  
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      `Level 1 Allocation`[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Allocation at each level`$
+                         `Level 1`[-NROW(hierarchical_segment_level_results$`Allocation at each level`$`Level 1`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      `Level 2 Allocation`[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Allocation at each level`$
+                         `Level 2`[-NROW(hierarchical_segment_level_results$`Allocation at each level`$`Level 2`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      Selection[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Selection at each level`$
+                         `Level 1`[-NROW(hierarchical_segment_level_results$`Selection at each level`$`Level 1`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      Selection[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Selection at each level`$
+                         `Level 2`[-NROW(hierarchical_segment_level_results$`Selection at each level`$`Level 2`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      Interaction[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Interaction at each level`$
+                         `Level 1`[-NROW(hierarchical_segment_level_results$`Interaction at each level`$`Level 1`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      Interaction[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Interaction at each level`$
+                         `Level 2`[-NROW(hierarchical_segment_level_results$`Interaction at each level`$`Level 2`),])),
+    tolerance = epsilon)
+  
+  expect_equal(as.numeric(excess_return), total_hierarchical_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_sector_allocation_effects, total_hierarchical_aggregated_sector_allocation_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_industry_allocation_effects, total_hierarchical_aggregated_ind_allocation_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_selection_effects, total_hierarchical_aggregated_sector_selection_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_selection_effects, total_hierarchical_aggregated_ind_selection_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_interaction_effects, total_hierarchical_aggregated_sector_ineraction_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_interaction_effects, total_hierarchical_aggregated_ind_interaction_effects, tolerance = epsilon)
+})
+
+test_that("Multi-period top-down arithmetic attribution at multiple segment level using hierarchical API gives expected results" , {
+  hierarchical_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
+                                                          multi_period_portf_1$wp, 
+                                                          multi_period_portf_1$Rb, 
+                                                          multi_period_portf_1$wb,
+                                                          h = hierarchy,
+                                                          h_levels = c("Segment", "Industry"),
+                                                          method = "top.down")
+  
+  total_hierarchical_sector_allocation_effects = hierarchical_segment_level_results$`Multi-level attribution`["Total", "Level 1 Allocation"]
+  total_hierarchical_industry_allocation_effects = hierarchical_segment_level_results$`Multi-level attribution`["Total", "Level 2 Allocation"]
+  total_hierarchical_selection_effects = hierarchical_segment_level_results$`Multi-level attribution`["Total", "Selection"]
+  total_hierarchical_effects = total_hierarchical_sector_allocation_effects + 
+    total_hierarchical_industry_allocation_effects + total_hierarchical_selection_effects
+  
+  total_hierarchical_aggregated_sector_allocation_effects = 
+    sum(hierarchical_segment_level_results$`Allocation at each level`$`Level 1`["Total",])
+  total_hierarchical_aggregated_sector_selection_effects = 
+    sum(hierarchical_segment_level_results$`Selection at each level`$`Level 1`["Total",])
+  
+  total_hierarchical_aggregated_ind_allocation_effects = 
+    sum(hierarchical_segment_level_results$`Allocation at each level`$`Level 2`["Total",])
+  total_hierarchical_aggregated_ind_selection_effects = 
+    sum(hierarchical_segment_level_results$`Selection at each level`$`Level 2`["Total",])
+  
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      `Level 1 Allocation`[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Allocation at each level`$
+                         `Level 1`[-NROW(hierarchical_segment_level_results$`Allocation at each level`$`Level 1`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      `Level 2 Allocation`[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Allocation at each level`$
+                         `Level 2`[-NROW(hierarchical_segment_level_results$`Allocation at each level`$`Level 2`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      Selection[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Selection at each level`$
+                         `Level 1`[-NROW(hierarchical_segment_level_results$`Selection at each level`$`Level 1`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_segment_level_results$`Multi-level attribution`$
+      Selection[-NROW(hierarchical_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_segment_level_results$`Selection at each level`$
+                         `Level 2`[-NROW(hierarchical_segment_level_results$`Selection at each level`$`Level 2`),])),
+    tolerance = epsilon)
+  
+  expect_equal(as.numeric(excess_return), total_hierarchical_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_sector_allocation_effects, total_hierarchical_aggregated_sector_allocation_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_industry_allocation_effects, total_hierarchical_aggregated_ind_allocation_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_selection_effects, total_hierarchical_aggregated_sector_selection_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_selection_effects, total_hierarchical_aggregated_ind_selection_effects, tolerance = epsilon)
+})
+
+
+
 
 
 ## GEOMETRIC ATTRIBUTION
@@ -231,7 +371,6 @@ test_that("Multi-period top-down geometric attribution at the segment level give
 })
 
 test_that("Multi-period geometric attribution at the segment level using hierarchical API gives expected results" , {
-  # Validate segment level results with hierarchical API
   hierarchical_geometric_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
                                                                     multi_period_portf_1$wp, 
                                                                     multi_period_portf_1$Rb, 
@@ -266,4 +405,77 @@ test_that("Multi-period geometric attribution at the segment level using hierarc
     tolerance = epsilon)
   
   expect_equal(as.numeric(geometric_excess_return), total_hierarchical_geometric_segment_effects, tolerance = epsilon)
+  
+  skip("These tests may not be valid by construction. Need to verify if that's the case.")
+  expect_equal(total_hierarchical_geometric_aggregated_segment_allocation_effects, 
+               total_hierarchical_geometric_segment_allocation_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_geometric_aggregated_segment_selection_effects, 
+               total_hierarchical_geometric_segment_selection_effects, tolerance = epsilon)
+})
+
+test_that("Multi-period geometric attribution at multiple segment level using hierarchical API gives expected results" , {
+  hierarchical_geometric_segment_level_results = Attribution.levels(multi_period_portf_1$Rp, 
+                                                                    multi_period_portf_1$wp, 
+                                                                    multi_period_portf_1$Rb, 
+                                                                    multi_period_portf_1$wb,
+                                                                    h = hierarchy,
+                                                                    h_levels = c("Segment", "Industry"),
+                                                                    geometric = TRUE)
+  
+  total_hierarchical_geometric_sector_allocation_effects = 
+    hierarchical_geometric_segment_level_results$`Multi-level attribution`["Total", "Level 1 Allocation"]
+  total_hierarchical_geometric_ind_allocation_effects = 
+    hierarchical_geometric_segment_level_results$`Multi-level attribution`["Total", "Level 2 Allocation"]
+  total_hierarchical_geometric_selection_effects = 
+    hierarchical_geometric_segment_level_results$`Multi-level attribution`["Total", "Selection"]
+  total_hierarchical_geometric_effects = 
+    (1+total_hierarchical_geometric_sector_allocation_effects) * 
+    (1+total_hierarchical_geometric_ind_allocation_effects) * 
+    (1+total_hierarchical_geometric_selection_effects) - 1 
+  
+  total_hierarchical_geometric_aggregated_sector_allocation_effects = 
+    sum(hierarchical_geometric_segment_level_results$`Allocation at each level`$`Level 1`["Total",])
+  total_hierarchical_geometric_aggregated_ind_allocation_effects = 
+    sum(hierarchical_geometric_segment_level_results$`Allocation at each level`$`Level 2`["Total",])
+  total_hierarchical_geometric_aggregated_sector_selection_effects = 
+    sum(hierarchical_geometric_segment_level_results$`Selection at each level`$`Level 1`["Total",])
+  total_hierarchical_geometric_aggregated_ind_selection_effects = 
+    sum(hierarchical_geometric_segment_level_results$`Selection at each level`$`Level 2`["Total",])
+  
+  expect_equal(
+    hierarchical_geometric_segment_level_results$`Multi-level attribution`$
+      `Level 1 Allocation`[-NROW(hierarchical_geometric_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_geometric_segment_level_results$`Allocation at each level`$
+                         `Level 1`[-NROW(hierarchical_geometric_segment_level_results$`Allocation at each level`$`Level 1`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_geometric_segment_level_results$`Multi-level attribution`$
+      `Level 2 Allocation`[-NROW(hierarchical_geometric_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_geometric_segment_level_results$`Allocation at each level`$
+                         `Level 2`[-NROW(hierarchical_geometric_segment_level_results$`Allocation at each level`$`Level 2`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_geometric_segment_level_results$`Multi-level attribution`$
+      Selection[-NROW(hierarchical_geometric_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_geometric_segment_level_results$`Selection at each level`$
+                         `Level 1`[-NROW(hierarchical_geometric_segment_level_results$`Selection at each level`$`Level 1`),])),
+    tolerance = epsilon)
+  expect_equal(
+    hierarchical_geometric_segment_level_results$`Multi-level attribution`$
+      Selection[-NROW(hierarchical_geometric_segment_level_results$`Multi-level attribution`)],
+    as.numeric(rowSums(hierarchical_geometric_segment_level_results$`Selection at each level`$
+                         `Level 2`[-NROW(hierarchical_geometric_segment_level_results$`Selection at each level`$`Level 2`),])),
+    tolerance = epsilon)
+  
+  expect_equal(as.numeric(geometric_excess_return), total_hierarchical_geometric_effects, tolerance = epsilon)
+  
+  skip("These tests may not be valid by construction. Need to verify if that's the case.")
+  expect_equal(total_hierarchical_geometric_aggregated_sector_allocation_effects,
+               total_hierarchical_geometric_sector_allocation_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_geometric_aggregated_ind_allocation_effects, 
+               total_hierarchical_geometric_ind_allocation_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_geometric_aggregated_sector_selection_effects, 
+               total_hierarchical_geometric_selection_effects, tolerance = epsilon)
+  expect_equal(total_hierarchical_geometric_aggregated_ind_selection_effects, 
+               total_hierarchical_geometric_selection_effects, tolerance = epsilon)
 })

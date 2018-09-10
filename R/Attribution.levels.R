@@ -370,8 +370,8 @@ function(Rp, wp, Rb, wb,
       } else{
         b = as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
                           ncol(returns.b[[1]])), index(rb))
-        r = as.xts(matrix(rep(rp, ncol(last(returns.p)[[1]])), nrow(rp),
-                          ncol(last(returns.p)[[1]])), index(rp))
+        r = as.xts(matrix(rep(rp, ncol(returns.p[[1]])), nrow(rp),
+                          ncol(returns.p[[1]])), index(rp))
       }
     } else{
       if(NROW(Rpl) == 1)
@@ -383,8 +383,8 @@ function(Rp, wp, Rb, wb,
       } else{
         b = as.xts(matrix(rep(rbl, ncol(returns.b[[1]])), nrow(rbl), 
                           ncol(returns.b[[1]])), index(rbl))
-        r = as.xts(matrix(rep(rpl, ncol(last(returns.p)[[1]])), nrow(rpl),
-                          ncol(last(returns.p)[[1]])), index(rpl))
+        r = as.xts(matrix(rep(rpl, ncol(returns.p[[1]])), nrow(rpl),
+                          ncol(returns.p[[1]])), index(rpl))
       }
     }
     
