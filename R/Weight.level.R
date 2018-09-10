@@ -41,17 +41,20 @@ Weight.level <-
     # This function returns portfolio weights at the chosen level
     
     # FUNCTION:
-    # Transform data to the xts objects
-    wp = Weight.transform(wp, Rp)
-    
+    if (is.vector(wp)){
+      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wp) = colnames(Rp)
+    }
+
     # If level has numeric values we replace numeric values by quintiles
     if (is.numeric(h[[level]])){
       h = HierarchyQuintiles(h, level)
     }
     h = split(h$primary_id, h[level])
-    weights = wp[, 1:length(h)]
+    weights = wp[, 1:length(h), drop=FALSE]
     for(i in 1:length(h)){
-      weights[, i] = rowSums(wp[, h[[i]]])
+      weights[, i] = rowSums(wp[, h[[i]], drop=FALSE])
     }
     colnames(weights) = names(h)
     return(weights)

@@ -120,19 +120,11 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
       print("Please use benchmark xts that has columns with benchmarks for each
             asset or one common benchmark for all assets")
     }
-    if (is.vector(WP)  & is.vector(WB) & is.vector(WBF)){
-      rp = Return.portfolio(Rp, WP, geometric = geometric)
-      rb = Return.portfolio(Rb, WB, geometric = geometric)
-      rf = Return.portfolio(Rf, WP, geometric = geometric)
-      dp = Return.portfolio(Dp, WP, geometric = geometric) # portfolio duration
-      db = Return.portfolio(Db, WB, geometric = geometric) # benchmark duration
-    } else{
-      rp = Return.rebalancing(Rp, WP, geometric = geometric)
-      rb = Return.rebalancing(Rb, WB, geometric = geometric)
-      rf = Return.rebalancing(Rf, WP, geometric = geometric)
-      dp = Return.rebalancing(Dp, WP, geometric = geometric)
-      db = Return.rebalancing(Db, WB, geometric = geometric)
-    }
+    rp = Return.portfolio(Rp, WP, geometric = geometric)
+    rb = Return.portfolio(Rb, WB, geometric = geometric)
+    rf = Return.portfolio(Rf, WP, geometric = geometric)
+    dp = Return.portfolio(Dp, WP, geometric = geometric) # portfolio duration
+    db = Return.portfolio(Db, WB, geometric = geometric) # benchmark duration
     names(rp) = "Total"
     names(rb) = "Total"
     Dbeta = dp / coredata(db)
@@ -143,7 +135,7 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     # Implied total benchmark yield changes
     deltayb = rep(rb - coredata(rp), ncol(Dp)) / coredata(Dp) 
     # Currency returns
-    Rc = lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1 
+    Rc = stats::lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1 
     rc = reclass(rowSums((wb + wbf) * (Rc + coredata(Rf))), Rc)
     if (!geometric){
       allocation = (Dp * wp - rep(Dbeta, ncol(Dp)) * coredata(Db) * wb) * 
@@ -163,9 +155,11 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     
     # Get total attribution effects 
     n = ncol(allocation)               # number of segments
-    allocation = cbind(allocation, rowSums(allocation))
+    # We use the zoo version of cbind to avoid the column names from being mangled 
+    # which the version in xts does without the option to override that behavior
+    allocation = as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
     names(allocation)[n + 1] = "Total"  
-    selection = cbind(selection, rowSums(selection))
+    selection = as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
     names(selection)[n + 1] = "Total"   
 
     result = list()
@@ -175,7 +169,7 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     names(result) = c("Excess returns", "Market allocation", "Issue selection")
     
     if (!geometric){
-      currency = cbind(currency, rowSums(currency))
+      currency = as.xts(zoo::cbind.zoo(currency, rowSums(currency)))
       names(currency)[ncol(currency)] = "Total"
       result[[4]] = currency
       names(result) = c("Excess returns", "Market allocation", 

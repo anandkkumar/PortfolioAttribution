@@ -1,0 +1,18 @@
+---
+title: "Brison, Hood & Beebower Arithmetic Attribution"
+author: "Anand Krishnakumar"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Brison, Hood & Beebower Arithmetic Attribution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+The `PortfolioAttribution` package has functions defined to perform arithmetic arithmetic using the Brinson, Hood & Beebower model. For a brief introduction to portfolio performance attribution and this model, please refer to the [introduction vignette](introduction.html)

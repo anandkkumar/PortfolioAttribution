@@ -71,7 +71,7 @@ function(rp, rb, attributions, adjusted)
     if (T > 2){
       G[T] = prod(1 + rp[1:(T - 1)]) #GRAP factor for the last period
     }
-    if (T > 3){
+    if (T >= 3){
       for(i in 2:(T - 1)){
         r = 1 + rp[1:(i-1)]
         b = 1 + rb[(i+1):T]

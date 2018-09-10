@@ -4,7 +4,8 @@
 #' Davies and Laker linking method. Used internally by the 
 #' \code{\link{Attribution}} function. Arithmetic attribution effects do not 
 #' naturally link over time. This function uses Davies and Laker linking method
-#' to compute total attribution effects. 
+#' to compute total attribution effects and uses Brinson, Hood & Beebower approach 
+#' to defining allocation, selection & interaction effects. 
 #' Arithmetic excess returns are decomposed as follows:
 #' \deqn{R_{p} - R_{b} = Allocation + Selection + Interaction}{Rp - Rb = 
 #' Allocation + Selection + Interaction}
@@ -61,36 +62,48 @@ function(Rp, wp, Rb, wb)
     # FUNCTION:
     WP = wp
     WB = wb
-    wp = Weight.transform(wp, Rp)
-    wb = Weight.transform(wb, Rb)
-    if (is.vector(WP)  & is.vector(WB)){
-      rp = Return.portfolio(Rp, WP, geometric = FALSE)
-      rb = Return.portfolio(Rb, WB, geometric = FALSE)
-    } else{
-      rp = Return.rebalancing(Rp, WP, geometric = FALSE)
-      rb = Return.rebalancing(Rb, WB, geometric = FALSE)
+    if (is.vector(wp)){
+      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+                  index(Rp))
+      colnames(wp) = colnames(Rp)
     }
+    else{
+      wp = checkData(WP)
+    }
+    if (is.vector(wb)){
+      wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+                  index(Rb))
+      colnames(wb) = colnames(Rb)
+    }
+    else{
+      wb = checkData(WB)
+    }
+    
+    rp = Return.portfolio(Rp, WP, geometric = FALSE)
+    rb = Return.portfolio(Rb, WB, geometric = FALSE)
     colnames(rp) = "Total"
     colnames(rb) = "Total"
     # Allocation notional fund returns
-    bs = reclass(rowSums((wp * coredata(Rb[, 1:ncol(wp)]))), Rp) 
+    bs = reclass(rowSums((coredata(wp) * coredata(Rb[, 1:ncol(wp)]))), Rp) 
     # Selection notional fund returns
-    rs = reclass(rowSums((wb * coredata(Rp[, 1:ncol(wb)]))), Rp) 
+    rs = reclass(rowSums((coredata(wb) * coredata(Rp[, 1:ncol(wb)]))), Rp) 
     a = apply(1 + bs, 2, prod) - apply(1 + rb, 2, prod)
     s = apply(1 + rs, 2, prod) - apply(1 + rb, 2, prod)
     i = apply(1 + rp, 2, prod) - apply(1 + rs, 2, prod) - 
       apply(1 + bs, 2, prod) + apply(1 + rb, 2, prod)
     
     # Compute attribution effects (Brinson, Hood and Beebower model)
-    allocation = (wp - wb) * coredata(Rb)
-    selection = wb * (Rp - coredata(Rb))
-    interaction = (wp - wb) * (Rp - coredata(Rb))
+    allocation = coredata(wp - wb) * Rb
+    selection = coredata(wb) * (Rp - coredata(Rb))
+    interaction = coredata(wp - wb) * (Rp - coredata(Rb))
     n = ncol(allocation)               # number of segments
-    allocation = cbind(allocation, rowSums(allocation))
+    # We use the zoo version of cbind to avoid the column names from being mangled 
+    # which the version in xts does without the option to override that behavior
+    allocation = as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
     names(allocation)[n + 1] = "Total"  
-    selection = cbind(selection, rowSums(selection))
+    selection = as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
     names(selection)[n + 1] = "Total"   
-    interaction = cbind(interaction, rowSums(interaction))
+    interaction = as.xts(zoo::cbind.zoo(interaction, rowSums(interaction)))
     names(interaction)[n + 1] = "Total"
     
     allocation = rbind(as.data.frame(allocation), 

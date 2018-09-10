@@ -38,9 +38,9 @@ Weight.transform(wp, Rp)
 Return.level(Rp, wp, h, level = "MarketCap")
 Weight.level(wp, Rp, h, level = "Sector")
 
-Attribution.levels(Rp, wp, Rb, wb, h, c("type", "MarketCap", "currency", "Sector"))
-Attribution.levels(Rp, wp, Rb, wb, h, c("type", "currency", "Sector"))
-Attribution.levels(Rp, wp, Rb, wb, h, c("type", "Sector"))
+Attribution.levels(Rp, wp, Rb, wb, h = h, h_levels = c("type", "MarketCap", "currency", "Sector"), geometric = TRUE, anchored = FALSE)
+Attribution.levels(Rp, wp, Rb, wb, h = h, h_levels = c("type", "currency", "Sector"), geometric = TRUE, anchored = FALSE)
+Attribution.levels(Rp, wp, Rb, wb, h = h, h_levels = c("type", "Sector"), geometric = TRUE, anchored = FALSE)
 
 Return.annualized.excess(rp, rb)
 HierarchyQuintiles(h, "MarketCap")
