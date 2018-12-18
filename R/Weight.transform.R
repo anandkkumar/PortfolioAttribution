@@ -37,7 +37,7 @@ Weight.transform <-
     
     # FUNCTION:
     if (is.vector(wp)){
-      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+      wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                   index(Rp))
       colnames(wp) = colnames(Rp)
     } else{
@@ -46,8 +46,8 @@ Weight.transform <-
                    'occurs before beginning of first rebalancing period',
                    as.Date(first(index(wp))) + 1))
       }
-      wp = checkData(wp, method = "xts")
-      wp = merge(wp, xts(, index(Rp)))
+      wp = PerformanceAnalytics::checkData(wp, method = "xts")
+      wp = merge(wp, xts::xts(, index(Rp)))
       wp = na.locf(wp)
       if(as.Date(first(index(Rp))) > (as.Date(index(wp[1,]))+1)) {
         warning(paste('data series starts on', as.Date(first(index(Rp))), ', 

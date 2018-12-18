@@ -45,9 +45,9 @@ function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
   
     # FUNCTION:
     # Transform data to the xts objects    
-    Rp = checkData(Rp, method = "xts")
+    Rp = PerformanceAnalytics::checkData(Rp, method = "xts")
     if (is.vector(wp)){
-      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+      wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                   index(Rp))
       colnames(wp) = colnames(Rp)
     }
@@ -61,14 +61,14 @@ function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
       h = HierarchyQuintiles(h, level)
     }
     h = split(h$primary_id, h[level])
-    returns = as.xts(matrix(NA, ncol = length(h), nrow = nrow(Rp)), index(Rp))
+    returns = xts::as.xts(matrix(NA, ncol = length(h), nrow = nrow(Rp)), index(Rp))
     for(i in 1:length(h)){
       # Check to see if the relativeWeights are all the same as the given weights
       if(all(dim(wp[,h[[i]]]) == dim(relativeWeights[, i])) && all(wp[,h[[i]]] == relativeWeights[, i])) {
         returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE])
       } else {
-        returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE] * coredata(wp[, h[[i]], drop = FALSE])/
-                                 coredata(matrix(rep(relativeWeights[, i], length(h[[i]])), ncol = length(h[[i]]))))
+        returns[, i] = rowSums(Rp[, h[[i]], drop = FALSE] * zoo::coredata(wp[, h[[i]], drop = FALSE])/
+                                 zoo::coredata(matrix(rep(relativeWeights[, i], length(h[[i]])), ncol = length(h[[i]]))))
         # Replace the NAs with zeroes for cases where the relative weights are 0
         returns[, i] = tidyr::replace_na(returns[, i], 0)
       }

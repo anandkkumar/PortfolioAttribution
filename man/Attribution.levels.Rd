@@ -45,8 +45,7 @@ summary of arithmetic attribution effects. May be any of:
 \itemize{\item carino - logarithmic linking coefficient method
 \item menchero - Menchero's smoothing algorithm
 \item grap - linking approach developed by GRAP
-\item frongello - Frongello's linking method
-\item davies.laker - Davies and Laker's linking method}
+\item frongello - Frongello's linking method}
 By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
 if the data does not imply multi-period attribution.}
 

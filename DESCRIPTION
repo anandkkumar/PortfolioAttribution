@@ -8,13 +8,13 @@ Maintainer: Anand Krishnakumar <andykris21@yahoo.com>
 Description: This package provides functions for the ex-post portfolio attribution methods described in Christopherson, Carino and Ferson (2009), Bacon (2008), and several other sources. The package was initially created as a part of the Google Summer of Code (GSoC) 2012 project. Since then it has undergone some minor enhancements & revisions for accuracy, consistency and improved usability.
 Imports:
     dplyr,
+    PerformanceAnalytics(>= 1.0.4.3),
     tidyr,
-    testthat
+    testthat,
+    zoo
 Depends:
     R (>= 2.15.0),
-    PerformanceAnalytics(>= 1.0.4.3),
     xts (>= 0.8),
-    zoo
 Suggests:
     FinancialInstrument,
     knitr,
@@ -25,5 +25,5 @@ LazyData: true
 URL: https://github.com/braverock/PortfolioAttribution
 Contributors: Brian Peterson, Peter Carl, Andrii Babii, Anand Krishnakumar
 Copyright: (c) 2004-2018
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr

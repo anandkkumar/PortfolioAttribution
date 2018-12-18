@@ -9,14 +9,14 @@ Wp = c(0.1, 0.09, 0.225, 0.17, 0.125, 0.29)
 Wb = c(0.05, 0.1, 0.25, 0.15, 0.1, 0.35)
 
 # Example using one-period time series data
-Rp = xts(matrix(c(NA, NA, NA, NA, NA, NA,
-                  0.0838, 0.02, 0.1605, 0.02, 0.02, 0.025),ncol=6,byrow=TRUE,
-                dimnames=list(c("Rp", "Rp"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-Rb = xts(matrix(c(NA, NA, NA, NA, NA, NA,
-                  0.096, 0.0645, 0.156, -0.0067, 0.01, 0.02),ncol=6,byrow=TRUE,
-                dimnames=list(c("Rb", "Rb"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
+Rp = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA,
+                       0.0838, 0.02, 0.1605, 0.02, 0.02, 0.025),ncol=6,byrow=TRUE,
+                     dimnames=list(c("Rp", "Rp"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+Rb = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA,
+                       0.096, 0.0645, 0.156, -0.0067, 0.01, 0.02),ncol=6,byrow=TRUE,
+                     dimnames=list(c("Rb", "Rb"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
 
 hierarchy = data.frame(
   primary_id = cnames, 

@@ -11,21 +11,21 @@ Wpf = c(0.20, -0.15, -0.05)
 Wbf = c(0.30, -0.10, -0.20)
 
 # Example using one-period time series data
-Rp = xts(matrix(c(NA, NA, NA, 0.20, 0.045, 0.272),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rp", "Rp"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-Rb = xts(matrix(c(NA, NA, NA, 0.10, 0.056, 0.296),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rb", "Rb"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-S = xts(matrix(c(NA, NA, NA, 1.0, 1.0, 1.0, 1.0, 1.1, 1.2),ncol=3,byrow=TRUE,
-               dimnames=list(c("SpotRates", "SpotRates", "SpotRates"),cnames)), 
-        order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
-Fp = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
-               dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),cnames)), 
-        order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
-Fb = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
-                dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
+Rp = xts::xts(matrix(c(NA, NA, NA, 0.20, 0.045, 0.272),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rp", "Rp"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+Rb = xts::xts(matrix(c(NA, NA, NA, 0.10, 0.056, 0.296),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rb", "Rb"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+S = xts::xts(matrix(c(NA, NA, NA, 1.0, 1.0, 1.0, 1.0, 1.1, 1.2),ncol=3,byrow=TRUE,
+                    dimnames=list(c("SpotRates", "SpotRates", "SpotRates"),cnames)), 
+             order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4"), zoo::as.yearqtr("2018 Q1")))
+Fp = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
+                     dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4"), zoo::as.yearqtr("2018 Q1")))
+Fb = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.01, 1.02),ncol=3,byrow=TRUE,
+                     dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4"), zoo::as.yearqtr("2018 Q1")))
 
 
 test_that("Ankrim-Hensel Example in Table 6.2" , {

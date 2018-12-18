@@ -11,14 +11,14 @@ Wp = c(0.15, 0.1, 0.05, 0.23, 0, 0.12, 0.18, 0.17)
 Wb = c(0.05, 0.25, 0.1, 0.05, 0.1, 0.25, 0, 0.2)
 
 # Example using one-period time series data
-Rp = xts(matrix(c(NA, NA, NA, NA, NA, NA, NA, NA,
-                  0.1, 0.2, 0.07, 0.133, 0.1476, 0.07, 0.05, -0.1),ncol=8,byrow=TRUE,
-                dimnames=list(c("Rp", "Rp"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-Rb = xts(matrix(c(NA, NA, NA, NA, NA, NA, NA, NA,
-                  -0.08, 0.08, 0.18, -0.01, 0.1476, 0.0586, 0.05, -0.05),ncol=8,byrow=TRUE,
-                dimnames=list(c("Rb", "Rb"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
+Rp = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA, NA, NA,
+                       0.1, 0.2, 0.07, 0.133, 0.1476, 0.07, 0.05, -0.1),ncol=8,byrow=TRUE,
+                     dimnames=list(c("Rp", "Rp"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+Rb = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA, NA, NA,
+                       -0.08, 0.08, 0.18, -0.01, 0.1476, 0.0586, 0.05, -0.05),ncol=8,byrow=TRUE,
+                     dimnames=list(c("Rb", "Rb"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
 
 hierarchy = data.frame(
   primary_id = cnames, 
@@ -42,7 +42,7 @@ test_that("Multi-level weights & return computations" , {
   returns.b = list()
   weights.b = list()
   bs = list()
-  rp = Return.portfolio(Rp, Wp)
+  rp = PerformanceAnalytics::Return.portfolio(Rp, Wp)
   for(i in 1:length(levels)){
     weights.p[[i]] = Weight.level(Wp, Rp, h, level = levels[i])
     weights.b[[i]] = Weight.level(Wb, Rb, h, level = levels[i])

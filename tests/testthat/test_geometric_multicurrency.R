@@ -9,21 +9,21 @@ Wp = c(0.40, 0.30, 0.30)
 Wb = c(0.40, 0.20, 0.40)
 
 # Example using one-period time series data
-Rp = xts(matrix(c(NA, NA, NA, 0.20, 0.047, 0.28),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rp", "Rp"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-Rb = xts(matrix(c(NA, NA, NA, 0.10, 0.056, 0.296),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rb", "Rb"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-Rpl = xts(matrix(c(NA, NA, NA, 0.20, -0.05, 0.06),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rp", "Rp"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-Rbl = xts(matrix(c(NA, NA, NA, 0.10, -0.04, 0.08),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rb", "Rb"),cnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
-Rbh = xts(matrix(c(NA, NA, NA, 0.10, -0.03, 0.10),ncol=3,byrow=TRUE,
-                 dimnames=list(c("Rb", "Rb"),cnames)), 
-          order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4")))
+Rp = xts::xts(matrix(c(NA, NA, NA, 0.20, 0.047, 0.28),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rp", "Rp"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+Rb = xts::xts(matrix(c(NA, NA, NA, 0.10, 0.056, 0.296),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rb", "Rb"),cnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+Rpl = xts::xts(matrix(c(NA, NA, NA, 0.20, -0.05, 0.06),ncol=3,byrow=TRUE,
+                      dimnames=list(c("Rp", "Rp"),cnames)), 
+               order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+Rbl = xts::xts(matrix(c(NA, NA, NA, 0.10, -0.04, 0.08),ncol=3,byrow=TRUE,
+                      dimnames=list(c("Rb", "Rb"),cnames)), 
+               order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
+Rbh = xts::xts(matrix(c(NA, NA, NA, 0.10, -0.03, 0.10),ncol=3,byrow=TRUE,
+                      dimnames=list(c("Rb", "Rb"),cnames)), 
+               order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4")))
 
 
 test_that("Multicurrency Geometric Example using data in Tables 6.7 and 6.8" , {
@@ -51,15 +51,15 @@ fcnames = c("Sterling", "Yen", "Dollar")
 Wpf = c(0.20, -0.15, -0.05)
 Wbf = c(0.30, -0.10, -0.20)
 
-S = xts(matrix(c(NA, NA, NA, 1.0, 1.0, 1.0, 1.0, 1.1, 1.2),ncol=3,byrow=TRUE,
-                       dimnames=list(c("SpotRates", "SpotRates", "SpotRates"),fcnames)), 
-                order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
-Fp = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.004566, 1.025641),ncol=3,byrow=TRUE,
-                          dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),fcnames)), 
-                   order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
-Fb = xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.010379, 1.018503),ncol=3,byrow=TRUE,
-                dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),fcnames)), 
-         order.by=c(as.yearqtr("2017 Q3"), as.yearqtr("2017 Q4"), as.yearqtr("2018 Q1")))
+S = xts::xts(matrix(c(NA, NA, NA, 1.0, 1.0, 1.0, 1.0, 1.1, 1.2),ncol=3,byrow=TRUE,
+                    dimnames=list(c("SpotRates", "SpotRates", "SpotRates"),fcnames)), 
+             order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4"), zoo::as.yearqtr("2018 Q1")))
+Fp = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.004566, 1.025641),ncol=3,byrow=TRUE,
+                     dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),fcnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4"), zoo::as.yearqtr("2018 Q1")))
+Fb = xts::xts(matrix(c(NA, NA, NA, NA, NA, NA, 1.0, 1.010379, 1.018503),ncol=3,byrow=TRUE,
+                     dimnames=list(c("ForwardRates", "ForwardRates", "ForwardRates"),fcnames)), 
+              order.by=c(zoo::as.yearqtr("2017 Q3"), zoo::as.yearqtr("2017 Q4"), zoo::as.yearqtr("2018 Q1")))
 
 
 test_that("Multicurrency Geometric Example using data in Tables 6.9 with forward contracts with main API" , {

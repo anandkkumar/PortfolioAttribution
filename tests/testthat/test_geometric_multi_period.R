@@ -16,10 +16,10 @@ test_that("Multi-period geometric attribution example in Table 8.6" , {
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", geometric = TRUE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)

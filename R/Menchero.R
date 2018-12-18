@@ -76,8 +76,8 @@ function(rp, rb, attributions, adjusted)
       at = 0
     } else{
       M = ((rpc - rbc) / T) / ((1 + rpc)^(1 / T) - (1 + rbc)^(1 / T))
-      at = (rpc - rbc - M * sum(rp - rb)) * (rp - coredata(rb)) / sum((rp - 
-        coredata(rb))^2)
+      at = (rpc - rbc - M * sum(rp - rb)) * (rp - zoo::coredata(rb)) / sum((rp - 
+        zoo::coredata(rb))^2)
     }
     m = matrix(rep(M + at, ncol(attributions)), nrow(attributions), 
                ncol(attributions), byrow = FALSE)

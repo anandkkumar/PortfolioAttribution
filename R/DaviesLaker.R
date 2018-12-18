@@ -63,47 +63,47 @@ function(Rp, wp, Rb, wb)
     WP = wp
     WB = wb
     if (is.vector(wp)){
-      wp = as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
+      wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
                   index(Rp))
       colnames(wp) = colnames(Rp)
     }
     else{
-      wp = checkData(WP)
+      wp = PerformanceAnalytics::checkData(WP)
     }
     if (is.vector(wb)){
-      wb = as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
+      wb = xts::as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
                   index(Rb))
       colnames(wb) = colnames(Rb)
     }
     else{
-      wb = checkData(WB)
+      wb = PerformanceAnalytics::checkData(WB)
     }
     
-    rp = Return.portfolio(Rp, WP, geometric = FALSE)
-    rb = Return.portfolio(Rb, WB, geometric = FALSE)
+    rp = PerformanceAnalytics::Return.portfolio(Rp, WP, geometric = FALSE)
+    rb = PerformanceAnalytics::Return.portfolio(Rb, WB, geometric = FALSE)
     colnames(rp) = "Total"
     colnames(rb) = "Total"
     # Allocation notional fund returns
-    bs = reclass(rowSums((coredata(wp) * coredata(Rb[, 1:ncol(wp)]))), Rp) 
+    bs = reclass(rowSums((zoo::coredata(wp) * zoo::coredata(Rb[, 1:ncol(wp)]))), Rp) 
     # Selection notional fund returns
-    rs = reclass(rowSums((coredata(wb) * coredata(Rp[, 1:ncol(wb)]))), Rp) 
+    rs = reclass(rowSums((zoo::coredata(wb) * zoo::coredata(Rp[, 1:ncol(wb)]))), Rp) 
     a = apply(1 + bs, 2, prod) - apply(1 + rb, 2, prod)
     s = apply(1 + rs, 2, prod) - apply(1 + rb, 2, prod)
     i = apply(1 + rp, 2, prod) - apply(1 + rs, 2, prod) - 
       apply(1 + bs, 2, prod) + apply(1 + rb, 2, prod)
     
     # Compute attribution effects (Brinson, Hood and Beebower model)
-    allocation = coredata(wp - wb) * Rb
-    selection = coredata(wb) * (Rp - coredata(Rb))
-    interaction = coredata(wp - wb) * (Rp - coredata(Rb))
+    allocation = zoo::coredata(wp - wb) * Rb
+    selection = zoo::coredata(wb) * (Rp - zoo::coredata(Rb))
+    interaction = zoo::coredata(wp - wb) * (Rp - zoo::coredata(Rb))
     n = ncol(allocation)               # number of segments
     # We use the zoo version of cbind to avoid the column names from being mangled 
     # which the version in xts does without the option to override that behavior
-    allocation = as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
+    allocation = xts::as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
     names(allocation)[n + 1] = "Total"  
-    selection = as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
+    selection = xts::as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
     names(selection)[n + 1] = "Total"   
-    interaction = as.xts(zoo::cbind.zoo(interaction, rowSums(interaction)))
+    interaction = xts::as.xts(zoo::cbind.zoo(interaction, rowSums(interaction)))
     names(interaction)[n + 1] = "Total"
     
     allocation = rbind(as.data.frame(allocation), 
@@ -117,9 +117,9 @@ function(Rp, wp, Rb, wb)
     rownames(interaction)[nrow(allocation)] = "Total"
 
     # Arithmetic excess returns + annualized arithmetic excess returns
-    excess.returns = rp - coredata(rb)
+    excess.returns = rp - zoo::coredata(rb)
     if (nrow(rp) > 1){
-      er = Return.annualized.excess(rp, rb, geometric = FALSE)
+      er = PerformanceAnalytics::Return.annualized.excess(rp, rb, geometric = FALSE)
       excess.returns = rbind(as.matrix(excess.returns), er)
     }
     colnames(excess.returns) = "Arithmetic"

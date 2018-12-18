@@ -7,7 +7,7 @@
 Attribution(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA, Fp = NA,
   Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE,
   method = "none", linking = "grap", geometric = FALSE,
-  contribution = FALSE, adjusted = FALSE)
+  contribution = FALSE, adjusted = FALSE, annualization = "none")
 }
 \arguments{
 \item{Rp}{T x n xts, data frame or matrix of portfolio returns}
@@ -75,6 +75,13 @@ for each category and period. Defaults to FALSE.}
 effects for each period. By default unadjusted attribution effects are 
 returned (this is not used for Davies and Laker's linking method for arithmetic attribution 
 or for geometric attribution as it is not applicable in either case)}
+
+\item{annualization}{Used to select the annualization method for multi-period excess returns, contributions
+and attribution effects. May be any of:
+\itemize{\item none - no annualized numbers are returned
+\item standard 
+\item proportional}
+The default is 'none'. See vignette on annualization for detailed descriptions of the supported methods}
 }
 \value{
 returns a list with the following components: excess returns with
@@ -97,8 +104,7 @@ the chosen category from the hierarchy can be done using
 for several periods. The multi-period summary is obtained using one of 
 linking methods: Carino, Menchero, GRAP, Frongello or Davies Laker. It also
 allows to break down the geometric excess returns, which link naturally over
-time. Finally, it annualizes arithmetic and geometric excess returns 
-similarly to the portfolio and/or benchmark returns annualization.
+time. Finally, it supports annualization of excess returns, attribution effects and contributions.
 }
 \details{
 The arithmetic excess returns are decomposed into the sum of allocation, 

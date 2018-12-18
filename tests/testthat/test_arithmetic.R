@@ -13,12 +13,12 @@ Wb = c(0.40, 0.20, 0.40)
 epsilon = 1e-10
 
 # Example using one-period time series data
-Rp = xts(matrix(c(0.20, -0.05, 0.06, 0, 0, 0),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rp", "Rp"),cnames)), 
-         order.by=c(Sys.yearqtr(), as.yearqtr(as.Date(as.yearqtr(Sys.Date()))-1)))
-Rb = xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rb", "Rb"),cnames)), 
-         order.by=c(Sys.yearqtr(), as.yearqtr(as.Date(as.yearqtr(Sys.Date()))-1)))
+Rp = xts::xts(matrix(c(0.20, -0.05, 0.06, 0, 0, 0),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rp", "Rp"),cnames)), 
+              order.by=c(Sys.yearqtr(), zoo::as.yearqtr(as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
+Rb = xts::xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rb", "Rb"),cnames)), 
+              order.by=c(Sys.yearqtr(), zoo::as.yearqtr(as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
 
 test_that("BHB Example in Table 5.2 with time series data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb,  bf = FALSE, method="none", geometric = FALSE)
@@ -78,10 +78,10 @@ test_that("BF Example in Table 5.4 for top-down approach with time series data" 
 # Example with single observation data
 Rp = matrix(c(0.20, -0.05, 0.06),ncol=3,byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
-Rp = checkData(Rp)
+Rp = PerformanceAnalytics::checkData(Rp)
 Rb = matrix(c(0.10, -0.04, 0.08),ncol=3,byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
-Rb = checkData(Rb)
+Rb = PerformanceAnalytics::checkData(Rb)
 
 test_that("BHB Example in Table 5.2 with single observation data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = FALSE, method="none", geometric = FALSE)
@@ -161,12 +161,12 @@ context("Examples comparing top-down & bottom-up approaches from Practical Portf
 
 
 # BF Example using one-period time series data
-Rp = xts(matrix(c(0.20, -0.05, 0.06, 0, 0, 0),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rp", "Rp"),cnames)), 
-         order.by=c(Sys.yearqtr(), as.yearqtr(as.Date(as.yearqtr(Sys.Date()))-1)))
-Rb = xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
-                dimnames=list(c("Rb", "Rb"),cnames)), 
-         order.by=c(Sys.yearqtr(), as.yearqtr(as.Date(as.yearqtr(Sys.Date()))-1)))
+Rp = xts::xts(matrix(c(0.20, -0.05, 0.06, 0, 0, 0),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rp", "Rp"),cnames)), 
+              order.by=c(Sys.yearqtr(), zoo::as.yearqtr(as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
+Rb = xts::xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
+                     dimnames=list(c("Rb", "Rb"),cnames)), 
+              order.by=c(Sys.yearqtr(), zoo::as.yearqtr(as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
 
 test_that("BF Example in Table 5.4 for arithmetic top-down approach with time series data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, geometric = FALSE)
@@ -204,10 +204,10 @@ test_that("BF Example for arithmetic bottom-up approach with time series data" ,
 # Example with single observation data
 Rp = matrix(c(0.20, -0.05, 0.06),ncol=3,byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
-Rp = checkData(Rp)
+Rp = PerformanceAnalytics::checkData(Rp)
 Rb = matrix(c(0.10, -0.04, 0.08),ncol=3,byrow=TRUE,
             dimnames=list(c(as.character(Sys.Date())),cnames))
-Rb = checkData(Rb)
+Rb = PerformanceAnalytics::checkData(Rb)
 
 test_that("BF Example in Table 5.4 for arithmetic top-down approach with single observation data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="top.down", bf = TRUE, geometric = FALSE)

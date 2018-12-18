@@ -16,10 +16,10 @@ test_that("Multi-period attribution example in Table 8.1 structured as quarterly
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down")
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -77,10 +77,10 @@ test_that("Multi-period attribution example in Table 8.1 structured as daily dat
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-01-01", "2016-01-02", "2016-01-03", "2016-01-04"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
 
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down")
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -139,10 +139,10 @@ test_that("Multi-period attribution example in Table 8.1 structured as data on a
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-01-16", "2016-02-02", "2016-02-16", "2016-03-19"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down")
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -200,10 +200,10 @@ test_that("Multi-period attribution example in Table 8.2 with Carino linking wit
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "carino", adjusted = FALSE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -272,10 +272,10 @@ test_that("Multi-period attribution example in Table 8.2 with Carino linking wit
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "carino", adjusted = TRUE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -344,10 +344,10 @@ test_that("Multi-period attribution example in Table 8.3 with Menchero linking w
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "menchero", adjusted = FALSE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -416,10 +416,10 @@ test_that("Multi-period attribution example in Table 8.2 with Menchero linking w
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "menchero", adjusted = TRUE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -488,10 +488,10 @@ test_that("Multi-period attribution example in Table 8.4 with GRAP linking with 
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "grap", adjusted = FALSE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -560,10 +560,10 @@ test_that("Multi-period attribution example in Table 8.4 with GRAP linking with 
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "grap", adjusted = TRUE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -632,10 +632,10 @@ test_that("Multi-period attribution example in Table 8.4 with Frongello linking 
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "frongello", adjusted = FALSE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -704,10 +704,10 @@ test_that("Multi-period attribution example in Table 8.5 with Frongello linking 
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   attribution_results = Attribution(Rp, Wp, Rb, Wb, bf = TRUE, method = "top.down", linking = "frongello", adjusted = TRUE)
   expect_true(abs(attribution_results$Allocation[1,"UK equities"] - 0) < epsilon)
@@ -775,10 +775,10 @@ test_that("Multi-period attribution example in Exhibit 8.10 with Davies & Laker 
   Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
               dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
   
-  Rp = checkData(Rp)
-  Rb = checkData(Rb)
-  Wp = checkData(Wp)
-  Wb = checkData(Wb)
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
   
   # The parameters of 'bf', 'method' and 'adjusted' don't apply to Davies Laker linking algorithm. By default it uses BHB.
   attribution_results = Attribution(Rp, Wp, Rb, Wb, linking = "davies.laker")

@@ -26,8 +26,8 @@ test_that("Contribution data is computed correctly for portfolio and benchmark f
                                     geometric = TRUE, contribution = TRUE)
   
   expect_equal(attribution_results$`Portfolio contribution to return`[-NROW(attribution_results$`Portfolio contribution to return`),],
-               as.data.frame(multi_period_portf_1$Rp*coredata(multi_period_portf_1$wp)))
+               as.data.frame(multi_period_portf_1$Rp*zoo::coredata(multi_period_portf_1$wp)))
   expect_equal(attribution_results$`Benchmark contribution to return`[-NROW(attribution_results$`Benchmark contribution to return`),],
-               as.data.frame(multi_period_portf_1$Rb*coredata(multi_period_portf_1$wb)))
+               as.data.frame(multi_period_portf_1$Rb*zoo::coredata(multi_period_portf_1$wb)))
 }
 )

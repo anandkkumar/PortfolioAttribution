@@ -94,12 +94,12 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     # This function returns the 
     
     # FUNCTION:
-    Rf = checkData(Rf)
-    Rp = checkData(Rp)
-    Rb = checkData(Rb)
-    Dp = checkData(Dp)
-    Db = checkData(Db)
-    S = checkData(S)
+    Rf = PerformanceAnalytics::checkData(Rf)
+    Rp = PerformanceAnalytics::checkData(Rp)
+    Rb = PerformanceAnalytics::checkData(Rb)
+    Dp = PerformanceAnalytics::checkData(Dp)
+    Db = PerformanceAnalytics::checkData(Db)
+    S = PerformanceAnalytics::checkData(S)
     WP = wp # Save original weights in order to avoid double conversion later
     WB = wb
     WBF = wbf
@@ -107,59 +107,59 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     wb = Weight.transform(wb, Rb)
     wbf = Weight.transform(wbf, Rb)
     if (ncol(Rb) == 1){
-      Rb = matrix(rep(coredata(Rb), ncol(Rp)), nrow(Rp), ncol(Rp))
+      Rb = matrix(rep(zoo::coredata(Rb), ncol(Rp)), nrow(Rp), ncol(Rp))
     }
     if (ncol(Rb) != ncol(Rp)){
       stop("Please use benchmark xts that has columns with benchmarks for each
             asset or one common benchmark for all assets")
     }
     if (ncol(Db) == 1){
-      Db = matrix(rep(coredata(Db), ncol(Dp)), nrow(Dp), ncol(Dp))
+      Db = matrix(rep(zoo::coredata(Db), ncol(Dp)), nrow(Dp), ncol(Dp))
     }
     if (ncol(Db) != ncol(Dp)){
       print("Please use benchmark xts that has columns with benchmarks for each
             asset or one common benchmark for all assets")
     }
-    rp = Return.portfolio(Rp, WP, geometric = geometric)
-    rb = Return.portfolio(Rb, WB, geometric = geometric)
-    rf = Return.portfolio(Rf, WP, geometric = geometric)
-    dp = Return.portfolio(Dp, WP, geometric = geometric) # portfolio duration
-    db = Return.portfolio(Db, WB, geometric = geometric) # benchmark duration
+    rp = PerformanceAnalytics::Return.portfolio(Rp, WP, geometric = geometric)
+    rb = PerformanceAnalytics::Return.portfolio(Rb, WB, geometric = geometric)
+    rf = PerformanceAnalytics::Return.portfolio(Rf, WP, geometric = geometric)
+    dp = PerformanceAnalytics::Return.portfolio(Dp, WP, geometric = geometric) # portfolio duration
+    db = PerformanceAnalytics::Return.portfolio(Db, WB, geometric = geometric) # benchmark duration
     names(rp) = "Total"
     names(rb) = "Total"
-    Dbeta = dp / coredata(db)
+    Dbeta = dp / zoo::coredata(db)
     # Implied benchmark yield changes
-    DeltaYb = -(Rb - coredata(Rf)) / coredata(Db) 
+    DeltaYb = -(Rb - zoo::coredata(Rf)) / zoo::coredata(Db) 
     # Implied portfolio yield changes
-    DeltaYp = -(Rp - coredata(Rf)) / coredata(Dp) 
+    DeltaYp = -(Rp - zoo::coredata(Rf)) / zoo::coredata(Dp) 
     # Implied total benchmark yield changes
-    deltayb = rep(rb - coredata(rp), ncol(Dp)) / coredata(Dp) 
+    deltayb = rep(rb - zoo::coredata(rp), ncol(Dp)) / zoo::coredata(Dp) 
     # Currency returns
     Rc = stats::lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1 
-    rc = reclass(rowSums((wb + wbf) * (Rc + coredata(Rf))), Rc)
+    rc = reclass(rowSums((wb + wbf) * (Rc + zoo::coredata(Rf))), Rc)
     if (!geometric){
-      allocation = (Dp * wp - rep(Dbeta, ncol(Dp)) * coredata(Db) * wb) * 
-        coredata(-DeltaYb + deltayb)
-      selection = Dp * coredata(wp) * coredata(-DeltaYp + coredata(DeltaYb))
-      currency = (wp - wb) * (Rc + coredata(Rf) - rep(rc, ncol(Rc)))
-      excess.returns = rp - coredata(rb)
+      allocation = (Dp * wp - rep(Dbeta, ncol(Dp)) * zoo::coredata(Db) * wb) * 
+        zoo::coredata(-DeltaYb + deltayb)
+      selection = Dp * zoo::coredata(wp) * zoo::coredata(-DeltaYp + zoo::coredata(DeltaYb))
+      currency = (wp - wb) * (Rc + zoo::coredata(Rf) - rep(rc, ncol(Rc)))
+      excess.returns = rp - zoo::coredata(rb)
     } else{
       rcprime = rowSums(wb * (Rc + Rf))
-      bd = reclass(rowSums(rep(Dbeta, ncol(Db)) * Db * coredata(wb) * 
-        coredata(-DeltaYb)), Db) + rcprime # Overal duration notional fund
-      allocation = Dp * wp - rep(Dbeta, ncol(Dp)) * coredata(Db) * wb * 
-        coredata(-DeltaYb + deltayb) / rep(bd, ncol(Db))
-      selection = Dp / coredata(Db) * coredata(Rb - coredata(Rf)) + Rf
-      excess.returns = (1 + rp) / (1 + coredata(rb)) - 1
+      bd = reclass(rowSums(rep(Dbeta, ncol(Db)) * Db * zoo::coredata(wb) * 
+        zoo::coredata(-DeltaYb)), Db) + rcprime # Overal duration notional fund
+      allocation = Dp * wp - rep(Dbeta, ncol(Dp)) * zoo::coredata(Db) * wb * 
+        zoo::coredata(-DeltaYb + deltayb) / rep(bd, ncol(Db))
+      selection = Dp / zoo::coredata(Db) * zoo::coredata(Rb - zoo::coredata(Rf)) + Rf
+      excess.returns = (1 + rp) / (1 + zoo::coredata(rb)) - 1
     }
     
     # Get total attribution effects 
     n = ncol(allocation)               # number of segments
     # We use the zoo version of cbind to avoid the column names from being mangled 
     # which the version in xts does without the option to override that behavior
-    allocation = as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
+    allocation = xts::as.xts(zoo::cbind.zoo(allocation, rowSums(allocation)))
     names(allocation)[n + 1] = "Total"  
-    selection = as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
+    selection = xts::as.xts(zoo::cbind.zoo(selection, rowSums(selection)))
     names(selection)[n + 1] = "Total"   
 
     result = list()
@@ -169,7 +169,7 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     names(result) = c("Excess returns", "Market allocation", "Issue selection")
     
     if (!geometric){
-      currency = as.xts(zoo::cbind.zoo(currency, rowSums(currency)))
+      currency = xts::as.xts(zoo::cbind.zoo(currency, rowSums(currency)))
       names(currency)[ncol(currency)] = "Total"
       result[[4]] = currency
       names(result) = c("Excess returns", "Market allocation", 

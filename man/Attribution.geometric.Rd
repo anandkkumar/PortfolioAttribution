@@ -6,7 +6,7 @@
 \usage{
 Attribution.geometric(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA,
   Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
-  contribution = FALSE)
+  contribution = FALSE, annualization = "none")
 }
 \arguments{
 \item{Rp}{xts of portfolio returns}
@@ -41,6 +41,13 @@ base currency}
 
 \item{contribution}{TRUE/FALSE, whether to also compute and return portfolio & benchmark contributions
 for each category and period. Defaults to FALSE.}
+
+\item{annualization}{Used to select the annualization method for multi-period excess returns, contributions
+and attribution effects. May be any of:
+\itemize{\item none - no annualized numbers are returned
+\item standard 
+\item proportional}
+The default is 'none'. See vignette on annualization for detailed descriptions of the supported methods}
 }
 \value{
 This function returns the list with attribution effects (allocation
