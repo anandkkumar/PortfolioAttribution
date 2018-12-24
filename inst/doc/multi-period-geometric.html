@@ -12,7 +12,7 @@
 
 <meta name="author" content="Anand Krishnakumar" />
 
-<meta name="date" content="2018-04-26" />
+<meta name="date" content="2018-12-19" />
 
 <title>Multi-period geometric attribution</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Multi-period geometric attribution</h1>
 <h4 class="author"><em><a href="https://github.com/anandkkumar">Anand Krishnakumar</a></em></h4>
-<h4 class="date"><em>2018-04-26</em></h4>
+<h4 class="date"><em>2018-12-19</em></h4>
 
 
 
@@ -79,7 +79,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h3><ins>Define the data inputs</ins></h3>
 <p>Say we have a relatively large portfolio &amp; benchmark data set at the security level. This example data set in the package has 2958 assets over 13 monthly periods. The column names are security identifiers and the row indexes are month-end dates. As outlined in the <a href="introduction.html">introduction vignette</a>, the attribution package requires that the number of assets be the same for all periods and between the portfolio &amp; benchmark.</p>
 <p>The first few periods &amp; assets are shown below.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PortfolioAttribution)
+<span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
 <span class="co"># Portfolio weights</span>
 multi_period_portf_<span class="dv">1</span><span class="op">$</span>wp[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]
 <span class="co">#&gt;            20 58     127 182</span>

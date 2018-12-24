@@ -12,7 +12,7 @@
 
 <meta name="author" content="Anand Krishnakumar" />
 
-<meta name="date" content="2018-04-26" />
+<meta name="date" content="2018-12-19" />
 
 <title>Introduction to Portfolio Attribution</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Introduction to Portfolio Attribution</h1>
 <h4 class="author"><em><a href="https://github.com/anandkkumar">Anand Krishnakumar</a></em></h4>
-<h4 class="date"><em>2018-04-26</em></h4>
+<h4 class="date"><em>2018-12-19</em></h4>
 
 
 
@@ -67,9 +67,13 @@ E^A = R_p - R_b = \sum ^n_{i=1} A_i + \sum ^n_{i=1} S_i + \sum ^n_{i=1} I_i
 </div>
 <div id="brinson-and-fachler" class="section level4">
 <h4>Brinson and Fachler</h4>
-<p>This method is based on the <em>Brinson and Fachler <span class="citation">(1985)</span></em> article and defines interaction and selection effects the same as in the Brinson, Hood and Beebower approach but the allocation effect is defined as</p>
+<p>This method is based on the <em>Brinson and Fachler <span class="citation">(1985)</span></em> article and defines interaction and selection effects the same as in the Brinson, Hood and Beebower approach but the allocation effect is as defined below.</p>
 <p><span class="math display">\[
-  A_i = (w_{pi} - w_{bi})\times (R_{bi} - R_b)
+  \begin{aligned}
+    A_i &amp; = (w_{pi} - w_{bi})\times (R_{bi} - R_b) \\
+    S_i &amp; = w_{bi}\times(R_{pi}-R_{bi}) \\
+    I_i &amp; = (w_{pi}-w_{bi})\times(R_{pi}-R_{bi})
+  \end{aligned}
 \]</span></p>
 <p>As before, the relationship between these attribution effects and the total arithmetic excess return for the portfolio over the benchmark is given by Geometric Excess Return is the profit in excess of a notional or benchmark fund expressed as a percentage of the final value of the notional or benchmark fund.</p>
 <p><span class="math display">\[
@@ -119,17 +123,20 @@ E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1 = \left((1 + \sum ^{n}_{i=1} A_i^G) \times 
 <p>The <code>PortfolioAttribution</code> package supports multiple methodologies and allows for multi-period attribution analysis. It also support multi-currency portfolios in which case it reports the currency effects. The package also supports the ability to define custom hierarchies to perform multi-level attribution. The various other companion vignettes in this package contain illustrative examples. They use sample data sets that are included with the package so that the users can try these examples on their own.</p>
 <p>The attribution functions in this package employ an interface in terms of weights &amp; returns. In other words, it is expected that any positions, prices, transactions and other complexities that go into computing the desired weight and return to use in attribution analysis, has occurred in advance and the resulting data is feed in as input to these functions.</p>
 <p>The main functions of interest are <code>Attribution</code>, <code>Attribution.levels</code> and <code>AttributionFixedIncome</code>. You can use the <code>help</code> command or the <code>?</code> shortcut on any of these functions to peruse their documentation.</p>
-<p>Some common aspects to the different functions are:</p>
+<p>Key data input assumptions:</p>
+<ul>
+<li>the package assumes you have already computed the relevant weights &amp; returns at the appropriate levels using either a buy-hold approach or a transactional platform to compute the returns more accurately</li>
+<li>the portfolio &amp; benchmark returns &amp; weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio &amp; benchmark data must match.</li>
+<li>similarly, in a multi-period data set, if an asset or category drops out of the portfolio or benchmark, a return and weight of 0 must be specified. In other words the number of assets or categories for each period must be the same.</li>
+<li>the package treats the weights provided as <strong>end-of-period</strong> weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.</li>
+</ul>
+<p>Other aspects common to the different functions are:</p>
 <ul>
 <li>the returns and weights have to be specified as decimal numbers and not percentages</li>
 <li>the returns have to be in the form of a <span class="math inline">\(T \times n\)</span> <code>xts</code>, <code>data.frame</code> or <code>matrix</code> of returns</li>
 <li>the weights have to be in the form of a vector or <span class="math inline">\(T \times n\)</span> <code>xts</code>, <code>data.frame</code> or <code>matrix</code> of returns. When the weights are in the form a vector it is assumed that the weights are reset to the target prior to each period</li>
 <li>the rows in the returns &amp; weights data represent periods while the columns represent assets or categories</li>
 <li>the package requires that the return data have row indexes defined as dates or periods compatible with the <code>xts</code> package</li>
-<li>the portfolio &amp; benchmark returns &amp; weights must have the same number of assets or categories for each date. If a portfolio or benchmark does not hold an asset or category that is in the other, a return and weight of 0 must be specified. In other words the dimensions of the portfolio &amp; benchmark data must match.</li>
-<li>similarly, in a multi-period data set, if an asset or category drops out of the portfolio or benchmark, a return and weight of 0 must be specified. In other words the number of assets or categories for each period must be the same.</li>
-<li>the package treats the weights provided as <strong>end-of-period</strong> weights. They can be thought of as taking effect immediately after the close of the bar. So, a weight specified for March 31 will actually be in effect starting April 1 through the next period. This convention was chosen because it fits with common usage, and because it simplifies date sub-setting via endpoints.</li>
-<li>the package by default applies the Brinson and Fachler methodology for both arithmetic and geometric attribution analysis. For arithmetic attribution only, the package supports switching it to use the Brinson, Hood and Beebower method.</li>
 <li>for arithmetic attribution the package supports combining the interaction effects into the selection or allocation effects, which is termed a <em>top-down</em> and <em>bottom-up</em> approach respectively. The default behavior is not combine them and report the interaction effects separately (please refer to the <a href="top-down-bottom-up.html">top-down v/s bottom-up arithmetic attribution vignette</a> for more details). For geometric attribution, no interaction effects are reported.</li>
 <li>the smoothing algorithms implemented by the package are listed below (please refer to the <a href="multi-period-arithmetic.html">multi-period arithmetic attribution vignette</a> for more details on smoothing)
 <ul>
@@ -142,8 +149,15 @@ E^G = \frac{(1 + R_p)}{(1+ R_b)} - 1 = \left((1 + \sum ^{n}_{i=1} A_i^G) \times 
 <li>in addition to the attribution effects, the attribution methods also report the total excess returns for each period and annualizes it when appropriate</li>
 <li>in the case of multi-currency arithmetic attribution, the weights &amp; returns of forward contracts in the portfolio &amp; benchmarks can also be provided</li>
 <li>the type of object returned by all of the attribution computational methods is a <code>list</code>. The list members that represent the attribution effects are <code>xts</code> or <code>data.frame</code> objects, while the excess returns are <code>matrix</code> objects.</li>
-<li>there are a number of unit tests included as part of the package that can be executed &amp; examined to better understand the different functions and their expected behavior. These unit tests are available in the <code>tests</code> folder and employ the <code>testthat</code> framework. These use specific test data sets that included in the package and so can be run through through <code>RStudio</code> or the R console directly.</li>
 </ul>
+</div>
+<div id="unit-tests" class="section level3">
+<h3><ins>Unit tests</ins></h3>
+<p>There are a large number of unit tests included as part of the package that can be executed &amp; examined to better understand the different functions and their expected behavior. These unit tests are available in the <code>tests</code> folder and employ the <code>testthat</code> framework. These use specific test data sets that included in the package and so can be run through through <code>RStudio</code> or the R console directly.</p>
+</div>
+<div id="run-times-for-attribution-analysis" class="section level3">
+<h3><ins>Run-times for attribution analysis</ins></h3>
+<p>Please refer to the <a href="run-time-analysis.html">run-times for attribution analysis vignette</a> for an approach to measure the computation times for different methods on large data sets.</p>
 </div>
 <div id="references" class="section level3 unnumbered">
 <h3><ins>References</ins></h3>

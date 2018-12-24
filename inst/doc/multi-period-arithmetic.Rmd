@@ -54,6 +54,7 @@ cbind(multi_period_portf_2$wb, multi_period_portf_2$Rb) %>%
 
 This sample data from the package is available in the package structured as a `list` object to use.
 ```{r}
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 names(multi_period_portf_2)
 ```
@@ -289,7 +290,7 @@ Summarized below are some key characteristics & differences between the methods:
 
 * The `GRAP` and `Frongello` methods are __order dependent__ and the smoothed results will be different if the periods are rearranged
 * The `GRAP` and `Frongello` methods produce the same total effects across all periods for each category
-* Counter-intuitively, the `Carino` and `Menchero` methods are sensitive to the total number of periods used to smooth the effects. In other words, if you lengthen the period of analysis, you will have to recompute the effects for __all periods__ and not just the additional ones added. 
+* Counter-intuitively, the `Carino` and `Menchero` methods are sensitive to the total number of periods used to smooth the effects. In other words, if you lengthen the period of analysis, you will have to recompute the effects for __all periods__ and not just the additional ones added. Consequently, avoid using these methods unless you understand their implications.
 * The `GRAP` and `Frongello` methods do not suffer from this disadvantage as you lengthen your period of analysis and so are computationally less cumbersome
 
 ### <ins>References</ins>

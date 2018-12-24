@@ -31,6 +31,7 @@ Say we have a relatively large portfolio & benchmark data set at the security le
 The first few periods & assets are shown below.
 
 ```{r}
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 # Portfolio weights
 multi_period_portf_1$wp[1:3,1:4]

@@ -12,10 +12,11 @@
 
 <meta name="author" content="Anand Krishnakumar" />
 
-<meta name="date" content="2018-04-26" />
+<meta name="date" content="2018-12-19" />
 
 <title>Top-down v/s bottom-up arithmetic attribution</title>
 
+<script src="data:application/x-javascript;base64,JChkb2N1bWVudCkucmVhZHkoZnVuY3Rpb24oKXsKICAgICQoJ1tkYXRhLXRvZ2dsZT0idG9vbHRpcCJdJykudG9vbHRpcCgpOwogICAgJCgnW2RhdGEtdG9nZ2xlPSJwb3BvdmVyIl0nKS5wb3BvdmVyKCk7Cn0pOwo="></script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -70,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Top-down v/s bottom-up arithmetic attribution</h1>
 <h4 class="author"><em><a href="https://github.com/anandkkumar">Anand Krishnakumar</a></em></h4>
-<h4 class="date"><em>2018-04-26</em></h4>
+<h4 class="date"><em>2018-12-19</em></h4>
 
 
 
@@ -87,6 +88,20 @@ table {
 <h3>Top-down v/s bottom-up arithmetic attribution</h3>
 <p>By default, the <code>Attribution</code> method decomposes the arithmetic attribution effects into three effects, allocation, selection and interaction. However, it is fairly common to combine the interaction effect into one of the other two effects depending on the investment process. This is due to the fact that the interaction effect, being a plug term, is not part of the investment decision process and portfolio managers do not seek to add value through interaction.</p>
 <p>If portfolio managers follow a top-down process in making allocation decisions first prior to stock selection, it is common to want to combine the interaction effects into the selection effects. Conversely, for bottom-up stock pickers, the interaction effects are combined into the allocation effects. Some practitioners label these two approaches as <em>Interaction in Selection</em> and <em>Interaction in Allocation</em> respectively.</p>
+<p>In a <strong>top-down</strong> approach the allocation and selection effects are as defined below.</p>
+<p><span class="math display">\[
+  \begin{aligned}
+    A_i &amp; = (w_{pi} - w_{bi})\times (R_{bi} - R_b) \\
+    S_i &amp; = w_{pi}\times(R_{pi}-R_{bi}) \\
+  \end{aligned}
+\]</span></p>
+<p>In a <strong>bottom-up</strong> approach the allocation and selection effects are as defined below.</p>
+<p><span class="math display">\[
+  \begin{aligned}
+    A_i &amp; = (w_{pi} - w_{bi})\times (R_{pi} - R_b) \\
+    S_i &amp; = w_{bi}\times(R_{pi}-R_{bi}) \\
+  \end{aligned}
+\]</span></p>
 <p>The rest of this vignette illustrates the differences between the approaches using the Brinson and Fachler model.</p>
 </div>
 <div id="define-the-data-inputs" class="section level3">
@@ -94,77 +109,187 @@ table {
 <p>Say we have a portfolio &amp; benchmark data categorized into sectors as shown below.</p>
 <table>
 <thead>
-<tr class="header">
-<th></th>
-<th align="right">Basic Materials</th>
-<th align="right">Capital Goods</th>
-<th align="right">Comm. Services</th>
-<th align="right">Cons. Cyclicals</th>
-<th align="right">Cons. Staples</th>
-<th align="right">Financials</th>
-<th align="right">Health Care</th>
-<th align="right">Technology</th>
-<th align="right">Transportation</th>
-<th align="right">Cash</th>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Basic Materials
+</th>
+<th style="text-align:right;">
+Capital Goods
+</th>
+<th style="text-align:right;">
+Comm. Services
+</th>
+<th style="text-align:right;">
+Cons. Cyclicals
+</th>
+<th style="text-align:right;">
+Cons. Staples
+</th>
+<th style="text-align:right;">
+Financials
+</th>
+<th style="text-align:right;">
+Health Care
+</th>
+<th style="text-align:right;">
+Technology
+</th>
+<th style="text-align:right;">
+Transportation
+</th>
+<th style="text-align:right;">
+Cash
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>Portfolio Weight</td>
-<td align="right">0.0580</td>
-<td align="right">0.0930</td>
-<td align="right">0.0270</td>
-<td align="right">0.1490</td>
-<td align="right">0.1340</td>
-<td align="right">0.0460</td>
-<td align="right">0.1420</td>
-<td align="right">0.3010</td>
-<td align="right">0.0080</td>
-<td align="right">0.042</td>
+<tr>
+<td style="text-align:left;">
+Portfolio Weight
+</td>
+<td style="text-align:right;">
+0.0580
+</td>
+<td style="text-align:right;">
+0.0930
+</td>
+<td style="text-align:right;">
+0.0270
+</td>
+<td style="text-align:right;">
+0.1490
+</td>
+<td style="text-align:right;">
+0.1340
+</td>
+<td style="text-align:right;">
+0.0460
+</td>
+<td style="text-align:right;">
+0.1420
+</td>
+<td style="text-align:right;">
+0.3010
+</td>
+<td style="text-align:right;">
+0.0080
+</td>
+<td style="text-align:right;">
+0.042
+</td>
 </tr>
-<tr class="even">
-<td>Portfolio Return</td>
-<td align="right">-0.0860</td>
-<td align="right">0.0259</td>
-<td align="right">0.0646</td>
-<td align="right">-0.0518</td>
-<td align="right">-0.1003</td>
-<td align="right">-0.0383</td>
-<td align="right">-0.1225</td>
-<td align="right">0.0308</td>
-<td align="right">-0.1481</td>
-<td align="right">0.004</td>
+<tr>
+<td style="text-align:left;">
+Portfolio Return
+</td>
+<td style="text-align:right;">
+-0.0860
+</td>
+<td style="text-align:right;">
+0.0259
+</td>
+<td style="text-align:right;">
+0.0646
+</td>
+<td style="text-align:right;">
+-0.0518
+</td>
+<td style="text-align:right;">
+-0.1003
+</td>
+<td style="text-align:right;">
+-0.0383
+</td>
+<td style="text-align:right;">
+-0.1225
+</td>
+<td style="text-align:right;">
+0.0308
+</td>
+<td style="text-align:right;">
+-0.1481
+</td>
+<td style="text-align:right;">
+0.004
+</td>
 </tr>
-<tr class="odd">
-<td>Benchmark Weight</td>
-<td align="right">0.0040</td>
-<td align="right">0.0980</td>
-<td align="right">0.1050</td>
-<td align="right">0.0790</td>
-<td align="right">0.1500</td>
-<td align="right">0.0100</td>
-<td align="right">0.1850</td>
-<td align="right">0.3670</td>
-<td align="right">0.0020</td>
-<td align="right">0.000</td>
+<tr>
+<td style="text-align:left;">
+Benchmark Weight
+</td>
+<td style="text-align:right;">
+0.0040
+</td>
+<td style="text-align:right;">
+0.0980
+</td>
+<td style="text-align:right;">
+0.1050
+</td>
+<td style="text-align:right;">
+0.0790
+</td>
+<td style="text-align:right;">
+0.1500
+</td>
+<td style="text-align:right;">
+0.0100
+</td>
+<td style="text-align:right;">
+0.1850
+</td>
+<td style="text-align:right;">
+0.3670
+</td>
+<td style="text-align:right;">
+0.0020
+</td>
+<td style="text-align:right;">
+0.000
+</td>
 </tr>
-<tr class="even">
-<td>Benchmark Return</td>
-<td align="right">-0.0437</td>
-<td align="right">0.0342</td>
-<td align="right">0.0501</td>
-<td align="right">0.0321</td>
-<td align="right">-0.0955</td>
-<td align="right">-0.0803</td>
-<td align="right">-0.0731</td>
-<td align="right">0.0004</td>
-<td align="right">-0.0428</td>
-<td align="right">0.000</td>
+<tr>
+<td style="text-align:left;">
+Benchmark Return
+</td>
+<td style="text-align:right;">
+-0.0437
+</td>
+<td style="text-align:right;">
+0.0342
+</td>
+<td style="text-align:right;">
+0.0501
+</td>
+<td style="text-align:right;">
+0.0321
+</td>
+<td style="text-align:right;">
+-0.0955
+</td>
+<td style="text-align:right;">
+-0.0803
+</td>
+<td style="text-align:right;">
+-0.0731
+</td>
+<td style="text-align:right;">
+0.0004
+</td>
+<td style="text-align:right;">
+-0.0428
+</td>
+<td style="text-align:right;">
+0.000
+</td>
 </tr>
 </tbody>
 </table>
 <p>This sample data from the package is available in the package as a data set to use.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PortfolioAttribution)
+<span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
 simple_portf_<span class="dv">2</span>
 <span class="co">#&gt;                  Basic Materials Capital Goods Comm. Services</span>
 <span class="co">#&gt; Portfolio Weight          0.0580        0.0930         0.0270</span>

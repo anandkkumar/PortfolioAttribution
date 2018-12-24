@@ -12,10 +12,11 @@
 
 <meta name="author" content="Anand Krishnakumar" />
 
-<meta name="date" content="2018-04-26" />
+<meta name="date" content="2018-12-19" />
 
 <title>Multi-period arithmetic attribution</title>
 
+<script src="data:application/x-javascript;base64,JChkb2N1bWVudCkucmVhZHkoZnVuY3Rpb24oKXsKICAgICQoJ1tkYXRhLXRvZ2dsZT0idG9vbHRpcCJdJykudG9vbHRpcCgpOwogICAgJCgnW2RhdGEtdG9nZ2xlPSJwb3BvdmVyIl0nKS5wb3BvdmVyKCk7Cn0pOwo="></script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -70,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Multi-period arithmetic attribution</h1>
 <h4 class="author"><em><a href="https://github.com/anandkkumar">Anand Krishnakumar</a></em></h4>
-<h4 class="date"><em>2018-04-26</em></h4>
+<h4 class="date"><em>2018-12-19</em></h4>
 
 
 
@@ -355,7 +356,8 @@ US equities
 </tbody>
 </table>
 <p>This sample data from the package is available in the package structured as a <code>list</code> object to use.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PortfolioAttribution)
+<span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
 <span class="kw">names</span>(multi_period_portf_<span class="dv">2</span>)
 <span class="co">#&gt; [1] &quot;Rp&quot; &quot;Rb&quot; &quot;wp&quot; &quot;wb&quot;</span></code></pre></div>
 </div>
@@ -1929,7 +1931,7 @@ NA
 <ul>
 <li>The <code>GRAP</code> and <code>Frongello</code> methods are <strong>order dependent</strong> and the smoothed results will be different if the periods are rearranged</li>
 <li>The <code>GRAP</code> and <code>Frongello</code> methods produce the same total effects across all periods for each category</li>
-<li>Counter-intuitively, the <code>Carino</code> and <code>Menchero</code> methods are sensitive to the total number of periods used to smooth the effects. In other words, if you lengthen the period of analysis, you will have to recompute the effects for <strong>all periods</strong> and not just the additional ones added.</li>
+<li>Counter-intuitively, the <code>Carino</code> and <code>Menchero</code> methods are sensitive to the total number of periods used to smooth the effects. In other words, if you lengthen the period of analysis, you will have to recompute the effects for <strong>all periods</strong> and not just the additional ones added. Consequently, avoid using these methods unless you understand their implications.</li>
 <li>The <code>GRAP</code> and <code>Frongello</code> methods do not suffer from this disadvantage as you lengthen your period of analysis and so are computationally less cumbersome</li>
 </ul>
 </div>

@@ -10,6 +10,7 @@ library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 
 ## ------------------------------------------------------------------------
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 # Portfolio weights
 multi_period_portf_1$wp[1:3,1:4]

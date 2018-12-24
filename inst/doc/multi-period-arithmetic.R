@@ -25,6 +25,7 @@ cbind(multi_period_portf_2$wb, multi_period_portf_2$Rb) %>%
   kableExtra::add_header_above(c(" " = 1, "Benchmark Weights" = 3, "Benchmark Returns" = 3))
 
 ## ------------------------------------------------------------------------
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 names(multi_period_portf_2)
 

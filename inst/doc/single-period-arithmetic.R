@@ -11,6 +11,7 @@ data("sample_data", package = "PortfolioAttribution")
 knitr::kable(simple_portf_1)
 
 ## ------------------------------------------------------------------------
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 simple_portf_1
 

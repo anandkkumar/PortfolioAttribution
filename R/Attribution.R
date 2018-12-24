@@ -62,8 +62,10 @@
 #' \deqn{E^G_ann =\frac{1+R_{pa}}{1+R_{ba}}-1}{E^G_ann = (1 + R_pa) / (1 + R_ba) - 1}
 #' In the case of \strong{arithmetic attribution} of a multi-currency portfolio, the currency return, currency
 #' surprise and forward premium should be specified. The multi-currency
-#' arithmetic attribution is handled following Ankrim and Hensel (1992).
-#' Currency returns are decomposed into the sum of the currency surprise and
+#' arithmetic attribution is handled following either a standard or Ankrim and Hensel approach (1992).
+#' With the standard approach, the currency effects are simply the difference between the attribution effects computed
+#' with the base currency and the local currency.
+#' With Ankrim and Hensel, the currency returns are decomposed into the sum of the currency surprise and
 #' the forward premium: \deqn{R_{ci} = R_{ei} + R_{di}}{R_ci = R_ei + R_di}
 #' where 
 #' \deqn{R_{ei} = \frac{S_{i}^{t+1} - F_{i}^{t+1}}{S_{i}^{t}}}{R_ei = (S_i^(t+1) - F_i^(t+1)) / S_i^t}
@@ -106,8 +108,8 @@
 #' The first date should coincide with the first date of portfolio returns
 #' @param Fb (T+1) x n xts, data frame or matrix with forward rates for contracts in the benchmark. 
 #' The first date should coincide with the first date of benchmark returns
-#' @param Rpl xts, data frame or matrix of portfolio returns in local currency (only used when geometric is set to TRUE)
-#' @param Rbl xts, data frame or matrix of benchmark returns in local currency (only used when geometric is set to TRUE)
+#' @param Rpl xts, data frame or matrix of portfolio returns in local currency
+#' @param Rbl xts, data frame or matrix of benchmark returns in local currency
 #' @param Rbh xts, data frame or matrix of benchmark returns hedged into the (only used when geometric is set to TRUE)
 #' base currency
 #' @param bf TRUE for Brinson and Fachler and FALSE for Brinson, Hood and 
@@ -122,6 +124,14 @@
 #' priority is given to the security selection. Interaction term is combined 
 #' with the group allocation effect} 
 #' By default "none" is selected
+#' @param currency_method Used to select the approach to use to compute currency attribution effects
+#' May be any of: \itemize{ \item none - 
+#' no currency attribution effects are computed, 
+#' \item standard - currency attribution effects are computed as the difference between the attribution effects
+#' computed with base and local currencies
+#' \item ankrim.hensel - currency attribution effects are computed using Ankrim-Hensel methodology (single-period only)}
+#' By default "none" is selected. Note that, at the moment, multi-currency attribution is not supported for Davies & Laker multi-period linking
+#' and the Ankrim-Hensel method is only implemented for single-period attribution.
 #' @param linking Used to select the linking method to present the multi-period
 #' summary of arithmetic attribution effects. May be any of: 
 #' \itemize{\item carino - logarithmic linking coefficient method
@@ -130,7 +140,8 @@
 #' \item frongello - Frongello's linking method
 #' \item davies.laker - Davies and Laker's linking method}
 #' By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
-#' if the data does not imply multi-period attribution.
+#' if the data does not imply multi-period attribution. Davies & Laker does not support multi-currency attribution
+#' at the moment.
 #' @param geometric TRUE/FALSE, whether to use geometric or arithmetic excess
 #' returns for the attribution analysis. By default this is set to FALSE, which results
 #' in arithmetic excess return attribution.
@@ -180,6 +191,7 @@ function (Rp, wp, Rb, wb,
           wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
           bf = TRUE,
           method = "none", 
+          currency_method = "none",
           linking = "grap",
           geometric = FALSE, contribution = FALSE, adjusted = FALSE, 
           annualization = "none")
@@ -200,10 +212,10 @@ function (Rp, wp, Rb, wb,
     # S        (T+1) x n xts, data frame or matrix with spot rates
     # Fp       (T+1) x n xts, data frame or matrix with forward rates for portfolio
     # Fb       (T+1) x n xts, data frame or matrix with forward rates for benchmark
-    # Rpl      xts, data frame or matrix of portfolio returns in local currency (only used when geometric is set to TRUE)
-    # Rbl      xts, data frame or matrix of benchmark returns in local currency (only used when geometric is set to TRUE)
+    # Rpl      xts, data frame or matrix of portfolio returns in local currency 
+    # Rbl      xts, data frame or matrix of benchmark returns in local currency
     # Rbh      xts, data frame or matrix of benchmark returns hedged into the
-    #          base currency (only used when geometric is set to TRUE)
+    #          base currency (only used for geometric multi-currency attribution)
   
     # Outputs: 
     # This function returns the attribution effects with multi-period summary
@@ -269,6 +281,11 @@ function (Rp, wp, Rb, wb,
                     "top.down" = "top.down", 
                     "bottom.up" = "bottom.up",
                     stop("Valid methods are 'none', 'top.down' and 'bottom.up'"))
+    currency_method = switch(currency_method,
+                             "none" = "none",
+                             "standard" = "standard",
+                             "ankrim.hensel" = "ankrim.hensel", 
+                             stop("Valid methods are 'none', 'ankrim.hensel' and 'standard'"))
     linking = switch(linking,
                      "carino" = "carino", 
                      "menchero" = "menchero", 
@@ -296,21 +313,27 @@ function (Rp, wp, Rb, wb,
       )
     }
     
-    currency = !(is.null(dim(wpf)) & is.null(dim(wbf)) & 
-                   is.null(dim(S)) & is.null(dim(Fp)) & is.null(dim(Fb)))
+    if(currency_method == "standard") {
+      currency = !(is.null(dim(Rpl)) & is.null(dim(Rbl)))
+      if(currency == FALSE)
+        warning("Ignoring request to compute currency attribution as not all required data has been 
+                provided for standard currency attribution")
+      
+    } else if(currency_method == "ankrim.hensel") {
+      currency = !(is.null(dim(wpf)) & is.null(dim(wbf)) & 
+                     is.null(dim(S)) & is.null(dim(Fp)) & is.null(dim(Fb)))
+      if(currency == FALSE)
+        warning("Ignoring request to compute currency attribution as not all required data has been 
+                provided for Ankrim-Hensel currency attribution")
+    } else {
+      currency = FALSE
+    }
     
     if (geometric == FALSE & linking != "davies.laker"){ 
       # The function makes all computations for the arithmetic attribution
       # case (except for Davies and Laker linking)
     
-      # Compute attribution effects (Brinson, Hood and Beebower model)
-      # If portfolio is single-currency
-      if (!currency){
-        Rc = 0
-        L = 0
-        Rpbf = NULL
-        WPF = WBF = NULL
-      } else{         # If multi-currency portfolio
+      if(currency && currency_method == "ankrim.hensel") {
         S = PerformanceAnalytics::checkData(S)
         Fp = PerformanceAnalytics::checkData(Fp)
         Fb = PerformanceAnalytics::checkData(Fb)
@@ -338,6 +361,11 @@ function (Rp, wp, Rb, wb,
         Df = xts::as.xts(zoo::cbind.zoo(Df, rowSums(Df)))
         colnames(Cc) = c(colnames(S), "Total")
         colnames(Df) = colnames(Cc)
+      } else {
+        Rc = 0
+        L = 0
+        Rpbf = NULL
+        WPF = WBF = NULL
       }
       
       # Get total portfolio returns including any forward contracts, if present
@@ -348,8 +376,16 @@ function (Rp, wp, Rb, wb,
           rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rpbf)))
           cumulative_rp = rp
           cumulative_rb = rb
-          port_contr = as.matrix(c(WP, WPF)*cbind(Rp, Rpbf))
-          bmk_contr = as.matrix(c(WB, WBF)*cbind(Rb, Rpbf))
+          if(contribution) {
+            port_contr = as.matrix(c(WP, WPF)*cbind(Rp, Rpbf))
+            bmk_contr = as.matrix(c(WB, WBF)*cbind(Rb, Rpbf))
+          }
+          if(currency && currency_method == "standard") {
+            Rpl = PerformanceAnalytics::checkData(Rpl)
+            Rbl = PerformanceAnalytics::checkData(Rbl)
+            rpl = as.matrix(sum(WP*Rpl))
+            rbl = as.matrix(sum(WB*Rbl))
+          }
         } else {
           if(!is.null(WPF) & !is.null(WBF)) {
             port_returns_and_contr = PerformanceAnalytics::Return.portfolio(cbind(Rp, Rpbf), c(WP, WPF), 
@@ -370,16 +406,30 @@ function (Rp, wp, Rb, wb,
             bmk_contr = bmk_returns_and_contr[,-1]
             names(bmk_contr) = names(Rb)
           }
+          if(currency && currency_method == "standard") {
+            Rpl = PerformanceAnalytics::checkData(Rpl)
+            Rbl = PerformanceAnalytics::checkData(Rbl)
+            rpl = PerformanceAnalytics::Return.portfolio(Rpl, WP)
+            rbl = PerformanceAnalytics::Return.portfolio(Rbl, WB)
+          }
         }
       } else {
         # If we have just one observation we simply sum up the contributions
         if(NROW(Rp) == 1 & NROW(wp) == 1 & NROW(Rb) == 1 & NROW(wb) == 1) {
           rp = as.matrix(sum(zoo::coredata(cbind(wp, WPF))*zoo::coredata(cbind(Rp, Rpbf))))
-          port_contr = as.matrix(zoo::coredata(cbind(wp, WPF))*zoo::coredata(cbind(Rp, Rpbf)))
           rb = as.matrix(sum(zoo::coredata(cbind(wb, WBF))*zoo::coredata(cbind(Rb, Rpbf))))
-          bmk_contr = as.matrix(zoo::coredata(cbind(wb, WBF))*zoo::coredata(cbind(Rb, Rpbf)))
           cumulative_rp = rp
           cumulative_rb = rb
+          if(contribution) {
+            port_contr = as.matrix(zoo::coredata(cbind(wp, WPF))*zoo::coredata(cbind(Rp, Rpbf)))
+            bmk_contr = as.matrix(zoo::coredata(cbind(wb, WBF))*zoo::coredata(cbind(Rb, Rpbf)))
+          }
+          if(currency && currency_method == "standard") {
+            Rpl = PerformanceAnalytics::checkData(Rpl)
+            Rbl = PerformanceAnalytics::checkData(Rbl)
+            rpl = as.matrix(sum(zoo::coredata(wp)*zoo::coredata(Rpl)))
+            rbl = as.matrix(sum(zoo::coredata(wb)*zoo::coredata(Rbl)))
+          }
         } else {
           if(!is.null(WPF) & !is.null(WBF)) {
             port_returns_and_contr = PerformanceAnalytics::Return.portfolio(cbind(Rp, Rpbf), cbind(wp, WPF), 
@@ -400,34 +450,87 @@ function (Rp, wp, Rb, wb,
             bmk_contr = bmk_returns_and_contr[,-1]
             names(bmk_contr) = names(Rb)
           }
+          if(currency && currency_method == "standard") {
+            Rpl = PerformanceAnalytics::checkData(Rpl)
+            Rbl = PerformanceAnalytics::checkData(Rbl)
+            rpl = PerformanceAnalytics::Return.portfolio(Rpl, WP)
+            rbl = PerformanceAnalytics::Return.portfolio(Rbl, WB)
+          }
         }
       }
       names(rp) = rownames(rp) = "Total"
       names(rb) = rownames(rb) = "Total"
+      if(currency && currency_method == "standard") {
+        names(rpl) = rownames(rpl) = "Total"
+        names(rbl) = rownames(rbl) = "Total"
+      }
       
       # Get individual attribution effects
       #if the benchmark weights are not specified allocation effect is equal to 0
       #selection contribution is equal to 0
       #if bm weights unknown all contribution is treated as interaction as it cannot be broken down, user is warned
-      
       if(ncol(wb)==1){
-        selection = (Rp  - zoo::coredata(Rb))*0
-        allocation = (Rp  - zoo::coredata(Rb))*0
-        interaction = zoo::coredata(wp) * (Rp - zoo::coredata(Rb))  
+        if(currency && currency_method == "standard") {
+          selection = (Rpl  - zoo::coredata(Rbl))*0
+          allocation = (Rpl  - zoo::coredata(Rbl))*0
+          interaction = zoo::coredata(wp) * (Rpl - zoo::coredata(Rbl))
+          
+          # These will be used to compute the smoothed currency effects later
+          if (nrow(allocation) > 1) {
+            selection_base = (Rp  - zoo::coredata(Rb))*0
+            allocation_base = (Rp  - zoo::coredata(Rb))*0
+            interaction_base = zoo::coredata(wp) * (Rp - zoo::coredata(Rb))
+          }
+        } else {
+          selection = (Rp  - zoo::coredata(Rb))*0
+          allocation = (Rp  - zoo::coredata(Rb))*0
+          interaction = zoo::coredata(wp) * (Rp - zoo::coredata(Rb))
+        }
         warning("Benchmark weights unknown, all effects treated as interaction, returns wp*(Rp-Rb)")
       }
       else{
         if (bf == TRUE){ 
           # Brinson and Fachler (1985) allocation effect
-          allocation = zoo::coredata(wp - wb) * (Rb - zoo::coredata(Rc) - zoo::coredata(L) - 
-            rep(rb, ncol(Rb)))
-        }else{
+          if(currency && currency_method == "standard") {
+            allocation = zoo::coredata(wp - wb) * (Rbl - rep(rbl, ncol(Rbl)))
+            currency_effect = zoo::coredata(wp) * (Rp - Rpl) - zoo::coredata(wb) * (Rb - Rbl) - 
+              zoo::coredata(wp - wb) * rep((rb - rbl), ncol(Rb))
+            
+            # These will be used to compute the smoothed currency effects later
+            if (nrow(allocation) > 1) {
+              allocation_base = zoo::coredata(wp - wb) * (Rb - rep(rb, ncol(Rb)))
+            }
+          } else {
+            allocation = zoo::coredata(wp - wb) * (Rb - zoo::coredata(Rc) - zoo::coredata(L) - 
+                                                     rep(rb, ncol(Rb)))
+          }
+        } else{
           # Brinson, Hood and Beebower (1986) allocation effect
-          allocation = zoo::coredata(wp - wb) * (Rb - zoo::coredata(Rc) - zoo::coredata(L))
+          if(currency && currency_method == "standard") {
+            allocation = zoo::coredata(wp - wb) * Rbl
+            currency_effect = zoo::coredata(wp) * (Rp - Rpl) - zoo::coredata(wb) * (Rb - Rbl)
+            
+            # These will be used to compute the smoothed currency effects later
+            if (nrow(allocation) > 1) {
+              allocation_base = zoo::coredata(wp - wb) * Rb
+            }
+          } else {
+            allocation = zoo::coredata(wp - wb) * (Rb - zoo::coredata(Rc) - zoo::coredata(L))
+          }
         }
-                        
-        selection = (Rp  - zoo::coredata(Rb)) * zoo::coredata(wb)
-        interaction = zoo::coredata(wp - wb) * (Rp - zoo::coredata(Rb))         
+        if(currency && currency_method == "standard") {
+          selection = (Rpl  - zoo::coredata(Rbl)) * zoo::coredata(wb)
+          interaction = zoo::coredata(wp - wb) * (Rpl - zoo::coredata(Rbl))
+          
+          # These will be used to compute the smoothed currency effects later
+          if (nrow(allocation) > 1) {
+            selection_base = (Rp  - zoo::coredata(Rb)) * zoo::coredata(wb)
+            interaction_base = zoo::coredata(wp - wb) * (Rp - zoo::coredata(Rb))
+          }
+        } else {
+          selection = (Rp  - zoo::coredata(Rb)) * zoo::coredata(wb)
+          interaction = zoo::coredata(wp - wb) * (Rp - zoo::coredata(Rb))
+        }
       }
     
       
@@ -456,31 +559,90 @@ function (Rp, wp, Rb, wb,
       interaction = xts::as.xts(zoo::cbind.zoo(interaction, rowSums(interaction)))
       names(interaction)[n + 1] = "Total"
       
+      if(currency && currency_method == "standard") {
+        # These will be used to compute the smoothed currency effects later
+        if(nrow(allocation) > 1) {
+          allocation_base = xts::as.xts(zoo::cbind.zoo(allocation_base, rowSums(allocation_base)))
+          names(allocation_base)[n + 1] = "Total"  
+          selection_base = xts::as.xts(zoo::cbind.zoo(selection_base, rowSums(selection_base)))
+          names(selection_base)[n + 1] = "Total"   
+          interaction_base = xts::as.xts(zoo::cbind.zoo(interaction_base, rowSums(interaction_base)))
+          names(interaction_base)[n + 1] = "Total"
+        }
+        currency_effect = xts::as.xts(zoo::cbind.zoo(currency_effect, rowSums(currency_effect)))
+        names(currency_effect)[n + 1] = "Total"
+      }
+      
       # Adjust attribution effects using one of linking methods if there are
       # mutliple periods
       if (nrow(allocation) > 1){
         if (linking == "carino"){
-          allocation = Carino(rp, rb, allocation, adjusted)
-          selection = Carino(rp, rb, selection, adjusted)
-          interaction = Carino(rp, rb, interaction, adjusted)
+          if(currency && currency_method == "standard") {
+            allocation = Carino(rpl, rbl, allocation, adjusted)
+            selection = Carino(rpl, rbl, selection, adjusted)
+            interaction = Carino(rpl, rbl, interaction, adjusted)
+            # You cannot just link the single-period currency effects unlike the other attribution effects
+            # due to the nature of the linking algorithms and how the currency effects are constructed.
+            # Instead they are derived from the linked attribution effects in base & local currencies.
+            currency_effect = Carino(rp, rb, allocation_base, adjusted) + Carino(rp, rb, selection_base, adjusted) + 
+              Carino(rp, rb, interaction_base, adjusted) - (allocation + selection + interaction)
+            
+          } else {
+            allocation = Carino(rp, rb, allocation, adjusted)
+            selection = Carino(rp, rb, selection, adjusted)
+            interaction = Carino(rp, rb, interaction, adjusted)
+          }
         }
       
         if (linking == "menchero"){
-          allocation = Menchero(rp, rb, allocation, adjusted)
-          selection = Menchero(rp, rb, selection, adjusted)
-          interaction = Menchero(rp, rb, interaction, adjusted)
+          if(currency && currency_method == "standard") {
+            allocation = Menchero(rpl, rbl, allocation, adjusted)
+            selection = Menchero(rpl, rbl, selection, adjusted)
+            interaction = Menchero(rpl, rbl, interaction, adjusted)
+            # You cannot just link the single-period currency effects unlike the other attribution effects
+            # due to the nature of the linking algorithms and how the currency effects are constructed.
+            # Instead they are derived from the linked attribution effects in base & local currencies.
+            currency_effect = Menchero(rp, rb, allocation_base, adjusted) + Menchero(rp, rb, selection_base, adjusted) + 
+              Menchero(rp, rb, interaction_base, adjusted) - (allocation + selection + interaction)
+          } else {
+            allocation = Menchero(rp, rb, allocation, adjusted)
+            selection = Menchero(rp, rb, selection, adjusted)
+            interaction = Menchero(rp, rb, interaction, adjusted)
+          }
         }    
       
         if (linking == "grap"){
-          allocation = Grap(rp, rb, allocation, adjusted)
-          selection = Grap(rp, rb, selection, adjusted)
-          interaction = Grap(rp, rb, interaction, adjusted)
+          if(currency && currency_method == "standard") {
+            allocation = Grap(rpl, rbl, allocation, adjusted)
+            selection = Grap(rpl, rbl, selection, adjusted)
+            interaction = Grap(rpl, rbl, interaction, adjusted)
+            # You cannot just link the single-period currency effects unlike the other attribution effects
+            # due to the nature of the linking algorithms and how the currency effects are constructed.
+            # Instead they are derived from the linked attribution effects in base & local currencies.
+            currency_effect = Grap(rp, rb, allocation_base, adjusted) + Grap(rp, rb, selection_base, adjusted) + 
+              Grap(rp, rb, interaction_base, adjusted) - (allocation + selection + interaction)
+          } else {
+            allocation = Grap(rp, rb, allocation, adjusted)
+            selection = Grap(rp, rb, selection, adjusted)
+            interaction = Grap(rp, rb, interaction, adjusted)
+          }
         }
       
         if (linking == "frongello"){
-          allocation = Frongello(rp, rb, allocation, adjusted)
-          selection = Frongello(rp, rb, selection, adjusted)
-          interaction = Frongello(rp, rb, interaction, adjusted)
+          if(currency && currency_method == "standard") {
+            allocation = Frongello(rpl, rbl, allocation, adjusted)
+            selection = Frongello(rpl, rbl, selection, adjusted)
+            interaction = Frongello(rpl, rbl, interaction, adjusted)
+            # You cannot just link the single-period currency effects unlike the other attribution effects
+            # due to the nature of the linking algorithms and how the currency effects are constructed.
+            # Instead they are derived from the linked attribution effects in base & local currencies.
+            currency_effect = Frongello(rp, rb, allocation_base, adjusted) + Frongello(rp, rb, selection_base, adjusted) + 
+              Frongello(rp, rb, interaction_base, adjusted) - (allocation + selection + interaction)
+          } else {
+            allocation = Frongello(rp, rb, allocation, adjusted)
+            selection = Frongello(rp, rb, selection, adjusted)
+            interaction = Frongello(rp, rb, interaction, adjusted)
+          }
         }
         
         if(annualization == "standard") {
@@ -495,6 +657,12 @@ function (Rp, wp, Rb, wb,
           ann_interaction = (1 + interaction["Total",])^(scale/num_periods) - 1
           interaction = rbind(interaction, zoo::coredata(ann_interaction))
           rownames(interaction)[NROW(interaction)] = "Annualized"
+          
+          if(currency && currency_method == "standard") {
+            ann_currency_effect = (1 + currency_effect["Total",])^(scale/num_periods) - 1
+            currency_effect = rbind(currency_effect, zoo::coredata(ann_currency_effect))
+            rownames(currency_effect)[NROW(currency_effect)] = "Annualized"
+          }
         } else if(annualization == "proportional") {
           ann_excess_prop_ratio = as.numeric(ann_er/cumulative_er)
           
@@ -509,6 +677,12 @@ function (Rp, wp, Rb, wb,
           ann_interaction = interaction["Total",] * ann_excess_prop_ratio
           interaction = rbind(interaction, zoo::coredata(ann_interaction))
           rownames(interaction)[NROW(interaction)] = "Annualized"
+          
+          if(currency && currency_method == "standard") {
+            ann_currency_effect = currency_effect["Total",] * ann_excess_prop_ratio
+            currency_effect = rbind(currency_effect, zoo::coredata(ann_currency_effect))
+            rownames(currency_effect)[NROW(currency_effect)] = "Annualized"
+          }
         }
       }      
       
@@ -526,6 +700,9 @@ function (Rp, wp, Rb, wb,
       if (method == "none"){
         result[[4]] = interaction
       }
+      if(currency && currency_method == "standard") {
+        result[[length(result) + 1]] = currency_effect
+      }
    } else{ # The function takes output of the corresponding function 
             # (Attribution.geometric or DaviesLaker)
       if (geometric == TRUE){
@@ -539,18 +716,31 @@ function (Rp, wp, Rb, wb,
         attrib = DaviesLaker(Rp, WP, Rb, WB)
       }
       result = attrib
-    }
+   }
     
     # Label the output
-    if (method == "none" | linking == "davies.laker"){
+    if (linking == "davies.laker"){
       names(result) = c("Excess returns", "Allocation", "Selection", 
                         "Interaction")
-    } else{
-      names(result) = c("Excess returns", "Allocation", "Selection")
+    }
+    else if (method == "none"){
+      if(currency && currency_method == "standard") {
+        names(result) = c("Excess returns", "Allocation", "Selection", 
+                          "Interaction", "Currency")
+      } else {
+        names(result) = c("Excess returns", "Allocation", "Selection", 
+                        "Interaction")
+      }
+    } else {
+      if(currency && currency_method == "standard") {
+        names(result) = c("Excess returns", "Allocation", "Selection", "Currency")
+      } else {
+        names(result) = c("Excess returns", "Allocation", "Selection")
+      }
     }
     
     # If multi-currency portfolio
-    if (currency){
+    if (currency && currency_method == "ankrim.hensel"){
       result[[length(result) + 1]] = Cc
       result[[length(result) + 1]] = Df
       names(result)[(length(result)-1):length(result)] = 

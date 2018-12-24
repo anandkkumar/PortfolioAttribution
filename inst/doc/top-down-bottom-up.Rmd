@@ -35,6 +35,25 @@ By default, the `Attribution` method decomposes the arithmetic attribution effec
 
 If portfolio managers follow a top-down process in making allocation decisions first prior to stock selection, it is common to want to combine the interaction effects into the selection effects. Conversely, for bottom-up stock pickers, the interaction effects are combined into the allocation effects. Some practitioners label these two approaches as _Interaction in Selection_ and _Interaction in Allocation_ respectively.
 
+In a **top-down** approach the allocation and selection effects are as defined below.
+
+\[
+  \begin{aligned}
+    A_i & = (w_{pi} - w_{bi})\times (R_{bi} - R_b) \\
+    S_i & = w_{pi}\times(R_{pi}-R_{bi}) \\
+  \end{aligned}
+\]
+
+In a **bottom-up** approach the allocation and selection effects are as defined below.
+
+\[
+  \begin{aligned}
+    A_i & = (w_{pi} - w_{bi})\times (R_{pi} - R_b) \\
+    S_i & = w_{bi}\times(R_{pi}-R_{bi}) \\
+  \end{aligned}
+\]
+
+
 The rest of this vignette illustrates the differences between the approaches using the Brinson and Fachler model.
 
 ### Define the data inputs
@@ -48,6 +67,7 @@ knitr::kable(simple_portf_2)
 
 This sample data from the package is available in the package as a data set to use.
 ```{r}
+library(PortfolioAttribution)
 data("sample_data", package = "PortfolioAttribution")
 simple_portf_2
 ```

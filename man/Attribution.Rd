@@ -6,8 +6,9 @@
 \usage{
 Attribution(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA, Fp = NA,
   Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE,
-  method = "none", linking = "grap", geometric = FALSE,
-  contribution = FALSE, adjusted = FALSE, annualization = "none")
+  method = "none", currency_method = "none", linking = "grap",
+  geometric = FALSE, contribution = FALSE, adjusted = FALSE,
+  annualization = "none")
 }
 \arguments{
 \item{Rp}{T x n xts, data frame or matrix of portfolio returns}
@@ -33,9 +34,9 @@ The first date should coincide with the first date of portfolio returns}
 \item{Fb}{(T+1) x n xts, data frame or matrix with forward rates for contracts in the benchmark. 
 The first date should coincide with the first date of benchmark returns}
 
-\item{Rpl}{xts, data frame or matrix of portfolio returns in local currency (only used when geometric is set to TRUE)}
+\item{Rpl}{xts, data frame or matrix of portfolio returns in local currency}
 
-\item{Rbl}{xts, data frame or matrix of benchmark returns in local currency (only used when geometric is set to TRUE)}
+\item{Rbl}{xts, data frame or matrix of benchmark returns in local currency}
 
 \item{Rbh}{xts, data frame or matrix of benchmark returns hedged into the (only used when geometric is set to TRUE)
 base currency}
@@ -54,6 +55,15 @@ priority is given to the security selection. Interaction term is combined
 with the group allocation effect} 
 By default "none" is selected}
 
+\item{currency_method}{Used to select the approach to use to compute currency attribution effects
+May be any of: \itemize{ \item none - 
+no currency attribution effects are computed, 
+\item standard - currency attribution effects are computed as the difference between the attribution effects
+computed with base and local currencies
+\item ankrim.hensel - currency attribution effects are computed using Ankrim-Hensel methodology (single-period only)}
+By default "none" is selected. Note that, at the moment, multi-currency attribution is not supported for Davies & Laker multi-period linking
+and the Ankrim-Hensel method is only implemented for single-period attribution.}
+
 \item{linking}{Used to select the linking method to present the multi-period
 summary of arithmetic attribution effects. May be any of: 
 \itemize{\item carino - logarithmic linking coefficient method
@@ -62,7 +72,8 @@ summary of arithmetic attribution effects. May be any of:
 \item frongello - Frongello's linking method
 \item davies.laker - Davies and Laker's linking method}
 By default grap linking is selected. This option is ignored if 'geometric' is set to TRUE or
-if the data does not imply multi-period attribution.}
+if the data does not imply multi-period attribution. Davies & Laker does not support multi-currency attribution
+at the moment.}
 
 \item{geometric}{TRUE/FALSE, whether to use geometric or arithmetic excess
 returns for the attribution analysis. By default this is set to FALSE, which results
@@ -153,8 +164,10 @@ portfolio and benchmark returns:
 \deqn{E^G_ann =\frac{1+R_{pa}}{1+R_{ba}}-1}{E^G_ann = (1 + R_pa) / (1 + R_ba) - 1}
 In the case of \strong{arithmetic attribution} of a multi-currency portfolio, the currency return, currency
 surprise and forward premium should be specified. The multi-currency
-arithmetic attribution is handled following Ankrim and Hensel (1992).
-Currency returns are decomposed into the sum of the currency surprise and
+arithmetic attribution is handled following either a standard or Ankrim and Hensel approach (1992).
+With the standard approach, the currency effects are simply the difference between the attribution effects computed
+with the base currency and the local currency.
+With Ankrim and Hensel, the currency returns are decomposed into the sum of the currency surprise and
 the forward premium: \deqn{R_{ci} = R_{ei} + R_{di}}{R_ci = R_ei + R_di}
 where 
 \deqn{R_{ei} = \frac{S_{i}^{t+1} - F_{i}^{t+1}}{S_{i}^{t}}}{R_ei = (S_i^(t+1) - F_i^(t+1)) / S_i^t}

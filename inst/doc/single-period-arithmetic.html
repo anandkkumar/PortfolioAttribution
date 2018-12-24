@@ -12,7 +12,7 @@
 
 <meta name="author" content="Anand Krishnakumar" />
 
-<meta name="date" content="2018-04-26" />
+<meta name="date" content="2018-12-19" />
 
 <title>Single period arithmetic attribution</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Single period arithmetic attribution</h1>
 <h4 class="author"><em><a href="https://github.com/anandkkumar">Anand Krishnakumar</a></em></h4>
-<h4 class="date"><em>2018-04-26</em></h4>
+<h4 class="date"><em>2018-12-19</em></h4>
 
 
 
@@ -80,42 +80,82 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Say we have a simple three category portfolio &amp; benchmark as defined below.</p>
 <table>
 <thead>
-<tr class="header">
-<th></th>
-<th align="right">UK equities</th>
-<th align="right">Japanese equities</th>
-<th align="right">US equities</th>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+UK equities
+</th>
+<th style="text-align:right;">
+Japanese equities
+</th>
+<th style="text-align:right;">
+US equities
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>Portfolio Weight</td>
-<td align="right">0.4</td>
-<td align="right">0.30</td>
-<td align="right">0.30</td>
+<tr>
+<td style="text-align:left;">
+Portfolio Weight
+</td>
+<td style="text-align:right;">
+0.4
+</td>
+<td style="text-align:right;">
+0.30
+</td>
+<td style="text-align:right;">
+0.30
+</td>
 </tr>
-<tr class="even">
-<td>Portfolio Return</td>
-<td align="right">0.2</td>
-<td align="right">-0.05</td>
-<td align="right">0.06</td>
+<tr>
+<td style="text-align:left;">
+Portfolio Return
+</td>
+<td style="text-align:right;">
+0.2
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.06
+</td>
 </tr>
-<tr class="odd">
-<td>Benchmark Weight</td>
-<td align="right">0.4</td>
-<td align="right">0.20</td>
-<td align="right">0.40</td>
+<tr>
+<td style="text-align:left;">
+Benchmark Weight
+</td>
+<td style="text-align:right;">
+0.4
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.40
+</td>
 </tr>
-<tr class="even">
-<td>Benchmark Return</td>
-<td align="right">0.1</td>
-<td align="right">-0.04</td>
-<td align="right">0.08</td>
+<tr>
+<td style="text-align:left;">
+Benchmark Return
+</td>
+<td style="text-align:right;">
+0.1
+</td>
+<td style="text-align:right;">
+-0.04
+</td>
+<td style="text-align:right;">
+0.08
+</td>
 </tr>
 </tbody>
 </table>
 <p>This example is available in the package as a data set to use.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PortfolioAttribution)
+<span class="kw">data</span>(<span class="st">&quot;sample_data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;PortfolioAttribution&quot;</span>)
 simple_portf_<span class="dv">1</span>
 <span class="co">#&gt;                  UK equities Japanese equities US equities</span>
 <span class="co">#&gt; Portfolio Weight         0.4              0.30        0.30</span>
@@ -134,13 +174,13 @@ Rb =<span class="st"> </span><span class="kw">data.frame</span>(simple_portf_<sp
 <p>The different attribution effects by category as well as their totals can be inspected.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">attribution_results<span class="op">$</span>Allocation
 <span class="co">#&gt;            UK equities Japanese equities US equities  Total</span>
-<span class="co">#&gt; 2018-04-26           0            -0.004      -0.008 -0.012</span>
+<span class="co">#&gt; 2018-12-19           0            -0.004      -0.008 -0.012</span>
 attribution_results<span class="op">$</span>Selection
 <span class="co">#&gt;            UK equities Japanese equities US equities Total</span>
-<span class="co">#&gt; 2018-04-26        0.04            -0.002      -0.008  0.03</span>
+<span class="co">#&gt; 2018-12-19        0.04            -0.002      -0.008  0.03</span>
 attribution_results<span class="op">$</span>Interaction
 <span class="co">#&gt;            UK equities Japanese equities US equities Total</span>
-<span class="co">#&gt; 2018-04-26           0            -0.001       0.002 0.001</span></code></pre></div>
+<span class="co">#&gt; 2018-12-19           0            -0.001       0.002 0.001</span></code></pre></div>
 <p>As expected the total arithmetic excess return equals the sum of the total for each attribution effect</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">excess_returns =<span class="st"> </span>attribution_results<span class="op">$</span><span class="st">`</span><span class="dt">Excess returns</span><span class="st">`</span>
 excess_returns
@@ -150,7 +190,7 @@ excess_returns
 total_effects =<span class="st"> </span>attribution_results<span class="op">$</span>Allocation[<span class="dv">1</span>,<span class="st">&quot;Total&quot;</span>] <span class="op">+</span><span class="st"> </span>attribution_results<span class="op">$</span>Selection[<span class="dv">1</span>,<span class="st">&quot;Total&quot;</span>] <span class="op">+</span><span class="st"> </span>attribution_results<span class="op">$</span>Interaction[<span class="dv">1</span>,<span class="st">&quot;Total&quot;</span>]
 total_effects
 <span class="co">#&gt;            Total</span>
-<span class="co">#&gt; 2018-04-26 0.019</span></code></pre></div>
+<span class="co">#&gt; 2018-12-19 0.019</span></code></pre></div>
 </div>
 <div id="brison-and-fachler" class="section level4">
 <h4>Brison and Fachler</h4>
@@ -160,13 +200,13 @@ attribution_results =<span class="st"> </span><span class="kw">Attribution</span
 <p>The allocation effects are different than in the previous model but the selection &amp; interaction effects are the same.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">attribution_results<span class="op">$</span>Allocation
 <span class="co">#&gt;            UK equities Japanese equities US equities  Total</span>
-<span class="co">#&gt; 2018-04-26           0           -0.0104     -0.0016 -0.012</span>
+<span class="co">#&gt; 2018-12-19           0           -0.0104     -0.0016 -0.012</span>
 attribution_results<span class="op">$</span>Selection
 <span class="co">#&gt;            UK equities Japanese equities US equities Total</span>
-<span class="co">#&gt; 2018-04-26        0.04            -0.002      -0.008  0.03</span>
+<span class="co">#&gt; 2018-12-19        0.04            -0.002      -0.008  0.03</span>
 attribution_results<span class="op">$</span>Interaction
 <span class="co">#&gt;            UK equities Japanese equities US equities Total</span>
-<span class="co">#&gt; 2018-04-26           0            -0.001       0.002 0.001</span></code></pre></div>
+<span class="co">#&gt; 2018-12-19           0            -0.001       0.002 0.001</span></code></pre></div>
 <p>As before, the total arithmetic excess return equals the sum of the total for each attribution effect</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">excess_returns =<span class="st"> </span>attribution_results<span class="op">$</span><span class="st">`</span><span class="dt">Excess returns</span><span class="st">`</span>
 excess_returns
@@ -176,7 +216,7 @@ excess_returns
 total_effects =<span class="st"> </span>attribution_results<span class="op">$</span>Allocation[<span class="dv">1</span>,<span class="st">&quot;Total&quot;</span>] <span class="op">+</span><span class="st"> </span>attribution_results<span class="op">$</span>Selection[<span class="dv">1</span>,<span class="st">&quot;Total&quot;</span>] <span class="op">+</span><span class="st"> </span>attribution_results<span class="op">$</span>Interaction[<span class="dv">1</span>,<span class="st">&quot;Total&quot;</span>]
 total_effects
 <span class="co">#&gt;            Total</span>
-<span class="co">#&gt; 2018-04-26 0.019</span></code></pre></div>
+<span class="co">#&gt; 2018-12-19 0.019</span></code></pre></div>
 </div>
 </div>
 
