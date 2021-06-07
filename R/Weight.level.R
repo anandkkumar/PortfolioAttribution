@@ -43,7 +43,7 @@ Weight.level <-
     # FUNCTION:
     if (is.vector(wp)){
       wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
-                  index(Rp))
+                       zoo::index(Rp))
       colnames(wp) = colnames(Rp)
     }
 

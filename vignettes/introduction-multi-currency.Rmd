@@ -3,7 +3,7 @@ title: "Introduction to multi-currency Portfolio Attribution"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-bibliography: introduction.bib
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Introduction to multi-currency Portfolio Attribution}
   %\VignetteEngine{knitr::rmarkdown}

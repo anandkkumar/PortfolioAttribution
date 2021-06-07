@@ -4,7 +4,9 @@
 \name{simple_multi_curr_portf_2_spot_forward_rates}
 \alias{simple_multi_curr_portf_2_spot_forward_rates}
 \title{Simple multi-currency spot and forward rates for each currency in each region in portfolio & benchmark example, for use in vignettes}
-\format{An object of class \code{data.frame} with 6 rows and 3 columns.}
+\format{
+An object of class \code{data.frame} with 6 rows and 3 columns.
+}
 \usage{
 simple_multi_curr_portf_2_spot_forward_rates
 }

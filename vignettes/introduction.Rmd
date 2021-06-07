@@ -3,7 +3,7 @@ title: "Introduction to Portfolio Attribution"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-bibliography: introduction.bib
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Introduction to Portfolio Attribution}
   %\VignetteEngine{knitr::rmarkdown}

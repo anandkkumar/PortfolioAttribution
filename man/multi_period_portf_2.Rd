@@ -3,14 +3,16 @@
 \docType{data}
 \name{multi_period_portf_2}
 \alias{multi_period_portf_2}
-\title{Second multi-period portfolio & benchmark example categorized into regions, for use in vignettes}
-\format{A list with 4 members:
+\title{Second multi-period portfolio & benchmark example categorized into regions, for use in vignettes & unit tests}
+\format{
+A list with 4 members:
 \describe{
   \item{Rp}{xts object with portfolio returns for each region and period}
   \item{Rb}{xts object with benchmark returns for each region and period}
   \item{wp}{xts object with portfolio weights for each region and period}
   \item{wb}{xts object with benchmark weights for each region and period}
-}}
+}
+}
 \usage{
 multi_period_portf_2
 }

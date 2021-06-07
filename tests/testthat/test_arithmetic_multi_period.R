@@ -790,3 +790,29 @@ test_that("Multi-period attribution example in Exhibit 8.10 with Davies & Laker 
   expect_true(abs(attribution_results$Interaction[5,"Total"] - (-0.0108)) < epsilon)
 }
 )
+
+test_that("Multi-period attribution example in Exhibit 8.10 with Davies & Laker linking with annualization" , {
+  Wp = matrix(c(0.4, 0.3, 0.3, 0.7, 0.2, 0.1, 0.3, 0.5, 0.2, 0.3, 0.5, 0.2), 4, 3, TRUE, 
+              dimnames = list(c("2015-12-31", "2016-03-31", "2016-06-30", "2016-09-30"), cnames))
+  Wb = matrix(c(0.4, 0.2, 0.4, 0.4, 0.3, 0.3, 0.5, 0.4, 0.1, 0.4, 0.4, 0.2), 4, 3, TRUE, 
+              dimnames = list(c("2015-12-31", "2016-03-31", "2016-06-30", "2016-09-30"), cnames))
+  Rp = matrix(c(0.2, -0.05, 0.06, -0.05, 0.03, -0.05, -0.2, 0.08, -0.15, 0.1, -0.07, 0.25), 4, 3, TRUE, 
+              dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
+  Rb = matrix(c(0.1, -0.04, 0.08, -0.07, 0.04, -0.1, -0.25, 0.05, -0.2, 0.05, -0.05, 0.1), 4, 3, TRUE, 
+              dimnames = list(c("2016-03-31", "2016-06-30", "2016-09-30", "2016-12-31"), cnames))
+  
+  Rp = PerformanceAnalytics::checkData(Rp)
+  Rb = PerformanceAnalytics::checkData(Rb)
+  Wp = PerformanceAnalytics::checkData(Wp)
+  Wb = PerformanceAnalytics::checkData(Wb)
+  
+  # The parameters of 'bf', 'method' and 'adjusted' don't apply to Davies Laker linking algorithm. By default it uses BHB.
+  attribution_results = Attribution(Rp, Wp, Rb, Wb, linking = "davies.laker", annualization = "standard")
+  
+  #Four quarter totals (component-level multi-period totals are not computed by this algorithm)
+  expect_true(abs(attribution_results$`Excess returns`[5,"Arithmetic"] - 0.1327) < epsilon)
+  expect_true(abs(attribution_results$Allocation[5,"Total"] - 0.0117) < epsilon)
+  expect_true(abs(attribution_results$Selection[5,"Total"] - 0.1318) < epsilon)
+  expect_true(abs(attribution_results$Interaction[5,"Total"] - (-0.0108)) < epsilon)
+}
+)

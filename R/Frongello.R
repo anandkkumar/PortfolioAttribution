@@ -59,13 +59,13 @@ function(rp, rb, attributions, adjusted)
     # FUNCTION:
     adj = attributions
     if (nrow(rp) > 1){
-      adj[2, ] = zoo::coredata(adj[2, ]) * drop((1 + rp[1, 1])) + drop(rb[2, 1]) * 
+      adj[2, ] = zoo::coredata(adj[2, ]) * as.numeric((1 + rp[1, 1])) + as.numeric(rb[2, 1]) * 
         zoo::coredata(adj[1, ])
     }
     if (nrow(rp) > 2){
       for(i in 3:nrow(rp)){
-        adj[i, ] = zoo::coredata(adj[i, ]) * drop(prod(1 + rp[1:(i-1), 1])) + 
-          drop(rb[i, ]) * zoo::coredata(colSums(adj[1:(i-1), ]))
+        adj[i, ] = zoo::coredata(adj[i, ]) * as.numeric(prod(1 + rp[1:(i-1), 1])) + 
+          as.numeric(rb[i, ]) * zoo::coredata(colSums(adj[1:(i-1), ]))
       }
     }
     total = colSums(adj)

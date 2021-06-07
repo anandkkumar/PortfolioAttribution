@@ -78,6 +78,14 @@
 #' \item standard 
 #' \item proportional}
 #' The default is 'none'. See vignette on annualization for detailed descriptions of the supported methods
+#' @param annualization_scale Used to define a custom scale factor to use when annualizing returns. This is only
+#' applicable if the periodicity of the data is daily and otherwise this parameter is ignored. May be any of:
+#' \itemize{\item NA - use built-in scale factor
+#' \item <numeric> - any numeric value
+#' \item "monthly" - count the periods in terms of months (including fractional months) to determine scale}
+#' @param impute_returns TRUE/FALSE, whether to impute returns from the benchmark, when the weight of the asset
+#' is zero in the portfolio & vice-versa. These imputed returns are only used in the calculations
+#' for attributions effects but not for cumulative asset returns (annualized or otherwise). Defaults to TRUE.
 #' @return This function returns the list with attribution effects (allocation
 #' or selection effect) including total multi-period attribution effects
 #' @author Andrii Babii
@@ -97,7 +105,10 @@
 Attribution.geometric <-
 function(Rp, wp, Rb, wb, 
          wpf = NA, wbf = NA, S = NA, Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, 
-         contribution = FALSE, annualization = "none")
+         contribution = FALSE, 
+         annualization = "none",
+         annualization_scale = NA,
+         impute_returns = TRUE)
 {   # @author Andrii Babii
   
     # DESCRIPTION:
@@ -137,7 +148,7 @@ function(Rp, wp, Rb, wb,
     
     if (is.vector(wp)){
       wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
-                  index(Rp))
+                       zoo::index(Rp))
       colnames(wp) = colnames(Rp)
     }
     else{
@@ -145,7 +156,7 @@ function(Rp, wp, Rb, wb,
     }
     if (is.vector(wb)){
       wb = xts::as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
-                  index(Rb))
+                       zoo::index(Rb))
       colnames(wb) = colnames(Rb)
     }
     else{
@@ -154,7 +165,7 @@ function(Rp, wp, Rb, wb,
     
     if (!is.na(wpf) && is.vector(wpf)){
       wpf = xts::as.xts(matrix(rep(wpf, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
-                   index(Rp))
+                        zoo::index(Rp))
       colnames(wpf) = colnames(Rp)
     }
     else{
@@ -162,7 +173,7 @@ function(Rp, wp, Rb, wb,
     }
     if (!is.na(wbf) && is.vector(wbf)){
       wbf = xts::as.xts(matrix(rep(wbf, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
-                   index(Rb))
+                        zoo::index(Rb))
       colnames(wbf) = colnames(Rb)
     }
     else{
@@ -175,20 +186,57 @@ function(Rp, wp, Rb, wb,
                            stop("Valid annualization methods are 'none' and 'standard'"))
     
     if(annualization == "standard" && NROW(Rp) > 1) {
-      num_periods = NROW(Rp)
       freq = xts::periodicity(Rp)
-      scale = switch(freq$scale,
-                     minute = stop("Data periodicity too high"),
-                     hourly = stop("Data periodicity too high"),
-                     daily = 252,
-                     weekly = 52,
-                     monthly = 12,
-                     quarterly = 4,
-                     yearly = 1
-      )
+      if(freq$scale != "daily" && !is.na(annualization_scale)) {
+        warning("Ignoring specified annualization scale as it is only applicable for data with a daily periodicty")
+      }
+      if(freq$scale != "daily") {
+        num_periods = NROW(Rp)
+        scale = switch(freq$scale,
+                       minute = stop("Data periodicity too high"),
+                       hourly = stop("Data periodicity too high"),
+                       weekly = 52,
+                       monthly = 12,
+                       quarterly = 4,
+                       yearly = 1
+        )
+      } else if(!is.na(annualization_scale) && annualization_scale == "monthly") {
+        # Get the number of periods as a fractional number of months
+        num_periods = getMonthlyPeriods(xts::first(zoo::index(Rp)), xts::last(zoo::index(Rp)))
+        # the scale is always 12 for 'monthy' annualization scale
+        scale = 12
+      } else {
+        num_periods = NROW(Rp)
+        # if provided scale is valid use it, else use the default
+        scale = ifelse(!is.na(annualization_scale) && is.numeric(annualization_scale), annualization_scale, 252)
+      }
     }
     
     currency = !(is.null(dim(Rpl)) & is.null(dim(Rbl)) & is.null(dim(Rbh)))
+    if(currency) {
+      Rpl = PerformanceAnalytics::checkData(Rpl)
+      Rbl = PerformanceAnalytics::checkData(Rbl)
+      Rbh = PerformanceAnalytics::checkData(Rbh)
+    }
+    
+    Rp_raw = Rp
+    Rb_raw = Rb
+    if(impute_returns == TRUE) {
+      # It is commmon to impute returns from the other entity when one asset's returns are missing in the
+      # portfoli or benchmark due to it having a zero weight. This imputation is only relevant for 
+      # computing attribution effects but should not be used when computing cumulative asset returns
+      # (annualized or otherwise).
+      wp_zero_weight_indexes = which(wp == 0 | is.na(wp))
+      zoo::coredata(Rp)[wp_zero_weight_indexes] = zoo::coredata(Rb)[wp_zero_weight_indexes]
+      
+      wb_zero_weight_indexes = which(wb == 0 | is.na(wb))
+      zoo::coredata(Rb)[wb_zero_weight_indexes] = zoo::coredata(Rp)[wb_zero_weight_indexes]
+      
+      if(currency) {
+        zoo::coredata(Rpl)[wp_zero_weight_indexes] = zoo::coredata(Rbl)[wp_zero_weight_indexes]
+        zoo::coredata(Rbl)[wb_zero_weight_indexes] = zoo::coredata(Rpl)[wb_zero_weight_indexes]
+      }
+    }
     
     # Get total portfolio returns
     if (is.vector(WP) & is.vector(WB)){
@@ -196,13 +244,23 @@ function(Rp, wp, Rb, wb,
       if(NROW(Rp) == 1 & NROW(Rb) == 1) {
         rp = as.matrix(sum(WP*Rp))
         rb = as.matrix(sum(WB*Rb))
-        port_contr = as.matrix(sum(WP*Rp))
-        bmk_contr = as.matrix(sum(WB*Rb))
+        cumulative_Rp = Rp_raw
+        cumulative_rp = rp
+        cumulative_Rb = Rb_raw
+        cumulative_rb = rb
+        if(contribution) {
+          port_contr = as.matrix(sum(WP*Rp))
+          bmk_contr = as.matrix(sum(WB*Rb))
+        }
       } else {
         port_returns_and_contr = PerformanceAnalytics::Return.portfolio(Rp, WP, contribution = contribution)
         bmk_returns_and_contr = PerformanceAnalytics::Return.portfolio(Rb, WB, contribution = contribution)
         rp = port_returns_and_contr[,1]
         rb = bmk_returns_and_contr[,1]
+        cumulative_Rp = PerformanceAnalytics::Return.cumulative(Rp_raw, geometric = TRUE)
+        cumulative_rp = PerformanceAnalytics::Return.cumulative(rp, geometric = TRUE)
+        cumulative_Rb = PerformanceAnalytics::Return.cumulative(Rb_raw, geometric = TRUE)
+        cumulative_rb = PerformanceAnalytics::Return.cumulative(rb, geometric = TRUE)
         if(contribution) {
           port_contr = port_returns_and_contr[,-1]
           names(port_contr) = names(Rp)
@@ -215,13 +273,23 @@ function(Rp, wp, Rb, wb,
       if(NROW(Rp) == 1 & NROW(WP) == 1 & NROW(Rb) == 1 & NROW(WB) == 1) {
         rp = as.matrix(sum(zoo::coredata(WP)*zoo::coredata(Rp)))
         rb = as.matrix(sum(zoo::coredata(WB)*zoo::coredata(Rb)))
-        port_contr = as.matrix(zoo::coredata(WP)*zoo::coredata(Rp))
-        bmk_contr = as.matrix(zoo::coredata(WB)*zoo::coredata(Rb))
+        cumulative_Rp = Rp_raw
+        cumulative_rp = rp
+        cumulative_Rb = Rb_raw
+        cumulative_rb = rb
+        if(contribution){
+          port_contr = as.matrix(zoo::coredata(WP)*zoo::coredata(Rp))
+          bmk_contr = as.matrix(zoo::coredata(WB)*zoo::coredata(Rb))
+        }
       } else {
         port_returns_and_contr = PerformanceAnalytics::Return.portfolio(Rp, WP, contribution = contribution)
         bmk_returns_and_contr = PerformanceAnalytics::Return.portfolio(Rb, WB, contribution = contribution)
         rp = port_returns_and_contr[,1]
         rb = bmk_returns_and_contr[,1]
+        cumulative_Rp = PerformanceAnalytics::Return.cumulative(Rp_raw, geometric = TRUE)
+        cumulative_rp = PerformanceAnalytics::Return.cumulative(rp, geometric = TRUE)
+        cumulative_Rb = PerformanceAnalytics::Return.cumulative(Rb_raw, geometric = TRUE)
+        cumulative_rb = PerformanceAnalytics::Return.cumulative(rb, geometric = TRUE)
         if(contribution) {
           port_contr = port_returns_and_contr[,-1]
           names(port_contr) = names(Rp)
@@ -234,7 +302,7 @@ function(Rp, wp, Rb, wb,
     names(rb) = rownames(rb) = "Total"
     
     # Allocation notional fund returns
-    bs = reclass(rowSums((wp * zoo::coredata(Rb[, 1:ncol(wp)]))), rp)
+    bs = xts::reclass(rowSums((wp * zoo::coredata(Rb[, 1:ncol(wp)]))), rp)
     if (!currency){
       # Geometric attribution effects for individual categories
       allocation = ((1 + Rb) / (1 + rep(rb, ncol(Rp))) - 1) * zoo::coredata(wp - wb) 
@@ -242,11 +310,6 @@ function(Rp, wp, Rb, wb,
       colnames(allocation) = colnames(Rp)
 
     } else{
-      Rpl = PerformanceAnalytics::checkData(Rpl)
-      Rbl = PerformanceAnalytics::checkData(Rbl)
-      Rbh = PerformanceAnalytics::checkData(Rbh)
-      
-      
       if (!is.null(dim(S)) & !is.null(dim(Fp)) & !is.null(dim(Fb))){
         S = PerformanceAnalytics::checkData(S)
         Fp = PerformanceAnalytics::checkData(Fp)
@@ -268,9 +331,11 @@ function(Rp, wp, Rb, wb,
           # If we have just one observation we simply sum up the contributions
           if(NROW(Rp) == 1 & NROW(Rb) == 1 & NROW(Rpf) == 1 & NROW(Rbf) == 1) {
             rp = as.matrix(sum(c(WP, WPF)*cbind(Rp, Rpf)))
-            port_contr = as.matrix(c(WP, WPF)*cbind(Rp, Rpf))
             rb = as.matrix(sum(c(WB, WBF)*cbind(Rb, Rbf)))
-            bmk_contr = as.matrix(c(WB, WBF)*cbind(Rb, Rbf))
+            if(contribution) {
+              port_contr = as.matrix(c(WP, WPF)*cbind(Rp, Rpf))
+              bmk_contr = as.matrix(c(WB, WBF)*cbind(Rb, Rbf))
+            }
           } else {
             if(!is.null(WPF) & !is.null(WBF)) {
               port_returns_and_contr = PerformanceAnalytics::Return.portfolio(cbind(Rp, Rpf), c(WP, WPF), contribution = contribution)
@@ -293,9 +358,11 @@ function(Rp, wp, Rb, wb,
           if(NROW(Rp) == 1 & NROW(wp) == 1 & NROW(Rb) == 1 & NROW(wb) == 1 & 
              NROW(Rpf) == 1 & NROW(wpf) == 1 & NROW(Rbf) == 1 & NROW(wbf) == 1) {
             rp = as.matrix(sum(zoo::coredata(cbind(wp, wpf))*zoo::coredata(cbind(Rp, Rpf))))
-            port_contr = as.matrix(zoo::coredata(cbind(wp, wpf))*zoo::coredata(cbind(Rp, Rpf)))
             rb = as.matrix(sum(zoo::coredata(cbind(wb, wbf))*zoo::coredata(cbind(Rb, Rbf))))
-            bmk_contr = as.matrix(zoo::coredata(cbind(wb, wbf))*zoo::coredata(cbind(Rb, Rbf)))
+            if(contribution) {
+              port_contr = as.matrix(zoo::coredata(cbind(wp, wpf))*zoo::coredata(cbind(Rp, Rpf)))
+              bmk_contr = as.matrix(zoo::coredata(cbind(wb, wbf))*zoo::coredata(cbind(Rb, Rbf)))
+            }
           } else {
             if(!is.null(wpf) & !is.null(wbf)) {
               port_returns_and_contr = PerformanceAnalytics::Return.portfolio(cbind(Rp, Rpf), cbind(wp, wpf), contribution = contribution)
@@ -318,10 +385,10 @@ function(Rp, wp, Rb, wb,
         names(rb) = rownames(rb) = "Total"
       }
       
-      bsl = reclass(rowSums(Rbl * wp), Rpl)
-      bsh = reclass(rowSums(((wp - wb) * Rbh + wb * Rbl)), Rpl)
-      rpl = reclass(rowSums(Rpl * wp), Rpl)
-      rbl = reclass(rowSums(Rbl * wb), Rbl)
+      bsl = xts::reclass(rowSums(Rbl * wp), Rpl)
+      bsh = xts::reclass(rowSums(((wp - wb) * Rbh + wb * Rbl)), Rpl)
+      rpl = xts::reclass(rowSums(Rpl * wp), Rpl)
+      rbl = xts::reclass(rowSums(Rbl * wb), Rbl)
       allocation = zoo::coredata(wp - wb) * ((1 + Rbh) / (1 + rep(rbl, ncol(Rbh))) - 1)
       selection = zoo::coredata(wp) * ((1 + Rpl) / (1 + Rbl) - 1) * ((1 + Rbl) / 
         (1 + rep(bsl, ncol(Rbl))))
@@ -365,13 +432,69 @@ function(Rp, wp, Rb, wb,
     if (nrow(rp) > 1){
       cumulative_er = (1 + PerformanceAnalytics::Return.cumulative(rp))/(1 + PerformanceAnalytics::Return.cumulative(rb)) - 1
       if(annualization == "standard") {
-        ann_er = PerformanceAnalytics::Return.annualized.excess(rp, rb)
+        if(freq$scale == "daily" && !is.na(annualization_scale)) {
+          ann_er = (1 + prod(1 + rp)^(scale/num_periods)) / (1 + prod(1 + zoo::coredata(rb))^(scale/num_periods)) - 1
+        } else {
+          ann_er = PerformanceAnalytics::Return.annualized.excess(rp, rb)
+        }
         excess.returns = rbind(as.matrix(excess.returns), cumulative_er, ann_er)
       } else {
         excess.returns = rbind(as.matrix(excess.returns), cumulative_er)
       }
     }
     colnames(excess.returns) = "Geometric"
+    
+    # Compute total portfolio returns
+    if (nrow(rp) > 1){
+      if(annualization != "none") {
+        if(freq$scale == "daily" && !is.na(annualization_scale)) {
+          ann_Rp = apply(1 + Rp_raw, 2, prod)^(scale/num_periods) - 1
+          ann_rp = prod(1 + rp)^(scale/num_periods) - 1
+        } else {
+          ann_Rp = PerformanceAnalytics::Return.annualized(Rp_raw, geometric = TRUE)
+          ann_rp = PerformanceAnalytics::Return.annualized(rp, geometric = TRUE)
+        }
+        port.returns = as.data.frame(cbind(rbind(as.matrix(Rp_raw), cumulative_Rp, ann_Rp),
+                                           rbind(as.matrix(rp), cumulative_rp, ann_rp)))
+        rownames(port.returns)[NROW(port.returns)] = "Annualized"
+      } else {
+        port.returns = as.data.frame(cbind(rbind(as.matrix(Rp_raw), cumulative_Rp),
+                                           rbind(as.matrix(rp), cumulative_rp)))
+      }
+    }
+    else {
+      # Since we only have one observation, the 'Cumulative Return' is just the same as that of the 
+      # individual period but for consistency of returned result structure we add a 'Cumulative Return' row
+      port.returns = as.data.frame(cbind(rbind(as.matrix(Rp_raw), zoo::coredata(Rp_raw)),
+                                         Total = as.vector(rbind(zoo::coredata(rp), zoo::coredata(rp)))))
+      rownames(port.returns)[NROW(port.returns)] = "Cumulative Return"
+    }
+    
+    # Compute total benchmark returns
+    if (nrow(rb) > 1){
+      if(annualization != "none") {
+        if(freq$scale == "daily" && !is.na(annualization_scale)) {
+          ann_Rb = apply(1 + Rb_raw, 2, prod)^(scale/num_periods) - 1
+          ann_rb = prod(1 + rb)^(scale/num_periods) - 1
+        } else {
+          ann_Rb = PerformanceAnalytics::Return.annualized(Rb_raw, geometric = TRUE)
+          ann_rb = PerformanceAnalytics::Return.annualized(rb, geometric = TRUE)
+        }
+        bench.returns = as.data.frame(cbind(rbind(as.matrix(Rb_raw), cumulative_Rb, ann_Rb),
+                                            rbind(as.matrix(rb), cumulative_rb, ann_rb)))
+        rownames(bench.returns)[NROW(bench.returns)] = "Annualized"
+      } else {
+        bench.returns = as.data.frame(cbind(rbind(as.matrix(Rb_raw), cumulative_Rb),
+                                            rbind(as.matrix(rb), cumulative_rb)))
+      }
+    }
+    else {
+      # Since we only have one observation, the 'Cumulative Return' is just the same as that of the 
+      # individual period but for consistency of returned result structure we add a 'Cumulative Return' row
+      bench.returns = as.data.frame(cbind(rbind(as.matrix(Rb_raw), zoo::coredata(Rb_raw)),
+                                          Total = as.vector(rbind(zoo::coredata(rb), zoo::coredata(rb)))))
+      rownames(bench.returns)[NROW(bench.returns)] = "Cumulative Return"
+    }
     
     result = list()
     result[[1]] = excess.returns
@@ -398,6 +521,10 @@ function(Rp, wp, Rb, wb,
           rownames(port_contr)[NROW(port_contr)] = "Annualized"
         }
       }
+      # Add in the total column for contributions for each period. By construction, they are the same
+      # as total portfolio returns
+      port_contr = cbind(port_contr, "Total" = port.returns[, "Total"])
+      
       if(nrow(bmk_contr) > 1) {
         total_bmk_contr = PerformanceAnalytics::to.period.contributions(bmk_contr, period = "all")[,1:NCOL(bmk_contr)]
         bmk_contr = rbind(as.data.frame(bmk_contr), zoo::coredata(total_bmk_contr))
@@ -409,11 +536,17 @@ function(Rp, wp, Rb, wb,
           rownames(bmk_contr)[NROW(bmk_contr)] = "Annualized"
         }
       }
+      # Add in the total column for contributions for each period. By construction, they are the same
+      # as total benchmark returns
+      bmk_contr = cbind(bmk_contr, "Total" = bench.returns[, "Total"])
       
       result[[length(result) + 1]] = port_contr
       result[[length(result) + 1]] = bmk_contr
       names(result)[(length(result)-1):length(result)] = 
         c("Portfolio contribution to return", "Benchmark contribution to return")
     }
+    result[[length(result) + 1]] = port.returns
+    result[[length(result) + 1]] = bench.returns
+    names(result)[(length(result)-1):length(result)] = c("Portfolio returns", "Benchmark returns")
     return(result)
 }

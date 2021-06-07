@@ -49,11 +49,11 @@ multi_period_portf_1$Rb[1:3,1:4]
 Since the package uses an end-of-period weight convention, the index of the weight data is the month-end prior to that of the return data.
 
 ```{r}
-index(multi_period_portf_1$wp[1,])
-index(multi_period_portf_1$Rp[1,])
+zoo::index(multi_period_portf_1$wp[1,])
+zoo::index(multi_period_portf_1$Rp[1,])
 
-index(multi_period_portf_1$wb[1,])
-index(multi_period_portf_1$Rb[1,])
+zoo::index(multi_period_portf_1$wb[1,])
+zoo::index(multi_period_portf_1$Rb[1,])
 ```
 
 

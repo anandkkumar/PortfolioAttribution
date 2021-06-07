@@ -113,13 +113,13 @@ is.null(attribution_results_bottom_up$Interaction)
 In all three cases the total excess return is the sum of the attribution effects.
 
 ```{r}
-as.numeric(attribution_results_standard$`Excess returns`)
+as.numeric(attribution_results_standard$`Excess returns`["Cumulative Return",1])
 
-all.equal(as.numeric(attribution_results_standard$`Excess returns`) , as.numeric(attribution_results_standard$Allocation[1,"Total"] + attribution_results_standard$Selection[1,"Total"] + attribution_results_standard$Interaction[1,"Total"]))
+all.equal(as.numeric(attribution_results_standard$`Excess returns`["Cumulative Return",1]) , as.numeric(attribution_results_standard$Allocation[1,"Total"] + attribution_results_standard$Selection[1,"Total"] + attribution_results_standard$Interaction[1,"Total"]))
 
-all.equal(as.numeric(attribution_results_top_down$`Excess returns`) , as.numeric(attribution_results_top_down$Allocation[1,"Total"] + attribution_results_top_down$Selection[1,"Total"]))
+all.equal(as.numeric(attribution_results_top_down$`Excess returns`["Cumulative Return",1]) , as.numeric(attribution_results_top_down$Allocation[1,"Total"] + attribution_results_top_down$Selection[1,"Total"]))
 
-all.equal(as.numeric(attribution_results_bottom_up$`Excess returns`) , as.numeric(attribution_results_bottom_up$Allocation[1,"Total"] + attribution_results_bottom_up$Selection[1,"Total"]))
+all.equal(as.numeric(attribution_results_bottom_up$`Excess returns`["Cumulative Return",1]) , as.numeric(attribution_results_bottom_up$Allocation[1,"Total"] + attribution_results_bottom_up$Selection[1,"Total"]))
 ```
 
 Shown below is a comparison of the effects with each approach. As expected, the total allocation effect in the standard approach matches that of the top-down approach, while that total selection effect in the standard approach matches that of the bottom-up approach. 

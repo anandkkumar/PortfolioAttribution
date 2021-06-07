@@ -13,10 +13,10 @@ epsilon = 1e-4
 # BF Example using one-period time series data
 Rp = xts::xts(matrix(c(0.20, -0.05, 0.06, 0, 0, 0),ncol=3,byrow=TRUE,
                      dimnames=list(c("Rp", "Rp"),cnames)), 
-              order.by=c(Sys.yearqtr(), zoo::as.yearqtr(as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
+              order.by=c(zoo::Sys.yearqtr(), zoo::as.yearqtr(zoo::as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
 Rb = xts::xts(matrix(c(0.10, -0.04, 0.08, 0, 0, 0),ncol=3,byrow=TRUE,
                      dimnames=list(c("Rb", "Rb"),cnames)), 
-              order.by=c(Sys.yearqtr(), zoo::as.yearqtr(as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
+              order.by=c(zoo::Sys.yearqtr(), zoo::as.yearqtr(zoo::as.Date(zoo::as.yearqtr(Sys.Date()))-1)))
 
 test_that("BHB Example for geometric approach with time series data" , {
   attribution_results = Attribution(Rp, Wp, Rb, Wb, method="none", bf = TRUE, geometric = TRUE)

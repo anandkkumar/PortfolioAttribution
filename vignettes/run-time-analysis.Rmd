@@ -3,7 +3,7 @@ title: "Run-times for attribution analysis"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-bibliography: introduction.bib
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Run-times for attribution analysis}
   %\VignetteEngine{knitr::rmarkdown}

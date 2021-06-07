@@ -136,7 +136,7 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
     deltayb = rep(rb - zoo::coredata(rp), ncol(Dp)) / zoo::coredata(Dp) 
     # Currency returns
     Rc = stats::lag(S, -1)[1:nrow(Rp), ] / S[1:nrow(Rp), ] - 1 
-    rc = reclass(rowSums((wb + wbf) * (Rc + zoo::coredata(Rf))), Rc)
+    rc = xts::reclass(rowSums((wb + wbf) * (Rc + zoo::coredata(Rf))), Rc)
     if (!geometric){
       allocation = (Dp * wp - rep(Dbeta, ncol(Dp)) * zoo::coredata(Db) * wb) * 
         zoo::coredata(-DeltaYb + deltayb)
@@ -145,7 +145,7 @@ function (Rp, wp, Rb, wb, Rf, Dp, Db, S, wbf, geometric = FALSE)
       excess.returns = rp - zoo::coredata(rb)
     } else{
       rcprime = rowSums(wb * (Rc + Rf))
-      bd = reclass(rowSums(rep(Dbeta, ncol(Db)) * Db * zoo::coredata(wb) * 
+      bd = xts::reclass(rowSums(rep(Dbeta, ncol(Db)) * Db * zoo::coredata(wb) * 
         zoo::coredata(-DeltaYb)), Db) + rcprime # Overal duration notional fund
       allocation = Dp * wp - rep(Dbeta, ncol(Dp)) * zoo::coredata(Db) * wb * 
         zoo::coredata(-DeltaYb + deltayb) / rep(bd, ncol(Db))

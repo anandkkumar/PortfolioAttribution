@@ -3,7 +3,7 @@ title: "Single period arithmetic attribution with currency effects"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-bibliography: introduction.bib
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Single period arithmetic attribution with currency effects}
   %\VignetteEngine{knitr::rmarkdown}
@@ -75,13 +75,13 @@ attribution_results = Attribution(Rp, wp, Rb, wb, method = "top.down")
 As expected, for both local and base currencies the total arithmetic excess return equals the sum of the total attribution effects
 
 ```{r}
-excess_returns_local = attribution_results_local$`Excess returns`
+excess_returns_local = attribution_results_local$`Excess returns`["Cumulative Return",]
 excess_returns_local
 
 total_effects_local = attribution_results_local$Allocation[1,"Total"] + attribution_results_local$Selection[1,"Total"]
 total_effects_local
 
-excess_returns = attribution_results$`Excess returns`
+excess_returns = attribution_results$`Excess returns`["Cumulative Return",]
 excess_returns
 
 total_effects = attribution_results$Allocation[1,"Total"] + attribution_results$Selection[1,"Total"]
@@ -107,11 +107,11 @@ all.equal(as.numeric(attribution_results_local$Allocation[1,"Total"] +
 Shown below is a summary of the all the effects including currency effects
 
 ```{r echo=FALSE, results='asis'}
-results_summary = as.data.frame(rbind(attribution_results$Allocation, 
-                                      attribution_results$Selection, 
-                                      attribution_results_local$Allocation, 
-                                      attribution_results_local$Selection, 
-                                      currency_effects))
+results_summary = as.data.frame(rbind(attribution_results$Allocation[1,], 
+                                      attribution_results$Selection[1,], 
+                                      attribution_results_local$Allocation[1,], 
+                                      attribution_results_local$Selection[1,], 
+                                      currency_effects[1,]))
 rownames(results_summary) = c("Base Currency Allocation", "Base Currency Selection",
                               "Local Currency Allocation", "Local Currency Selection", 
                               "Curreny effect")
@@ -170,7 +170,7 @@ S;Fp;Fb
 The following command is executed to perform standard attribution analysis with currency effects on this data set using the Ankrim and Hensel methodology.
 
 ```{r}
-attribution_results = Attribution(Rp, wp, Rb, wb, wpf, wbf, S, Fp, Fb)
+attribution_results = Attribution(Rp, wp, Rb, wb, wpf, wbf, S, Fp, Fb, currency_method = "ankrim.hensel")
 ```
 
 The two currency effects reported are _Currency Management_ and _Forward Premium_ in addition to the usual attribution effects of allocation, selection and interaction
@@ -184,14 +184,14 @@ attribution_results$`Forward Premium`
 As expected the total arithmetic excess return can be decomposed into the sum of the three standard attribution effects and the two currency effects.
 
 ```{r}
-attribution_results$`Excess returns`
+attribution_results$`Excess returns`["Cumulative Return",]
 
-all.equal(as.numeric(attribution_results$Allocation[,"Total"] + 
-                     attribution_results$Selection[,"Total"] + 
-                     attribution_results$Interaction[,"Total"] + 
-                     attribution_results$`Currency management`[,"Total"] +
-                     attribution_results$`Forward Premium`[,"Total"]),
-          as.numeric(attribution_results$`Excess returns`))
+all.equal(as.numeric(attribution_results$Allocation[1,"Total"] + 
+                     attribution_results$Selection[1,"Total"] + 
+                     attribution_results$Interaction[1,"Total"] + 
+                     attribution_results$`Currency management`[1,"Total"] +
+                     attribution_results$`Forward Premium`[1,"Total"]),
+          as.numeric(attribution_results$`Excess returns`["Cumulative Return",]))
 ```
 
 ### <ins>References</ins>

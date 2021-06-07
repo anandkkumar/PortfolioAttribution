@@ -3,8 +3,10 @@
 \docType{data}
 \name{simple_multi_curr_portf_1}
 \alias{simple_multi_curr_portf_1}
-\title{Simple multi-currency portfolio & benchmark example, categorized into sectors, for use in vignettes}
-\format{An object of class \code{data.frame} with 6 rows and 11 columns.}
+\title{Simple multi-currency portfolio & benchmark example, categorized into sectors, for use in vignettes & unit tests}
+\format{
+An object of class \code{data.frame} with 6 rows and 11 columns.
+}
 \usage{
 simple_multi_curr_portf_1
 }

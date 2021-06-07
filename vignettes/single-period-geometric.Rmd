@@ -53,13 +53,13 @@ To perform a single period attribution analysis just the first observation for t
 ```{r}
 wp = multi_period_portf_1$wp[1,]
 Rp = multi_period_portf_1$Rp[1,]
-index(wp)
-index(Rp)
+zoo::index(wp)
+zoo::index(Rp)
 
 wb = multi_period_portf_1$wb[1,]
 Rb = multi_period_portf_1$Rb[1,]
-index(wb)
-index(Rb)
+zoo::index(wb)
+zoo::index(Rb)
 ```
 
 #### Geometric attribution

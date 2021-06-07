@@ -4,11 +4,30 @@
 \alias{Attribution}
 \title{performs single-category attribution}
 \usage{
-Attribution(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA, Fp = NA,
-  Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA, bf = TRUE,
-  method = "none", currency_method = "none", linking = "grap",
-  geometric = FALSE, contribution = FALSE, adjusted = FALSE,
-  annualization = "none")
+Attribution(
+  Rp,
+  wp,
+  Rb,
+  wb,
+  wpf = NA,
+  wbf = NA,
+  S = NA,
+  Fp = NA,
+  Fb = NA,
+  Rpl = NA,
+  Rbl = NA,
+  Rbh = NA,
+  bf = TRUE,
+  method = "none",
+  currency_method = "none",
+  linking = "grap",
+  geometric = FALSE,
+  contribution = FALSE,
+  adjusted = FALSE,
+  annualization = "none",
+  annualization_scale = NA,
+  impute_returns = TRUE
+)
 }
 \arguments{
 \item{Rp}{T x n xts, data frame or matrix of portfolio returns}
@@ -87,18 +106,29 @@ effects for each period. By default unadjusted attribution effects are
 returned (this is not used for Davies and Laker's linking method for arithmetic attribution 
 or for geometric attribution as it is not applicable in either case)}
 
-\item{annualization}{Used to select the annualization method for multi-period excess returns, contributions
+\item{annualization}{Used to select the annualization method for multi-period returns, excess returns, contributions
 and attribution effects. May be any of:
 \itemize{\item none - no annualized numbers are returned
 \item standard 
 \item proportional}
 The default is 'none'. See vignette on annualization for detailed descriptions of the supported methods}
+
+\item{annualization_scale}{Used to define a custom scale factor to use when annualizing returns. This is only
+applicable if the periodicity of the data is daily and otherwise this parameter is ignored. May be any of:
+\itemize{\item NA - use built-in scale factor
+\item <numeric> - any numeric value
+\item "monthly" - count the periods in terms of months (including fractional months) to determine scale}
+The default is 'NA'. See vignette on annualization for more details.}
+
+\item{impute_returns}{TRUE/FALSE, whether to impute returns from the benchmark, when the weight of the asset
+is zero in the portfolio & vice-versa. These imputed returns are only used in the calculations
+for attributions effects but not for cumulative asset returns (annualized or otherwise). Defaults to TRUE.}
 }
 \value{
 returns a list with the following components: excess returns with
 annualized excess returns over all periods, attribution effects (allocation, 
 selection and interaction) and optionally, portfolio and benchmark contributions 
-for each category and period.
+for each category and period. Each element of the list is structured as a data.frame for consistency purposes.
 }
 \description{
 Performs single-category attribution analysis. Portfolio 

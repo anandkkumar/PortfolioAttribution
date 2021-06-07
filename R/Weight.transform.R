@@ -38,21 +38,21 @@ Weight.transform <-
     # FUNCTION:
     if (is.vector(wp)){
       wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
-                  index(Rp))
+                       zoo::index(Rp))
       colnames(wp) = colnames(Rp)
     } else{
-      if(as.Date(last(index(Rp))) < (as.Date(index(wp[1, ])) + 1)){
-        stop(paste('last date in series', as.Date(last(index(Rp))),
+      if(as.Date(xts::last(zoo::index(Rp))) < (as.Date(zoo::index(wp[1, ])) + 1)){
+        stop(paste('last date in series', as.Date(xts::last(zoo::index(Rp))),
                    'occurs before beginning of first rebalancing period',
-                   as.Date(first(index(wp))) + 1))
+                   as.Date(first(zoo::index(wp))) + 1))
       }
       wp = PerformanceAnalytics::checkData(wp, method = "xts")
-      wp = merge(wp, xts::xts(, index(Rp)))
+      wp = merge(wp, xts::xts(, zoo::index(Rp)))
       wp = na.locf(wp)
-      if(as.Date(first(index(Rp))) > (as.Date(index(wp[1,]))+1)) {
-        warning(paste('data series starts on', as.Date(first(index(Rp))), ', 
+      if(as.Date(first(zoo::index(Rp))) > (as.Date(zoo::index(wp[1,]))+1)) {
+        warning(paste('data series starts on', as.Date(first(zoo::index(Rp))), ', 
                       which is after the first rebalancing period', 
-                      as.Date(first(index(wp)))+1)) 
+                      as.Date(first(zoo::index(wp)))+1)) 
         wp = wp
       } else{
         wp = wp[2:nrow(wp)]

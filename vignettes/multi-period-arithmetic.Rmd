@@ -3,7 +3,7 @@ title: "Multi-period arithmetic attribution"
 author: "[Anand Krishnakumar](https://github.com/anandkkumar)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-bibliography: introduction.bib
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Multi-period arithmetic attribution}
   %\VignetteEngine{knitr::rmarkdown}

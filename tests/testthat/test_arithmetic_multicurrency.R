@@ -76,26 +76,26 @@ test_that("Single period multi-currency top-down arithmetic attribuition with 's
   
   attribution_results = Attribution(Rp, wp, Rb, wb, Rpl=Rpl, Rbl=Rbl, method = "top.down", currency_method = "standard", contribution = TRUE)
   
-  expect_true(all.equal(as.numeric(attribution_results_local$Allocation), as.numeric(attribution_results$Allocation)))
-  expect_true(all.equal(as.numeric(attribution_results_local$Selection), as.numeric(attribution_results$Selection)))
+  expect_true(all.equal(as.numeric(attribution_results_local$Allocation["Total",]), as.numeric(attribution_results$Allocation["Total",])))
+  expect_true(all.equal(as.numeric(attribution_results_local$Selection["Total",]), as.numeric(attribution_results$Selection["Total",])))
   
   expect_true(all.equal(
-    as.numeric(attribution_results_base$Allocation) + as.numeric(attribution_results_base$Selection), 
-    as.numeric(attribution_results$Allocation) + 
-      as.numeric(attribution_results$Selection) + 
-      as.numeric(attribution_results$Currency)))
+    as.numeric(attribution_results_base$Allocation["Total",]) + as.numeric(attribution_results_base$Selection["Total",]), 
+    as.numeric(attribution_results$Allocation["Total",]) + 
+      as.numeric(attribution_results$Selection["Total",]) + 
+      as.numeric(attribution_results$Currency["Total",])))
   
   expect_true(all.equal(
-    as.numeric(attribution_results_base$Allocation) + as.numeric(attribution_results_base$Selection) -
-    as.numeric(attribution_results_local$Allocation) - as.numeric(attribution_results_local$Selection), 
-      as.numeric(attribution_results$Currency)))
+    as.numeric(attribution_results_base$Allocation["Total",]) + as.numeric(attribution_results_base$Selection["Total",]) -
+    as.numeric(attribution_results_local$Allocation["Total",]) - as.numeric(attribution_results_local$Selection["Total",]), 
+      as.numeric(attribution_results$Currency["Total",])))
   
-  expect_true(all.equal(as.numeric(attribution_results_base$`Portfolio contribution to return`), 
-                        as.numeric(attribution_results$`Portfolio contribution to return`)))
-  expect_true(all.equal(as.numeric(attribution_results_base$`Benchmark contribution to return`), 
-                        as.numeric(attribution_results$`Benchmark contribution to return`)))
+  expect_true(all.equal(as.numeric(attribution_results_base$`Portfolio contribution to return`["Total",]), 
+                        as.numeric(attribution_results$`Portfolio contribution to return`["Total",])))
+  expect_true(all.equal(as.numeric(attribution_results_base$`Benchmark contribution to return`["Total",]), 
+                        as.numeric(attribution_results$`Benchmark contribution to return`["Total",])))
   
-  expect_true(all.equal(as.numeric(attribution_results_base$`Excess returns`), 
+  expect_true(all.equal(as.numeric(attribution_results_base$`Excess returns`["Cumulative Return",]), 
                         as.numeric(attribution_results$Allocation[1,"Total"]) + 
                           as.numeric(attribution_results$Selection[1,"Total"]) + 
                           as.numeric(attribution_results$Currency[1,"Total"])))
@@ -107,26 +107,26 @@ test_that("Single period multi-currency bottom-up arithmetic attribuition with '
   
   attribution_results = Attribution(Rp, wp, Rb, wb, Rpl=Rpl, Rbl=Rbl, method = "bottom.up", currency_method = "standard", contribution = TRUE)
   
-  expect_true(all.equal(as.numeric(attribution_results_local$Allocation), as.numeric(attribution_results$Allocation)))
-  expect_true(all.equal(as.numeric(attribution_results_local$Selection), as.numeric(attribution_results$Selection)))
+  expect_true(all.equal(as.numeric(attribution_results_local$Allocation["Total",]), as.numeric(attribution_results$Allocation["Total",])))
+  expect_true(all.equal(as.numeric(attribution_results_local$Selection["Total",]), as.numeric(attribution_results$Selection["Total",])))
   
   expect_true(all.equal(
-    as.numeric(attribution_results_base$Allocation) + as.numeric(attribution_results_base$Selection), 
-    as.numeric(attribution_results$Allocation) + 
-      as.numeric(attribution_results$Selection) + 
-      as.numeric(attribution_results$Currency)))
+    as.numeric(attribution_results_base$Allocation["Total",]) + as.numeric(attribution_results_base$Selection["Total",]), 
+    as.numeric(attribution_results$Allocation["Total",]) + 
+      as.numeric(attribution_results$Selection["Total",]) + 
+      as.numeric(attribution_results$Currency["Total",])))
   
   expect_true(all.equal(
-    as.numeric(attribution_results_base$Allocation) + as.numeric(attribution_results_base$Selection) -
-      as.numeric(attribution_results_local$Allocation) - as.numeric(attribution_results_local$Selection), 
-    as.numeric(attribution_results$Currency)))
+    as.numeric(attribution_results_base$Allocation["Total",]) + as.numeric(attribution_results_base$Selection["Total",]) -
+      as.numeric(attribution_results_local$Allocation["Total",]) - as.numeric(attribution_results_local$Selection["Total",]), 
+    as.numeric(attribution_results$Currency["Total",])))
   
-  expect_true(all.equal(as.numeric(attribution_results_base$`Portfolio contribution to return`), 
-                        as.numeric(attribution_results$`Portfolio contribution to return`)))
-  expect_true(all.equal(as.numeric(attribution_results_base$`Benchmark contribution to return`), 
-                        as.numeric(attribution_results$`Benchmark contribution to return`)))
+  expect_true(all.equal(as.numeric(attribution_results_base$`Portfolio contribution to return`["Total",]), 
+                        as.numeric(attribution_results$`Portfolio contribution to return`["Total",])))
+  expect_true(all.equal(as.numeric(attribution_results_base$`Benchmark contribution to return`["Total",]), 
+                        as.numeric(attribution_results$`Benchmark contribution to return`["Total",])))
   
-  expect_true(all.equal(as.numeric(attribution_results_base$`Excess returns`), 
+  expect_true(all.equal(as.numeric(attribution_results_base$`Excess returns`["Cumulative Return",]), 
                         as.numeric(attribution_results$Allocation[1,"Total"]) + 
                           as.numeric(attribution_results$Selection[1,"Total"]) + 
                           as.numeric(attribution_results$Currency[1,"Total"])))
@@ -138,34 +138,34 @@ test_that("Single period multi-currency three-factor arithmetic attribuition wit
   
   attribution_results = Attribution(Rp, wp, Rb, wb, Rpl=Rpl, Rbl=Rbl, method = "none", currency_method = "standard", contribution = TRUE)
   
-  expect_true(all.equal(as.numeric(attribution_results_local$Allocation), as.numeric(attribution_results$Allocation)))
-  expect_true(all.equal(as.numeric(attribution_results_local$Selection), as.numeric(attribution_results$Selection)))
-  expect_true(all.equal(as.numeric(attribution_results_local$Interaction), as.numeric(attribution_results$Interaction)))
+  expect_true(all.equal(as.numeric(attribution_results_local$Allocation["Total",]), as.numeric(attribution_results$Allocation["Total",])))
+  expect_true(all.equal(as.numeric(attribution_results_local$Selection["Total",]), as.numeric(attribution_results$Selection["Total",])))
+  expect_true(all.equal(as.numeric(attribution_results_local$Interaction["Total",]), as.numeric(attribution_results$Interaction["Total",])))
   
   expect_true(all.equal(
-    as.numeric(attribution_results_base$Allocation) + 
-      as.numeric(attribution_results_base$Selection) +
-      as.numeric(attribution_results_base$Interaction), 
-    as.numeric(attribution_results$Allocation) + 
-      as.numeric(attribution_results$Selection) + 
-      as.numeric(attribution_results$Interaction) +
-      as.numeric(attribution_results$Currency)))
+    as.numeric(attribution_results_base$Allocation["Total",]) + 
+      as.numeric(attribution_results_base$Selection["Total",]) +
+      as.numeric(attribution_results_base$Interaction["Total",]), 
+    as.numeric(attribution_results$Allocation["Total",]) + 
+      as.numeric(attribution_results$Selection["Total",]) + 
+      as.numeric(attribution_results$Interaction["Total",]) +
+      as.numeric(attribution_results$Currency["Total",])))
   
   expect_true(all.equal(
-    as.numeric(attribution_results_base$Allocation) + 
-      as.numeric(attribution_results_base$Selection) + 
-      as.numeric(attribution_results_base$Interaction) -
-      as.numeric(attribution_results_local$Allocation) - 
-      as.numeric(attribution_results_local$Selection) -
-      as.numeric(attribution_results_local$Interaction), 
-    as.numeric(attribution_results$Currency)))
+    as.numeric(attribution_results_base$Allocation["Total",]) + 
+      as.numeric(attribution_results_base$Selection["Total",]) + 
+      as.numeric(attribution_results_base$Interaction["Total",]) -
+      as.numeric(attribution_results_local$Allocation["Total",]) - 
+      as.numeric(attribution_results_local$Selection["Total",]) -
+      as.numeric(attribution_results_local$Interaction["Total",]), 
+    as.numeric(attribution_results$Currency["Total",])))
   
-  expect_true(all.equal(as.numeric(attribution_results_base$`Portfolio contribution to return`), 
-                        as.numeric(attribution_results$`Portfolio contribution to return`)))
-  expect_true(all.equal(as.numeric(attribution_results_base$`Benchmark contribution to return`), 
-                        as.numeric(attribution_results$`Benchmark contribution to return`)))
+  expect_true(all.equal(as.numeric(attribution_results_base$`Portfolio contribution to return`["Total",]), 
+                        as.numeric(attribution_results$`Portfolio contribution to return`["Total",])))
+  expect_true(all.equal(as.numeric(attribution_results_base$`Benchmark contribution to return`["Total",]), 
+                        as.numeric(attribution_results$`Benchmark contribution to return`["Total",])))
   
-  expect_true(all.equal(as.numeric(attribution_results_base$`Excess returns`), 
+  expect_true(all.equal(as.numeric(attribution_results_base$`Excess returns`["Cumulative Return",]), 
                         as.numeric(attribution_results$Allocation[1,"Total"]) + 
                           as.numeric(attribution_results$Selection[1,"Total"]) + 
                           as.numeric(attribution_results$Interaction[1,"Total"]) + 

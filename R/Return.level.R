@@ -48,7 +48,7 @@ function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
     Rp = PerformanceAnalytics::checkData(Rp, method = "xts")
     if (is.vector(wp)){
       wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
-                  index(Rp))
+                       zoo::index(Rp))
       colnames(wp) = colnames(Rp)
     }
     
@@ -61,7 +61,7 @@ function(Rp, wp, h, level = "Sector", relativeWeights = NULL)
       h = HierarchyQuintiles(h, level)
     }
     h = split(h$primary_id, h[level])
-    returns = xts::as.xts(matrix(NA, ncol = length(h), nrow = nrow(Rp)), index(Rp))
+    returns = xts::as.xts(matrix(NA, ncol = length(h), nrow = nrow(Rp)), zoo::index(Rp))
     for(i in 1:length(h)){
       # Check to see if the relativeWeights are all the same as the given weights
       if(all(dim(wp[,h[[i]]]) == dim(relativeWeights[, i])) && all(wp[,h[[i]]] == relativeWeights[, i])) {

@@ -4,9 +4,24 @@
 \alias{Attribution.geometric}
 \title{performs category-based geometric attribution}
 \usage{
-Attribution.geometric(Rp, wp, Rb, wb, wpf = NA, wbf = NA, S = NA,
-  Fp = NA, Fb = NA, Rpl = NA, Rbl = NA, Rbh = NA,
-  contribution = FALSE, annualization = "none")
+Attribution.geometric(
+  Rp,
+  wp,
+  Rb,
+  wb,
+  wpf = NA,
+  wbf = NA,
+  S = NA,
+  Fp = NA,
+  Fb = NA,
+  Rpl = NA,
+  Rbl = NA,
+  Rbh = NA,
+  contribution = FALSE,
+  annualization = "none",
+  annualization_scale = NA,
+  impute_returns = TRUE
+)
 }
 \arguments{
 \item{Rp}{xts of portfolio returns}
@@ -48,6 +63,16 @@ and attribution effects. May be any of:
 \item standard 
 \item proportional}
 The default is 'none'. See vignette on annualization for detailed descriptions of the supported methods}
+
+\item{annualization_scale}{Used to define a custom scale factor to use when annualizing returns. This is only
+applicable if the periodicity of the data is daily and otherwise this parameter is ignored. May be any of:
+\itemize{\item NA - use built-in scale factor
+\item <numeric> - any numeric value
+\item "monthly" - count the periods in terms of months (including fractional months) to determine scale}}
+
+\item{impute_returns}{TRUE/FALSE, whether to impute returns from the benchmark, when the weight of the asset
+is zero in the portfolio & vice-versa. These imputed returns are only used in the calculations
+for attributions effects but not for cumulative asset returns (annualized or otherwise). Defaults to TRUE.}
 }
 \value{
 This function returns the list with attribution effects (allocation
@@ -82,7 +107,7 @@ with
 \eqn{n} being the number of periods.
 
 The multi-currency geometric attribution is handled following the Appendix B
-(Bacon, 2004).
+(Bacon, 2004). 
 
 The individual selection effects are computed using:
 \deqn{S_i = w_{pi}\times\left(\frac{1+R_{pli}}{1+R_{bli}}-1\right)\times \left(\frac{1+R_{bli}}{1+R_{bsl}}\right)}{S_i = w_pi * ((1 + R_pli) / (1 + R_bli) - 1) * ((1 + R_bli) / (1 + R_bsl))}

@@ -4,7 +4,15 @@
 \alias{DaviesLaker}
 \title{calculates total attribution effects using Davies and Laker smoothing}
 \usage{
-DaviesLaker(Rp, wp, Rb, wb)
+DaviesLaker(
+  Rp,
+  wp,
+  Rb,
+  wb,
+  annualization = "none",
+  annualization_scale = NA,
+  impute_returns = TRUE
+)
 }
 \arguments{
 \item{Rp}{xts of portfolio returns}
@@ -14,6 +22,23 @@ DaviesLaker(Rp, wp, Rb, wb)
 \item{Rb}{xts of benchmark returns}
 
 \item{wb}{xts of benchmark weights}
+
+\item{annualization}{Used to select the annualization method for multi-period returns, excess returns,
+and attribution effects. May be any of:
+\itemize{\item none - no annualized numbers are returned
+\item standard 
+\item proportional}
+The default is 'none'. See vignette on annualization for detailed descriptions of the supported methods}
+
+\item{annualization_scale}{Used to define a custom scale factor to use when annualizing returns. This is only
+applicable if the periodicity of the data is daily and otherwise this parameter is ignored. May be any of:
+\itemize{\item NA - use built-in scale factor
+\item <numeric> - any numeric value
+\item "monthly" - count the periods in terms of months (including fractional months) to determine scale}}
+
+\item{impute_returns}{TRUE/FALSE, whether to impute returns from the benchmark, when the weight of the asset
+is zero in the portfolio & vice-versa. These imputed returns are only used in the calculations
+for attributions effects but not for cumulative asset returns (annualized or otherwise). Defaults to TRUE.}
 }
 \value{
 This function returns the data.frame with original attribution 

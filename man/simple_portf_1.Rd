@@ -3,8 +3,10 @@
 \docType{data}
 \name{simple_portf_1}
 \alias{simple_portf_1}
-\title{Simple three category portfolio & benchmark example for use in vignettes}
-\format{An object of class \code{data.frame} with 4 rows and 3 columns.}
+\title{Simple three category portfolio & benchmark example for use in vignettes & unit tests}
+\format{
+An object of class \code{data.frame} with 4 rows and 3 columns.
+}
 \usage{
 simple_portf_1
 }

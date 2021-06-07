@@ -4,9 +4,22 @@
 \alias{Attribution.levels}
 \title{provides multi-level sector-based geometric attribution}
 \usage{
-Attribution.levels(Rp, wp, Rb, wb, Rpl = NA, Rbl = NA, Rbh = NA, h,
-  h_levels, method = "top.down", linking = "grap", geometric = FALSE,
-  adjusted = FALSE, anchored = TRUE)
+Attribution.levels(
+  Rp,
+  wp,
+  Rb,
+  wb,
+  Rpl = NA,
+  Rbl = NA,
+  Rbh = NA,
+  h,
+  h_levels,
+  method = "top.down",
+  linking = "grap",
+  geometric = FALSE,
+  adjusted = FALSE,
+  anchored = TRUE
+)
 }
 \arguments{
 \item{Rp}{xts, data frame or matrix of portfolio returns}

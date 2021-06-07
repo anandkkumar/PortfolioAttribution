@@ -113,7 +113,7 @@ function(Rp, wp, Rb, wb,
     WB = wb
     if (is.vector(wp)){
       wp = xts::as.xts(matrix(rep(wp, nrow(Rp)), nrow(Rp), ncol(Rp), byrow = TRUE), 
-                  index(Rp))
+                       zoo::index(Rp))
       colnames(wp) = colnames(Rp)
     }
     else{
@@ -121,7 +121,7 @@ function(Rp, wp, Rb, wb,
     }
     if (is.vector(wb)){
       wb = xts::as.xts(matrix(rep(wb, nrow(Rb)), nrow(Rb), ncol(Rb), byrow = TRUE), 
-                  index(Rb))
+                       zoo::index(Rb))
       colnames(wb) = colnames(Rb)
     }
     else{
@@ -224,8 +224,8 @@ function(Rp, wp, Rb, wb,
       names(rbl) = "Total"
       
       # Compute currency effect
-      bsl = reclass(rowSums(Rbl * zoo::coredata(wp)), Rpl)
-      bsh = reclass(rowSums((zoo::coredata(wp - wb) * Rbh + zoo::coredata(wb) * Rbl)), Rpl)
+      bsl = xts::reclass(rowSums(Rbl * zoo::coredata(wp)), Rpl)
+      bsh = xts::reclass(rowSums((zoo::coredata(wp - wb) * Rbh + zoo::coredata(wb) * Rbl)), Rpl)
       if(geometric){
         hedge = (1 + bsl) / (1 + bsh) - 1
         currency.attr = (1 + rp) * (1 + rbl) / (1 + rpl) / (1 + rb) - 1
@@ -281,16 +281,16 @@ function(Rp, wp, Rb, wb,
         returns.p[[i]] = Return.level(Rp, WP, h, level = levels[i], weights.p[[i]])
         returns.b[[i]] = Return.level(Rb, WB, h, level = levels[i], weights.b[[i]])
         # semi-notional funds returns
-        bs[[i]] = reclass(rowSums(returns.b[[i]] * zoo::coredata(weights.p[[i]])), rp)  
-        rs[[i]] = reclass(rowSums(returns.p[[i]] * zoo::coredata(weights.b[[i]])), rp)
+        bs[[i]] = xts::reclass(rowSums(returns.b[[i]] * zoo::coredata(weights.p[[i]])), rp)  
+        rs[[i]] = xts::reclass(rowSums(returns.p[[i]] * zoo::coredata(weights.b[[i]])), rp)
       } else{
         weights.p[[i]] = Weight.level(WP, Rpl, h, level = levels[i])
         weights.b[[i]] = Weight.level(WB, Rbl, h, level = levels[i])
         returns.p[[i]] = Return.level(Rpl, WP, h, level = levels[i], weights.p[[i]])
         returns.b[[i]] = Return.level(Rbl, WB, h, level = levels[i], weights.b[[i]])
         # semi-notional funds returns
-        bs[[i]] = reclass(rowSums(returns.b[[i]] * zoo::coredata(weights.p[[i]])), rpl)  
-        rs[[i]] = reclass(rowSums(returns.p[[i]] * zoo::coredata(weights.b[[i]])), rpl)
+        bs[[i]] = xts::reclass(rowSums(returns.b[[i]] * zoo::coredata(weights.p[[i]])), rpl)  
+        rs[[i]] = xts::reclass(rowSums(returns.p[[i]] * zoo::coredata(weights.b[[i]])), rpl)
       }
     }
     names(returns.p) = levels
@@ -301,7 +301,7 @@ function(Rp, wp, Rb, wb,
     if(!currency){
       # Total attribution effects
       allocation = xts::as.xts(matrix(rep(NA, nrow(Rp) * length(levels)), nrow(Rp), 
-                          length(levels)), index(Rp))
+                          length(levels)), zoo::index(Rp))
       
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / zoo::coredata(1 + rb) - 1 # Allocation 1
@@ -310,7 +310,7 @@ function(Rp, wp, Rb, wb,
             allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
           }
         }
-        selection = (1 + rp) / (1 + last(bs)[[1]]) - 1
+        selection = (1 + rp) / (1 + xts::last(bs)[[1]]) - 1
       } else{
         allocation[, 1] = bs[[1]] - zoo::coredata(rb) # Allocation 1
         if(length(levels) > 1){
@@ -319,8 +319,8 @@ function(Rp, wp, Rb, wb,
           }
         }
         
-        selection = last(rs)[[1]] - rb
-        interaction = rp - last(rs)[[1]] - last(bs)[[1]] + rb
+        selection = xts::last(rs)[[1]] - rb
+        interaction = rp - xts::last(rs)[[1]] - xts::last(bs)[[1]] + rb
         if (method == "top.down") {
           selection = selection + interaction
         }
@@ -331,7 +331,7 @@ function(Rp, wp, Rb, wb,
     } else{
       # Total attribution effects
       allocation = xts::as.xts(matrix(rep(NA, nrow(Rpl) * length(levels)), nrow(Rpl), 
-                          length(levels)), index(Rpl))
+                          length(levels)), zoo::index(Rpl))
       
       if(geometric){
         allocation[, 1] = (1 + bs[[1]]) / zoo::coredata(1 + rbl) - 1 # Allocation 1
@@ -340,7 +340,7 @@ function(Rp, wp, Rb, wb,
             allocation[, i] = (1 + bs[[i]]) / (1 + bs[[i-1]]) - 1
           }
         }
-        selection = (1 + rpl) / (1 + last(bs)[[1]]) - 1
+        selection = (1 + rpl) / (1 + xts::last(bs)[[1]]) - 1
       } else{
         allocation[, 1] = bs[[1]] - zoo::coredata(rbl) # Allocation 1
         if(length(levels) > 1){
@@ -349,8 +349,8 @@ function(Rp, wp, Rb, wb,
           }
         }
         
-        selection = last(rs)[[1]] - rbl
-        interaction = rpl - last(rs)[[1]] - last(bs)[[1]] + rbl
+        selection = xts::last(rs)[[1]] - rbl
+        interaction = rpl - xts::last(rs)[[1]] - xts::last(bs)[[1]] + rbl
         if (method == "top.down") {
           selection = selection + interaction
         }
@@ -366,27 +366,27 @@ function(Rp, wp, Rb, wb,
       if(NROW(Rp) == 1)
       {
         b = xts::as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
-                          ncol(returns.b[[1]])), index(Rb))
+                          ncol(returns.b[[1]])), zoo::index(Rb))
         r = xts::as.xts(matrix(rep(rp, ncol(returns.p[[1]])), nrow(rp), 
-                          ncol(returns.p[[1]])), index(Rp))
+                          ncol(returns.p[[1]])), zoo::index(Rp))
       } else{
         b = xts::as.xts(matrix(rep(rb, ncol(returns.b[[1]])), nrow(rb), 
-                          ncol(returns.b[[1]])), index(rb))
+                          ncol(returns.b[[1]])), zoo::index(rb))
         r = xts::as.xts(matrix(rep(rp, ncol(returns.p[[1]])), nrow(rp),
-                          ncol(returns.p[[1]])), index(rp))
+                          ncol(returns.p[[1]])), zoo::index(rp))
       }
     } else{
       if(NROW(Rpl) == 1)
       {
         b = xts::as.xts(matrix(rep(rbl, ncol(returns.b[[1]])), nrow(rbl), 
-                          ncol(returns.b[[1]])), index(Rbl))
+                          ncol(returns.b[[1]])), zoo::index(Rbl))
         r = xts::as.xts(matrix(rep(rpl, ncol(returns.p[[1]])), nrow(rpl), 
-                          ncol(returns.p[[1]])), index(Rpl))
+                          ncol(returns.p[[1]])), zoo::index(Rpl))
       } else{
         b = xts::as.xts(matrix(rep(rbl, ncol(returns.b[[1]])), nrow(rbl), 
-                          ncol(returns.b[[1]])), index(rbl))
+                          ncol(returns.b[[1]])), zoo::index(rbl))
         r = xts::as.xts(matrix(rep(rpl, ncol(returns.p[[1]])), nrow(rpl),
-                          ncol(returns.p[[1]])), index(rpl))
+                          ncol(returns.p[[1]])), zoo::index(rpl))
       }
     }
     
@@ -427,13 +427,13 @@ function(Rp, wp, Rb, wb,
     if(length(bs) > 1){
       for (i in 1:(length(bs) - 1)){
         bs[[i]] = xts::as.xts(matrix(rep(bs[[i]], ncol(returns.b2[[i]])), nrow(r), 
-                                ncol(returns.b2[[i]])), index(r))
+                                ncol(returns.b2[[i]])), zoo::index(r))
       }
       # Use the last iteration index for the number of columns to set the last list element
-      bs[[length(bs)]] = xts::as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b2[[i]])), nrow(r), ncol(returns.b2[[i]])), index(r))
+      bs[[length(bs)]] = xts::as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b2[[i]])), nrow(r), ncol(returns.b2[[i]])), zoo::index(r))
     } else{
       # Use the last iteration index for the number of columns to set the last list element
-      bs[[length(bs)]] = xts::as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b[[1]])), nrow(r), ncol(returns.b[[1]])), index(r))
+      bs[[length(bs)]] = xts::as.xts(matrix(rep(bs[[length(bs)]], ncol(returns.b[[1]])), nrow(r), ncol(returns.b[[1]])), zoo::index(r))
     }
     
     # Attribution at each level
@@ -486,7 +486,7 @@ function(Rp, wp, Rb, wb,
           select_level[[i]][,] = NA
           if (i == length(levels)) {
             # Selection at lowest level
-            select_level[[i]] = zoo::coredata(reclass(weights.p[[i]], rp)) * 
+            select_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]], rp)) * 
               ((1 + returns.p[[i]]) / (1 + returns.b[[i]]) - 1) *
               ((1 + returns.b[[i]]) / (1 + bs[[i]]))
           } else {
@@ -507,18 +507,18 @@ function(Rp, wp, Rb, wb,
             if (i == length(levels)) {
               if(method == "top.down" & length(levels) > 1) {
                 # Selection at lowest level
-                select_level[[i]] = zoo::coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) *
+                select_level[[i]] = zoo::coredata(xts::reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) *
                   (returns.p[[i]] - returns.b[[i]])
                 
                 # Interaction at lowest level
-                interaction_level[[i]] = zoo::coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) * 
+                interaction_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rb)) * 
                   (returns.p[[i]] - returns.b[[i]])
               } else {
                 # Selection at lowest level
-                select_level[[i]] = zoo::coredata(reclass(weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+                select_level[[i]] = zoo::coredata(xts::reclass(weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
                 
                 # Interaction at lowest level
-                interaction_level[[i]] = zoo::coredata(reclass(weights.p[[i]] - weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+                interaction_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]] - weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
               }
               
               # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
@@ -542,10 +542,10 @@ function(Rp, wp, Rb, wb,
             select_level[[i]][,] = interaction_level[[i]][,] = NA
             if (i == length(levels)) {
               # Selection at lowest level
-              select_level[[i]] = zoo::coredata(reclass(weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+              select_level[[i]] = zoo::coredata(xts::reclass(weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
               
               # Interaction at lowest level
-              interaction_level[[i]] = zoo::coredata(reclass(weights.p[[i]] - weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
+              interaction_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]] - weights.b[[i]], rb)) * (returns.p[[i]] - returns.b[[i]])
             } else {
               # At higher levels it's the sum of the effects at the lower level
               columnNames = colnames(select_level[[i]])
@@ -574,7 +574,7 @@ function(Rp, wp, Rb, wb,
           select_level[[i]][,] = NA
           if (i == length(levels)) {
             # Selection at lowest level
-            select_level[[i]] = zoo::coredata(reclass(weights.p[[i]], rpl)) * 
+            select_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]], rpl)) * 
               ((1 + returns.p[[i]]) / (1 + returns.b[[i]]) - 1) *
               ((1 + returns.b[[i]]) / (1 + bs[[i]]))
           } else {
@@ -595,18 +595,18 @@ function(Rp, wp, Rb, wb,
             if (i == length(levels)) {
               if(length(levels) > 1){
                 # Selection at lowest level
-                select_level[[i]] = zoo::coredata(reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) *
+                select_level[[i]] = zoo::coredata(xts::reclass(weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) *
                   (returns.p[[i]] - returns.b[[i]])
                 
                 # Interaction at the lowest level
-                interaction_level[[i]] = zoo::coredata(reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) * 
+                interaction_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]] - weights.b[[i]]*weights.p2[[i-1]]/weights.b2[[i-1]], rbl)) * 
                   (returns.p[[i]] - returns.b[[i]])
               } else {
                 # Selection at lowest level
-                select_level[[i]] = zoo::coredata(reclass(weights.b[[i]], rbl)) * (returns.p[[i]] - returns.b[[i]])
+                select_level[[i]] = zoo::coredata(xts::reclass(weights.b[[i]], rbl)) * (returns.p[[i]] - returns.b[[i]])
                 
                 # Interaction at the lowest level
-                interaction_level[[i]] = zoo::coredata(reclass(weights.p[[i]] - weights.b[[i]], rbl)) * 
+                interaction_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]] - weights.b[[i]], rbl)) * 
                   (returns.p[[i]] - returns.b[[i]])
               }
               # In cases where weights.b2 is 0, we get NaNs above, which we relace with zeroes
@@ -630,10 +630,10 @@ function(Rp, wp, Rb, wb,
             select_level[[i]][,] = interaction_level[[i]][,] = NA
             if (i == length(levels)) {
               # Selection at the lowest level
-              select_level[[i]] = zoo::coredata(reclass(weights.b[[i]], rbl)) * (returns.p[[i]] - returns.b[[i]])
+              select_level[[i]] = zoo::coredata(xts::reclass(weights.b[[i]], rbl)) * (returns.p[[i]] - returns.b[[i]])
               
               # Interaction at the lowest level
-              interaction_level[[i]] = zoo::coredata(reclass(weights.p[[i]] - weights.b[[i]], rbl)) * 
+              interaction_level[[i]] = zoo::coredata(xts::reclass(weights.p[[i]] - weights.b[[i]], rbl)) * 
                 (returns.p[[i]] - returns.b[[i]])
             } else {
               # At higher levels it's the sum of the effects at the lower level
